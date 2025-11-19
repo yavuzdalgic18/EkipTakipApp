@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ekip Yönetim (Online)</title>
+    <style>
+        :root { --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #c0392b; --bg: #f4f7f6; }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; color: #333; }
+        nav { background: var(--primary); padding: 15px; text-align: center; color: white; font-weight: bold; font-size: 1.2rem; }
+        .container { max-width: 1100px; margin: 20px auto; padding: 15px; }
+        
+        /* İstatistikler ve Takvim Tasarımı */
+        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .stat { background: white; padding: 15px; border-radius: 8px; text-align: center; border-top: 4px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .stat b { font-size: 1.5rem; display: block; margin-top: 5px; }
+        
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; background: white; padding: 10px; border-radius: 8px; }
+        .day-cell { border: 1px solid #eee; min-height: 80px; padding: 5px; cursor: pointer; }
+        .day-cell:hover { background: #f9f9f9; border-color: var(--accent); }
+        .task-dot { font-size: 0.7rem; background: #eaf2f8; color: var(--primary); padding: 2px; margin-top: 2px; border-left: 3px solid var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 99; }
+        .modal-content { background: white; padding: 20px; width: 90%; max-width: 400px; border-radius: 10px; max-height: 90vh; overflow-y: auto; }
+        input, select { width: 100%; padding: 10px; margin: 5px 0 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-save { background: var(--success); }
+        .btn-del { background: var(--danger); width: auto; padding: 5px 10px; float: right; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+<nav>Bulut Tabanlı Ekip Takip</nav>
+
+<div class="container">
+    <div class="dashboard">
+        <div class="stat" style="border-color:var(--accent)">Toplam Ekip <b id="s-total">0</b></div>
+        <div class="stat" style="border-color:var(--danger)">Sahada <b id="s-active">0</b></div>
+        <div class="stat" style="border-color:var(--success)">Boşta <b id="s-idle">0</b></div>
+    </div>
+    <div style="text-align:center; margin-bottom:10px; color:#666; font-size:0.9rem;">Seçili Tarih: <span id="dateLabel">Bugün</span></div>
+
+    <div class="calendar-header">
+        <button onclick="changeMonth(-1)" style="width:auto; background:#ddd; color:#333;">&#9664;</button>
+        <h3 id="monthDisplay" style="margin:0;"></h3>
+        <button onclick="changeMonth(1)" style="width:auto; background:#ddd; color:#333;">&#9654;</button>
+    </div>
+    <div class="calendar-grid" id="calGrid"></div>
+</div>
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <div style="text-align:right;"><span onclick="closeModal()" style="cursor:pointer; font-size:1.5rem;">&times;</span></div>
+        <h3>Görev Atama</h3>
+        <div id="dayList" style="background:#f8f8f8; padding:10px; margin-bottom:15px;"></div>
+        
+        <label>Personel</label>
+        <select id="inpPerson">
+            <option>Ahmet Yılmaz</option>
+            <option>Mehmet Öz</option>
+            <option>Ayşe Demir</option>
+            <option>Ekip Alpha</option>
+            <option>Ekip Beta</option>
+        </select>
+        
+        <label>Proje / Yer</label>
+        <input type="text" id="inpProj" placeholder="Eren Enerji vb.">
+        
+        <label>İlçe / Şehir</label>
+        <input type="text" id="inpLoc" placeholder="Zonguldak">
+        
+        <button class="btn-save" onclick="addTask()">Kaydet</button>
+    </div>
+</div>
+
+<script type="module">
+    // Firebase kütüphanelerini internetten çekiyoruz
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // --- SENİN RESİMDEKİ BİLGİLERİN BURADA ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyD4XZR8JAMe-Qr20j2UGnp9mFc8En38gxY",
+        authDomain: "ekiptakipapp.firebaseapp.com",
+        projectId: "ekiptakipapp",
+        storageBucket: "ekiptakipapp.firebasestorage.app",
+        messagingSenderId: "55716082808",
+        appId: "1:55716082808:web:b144b953684fc9f80c698d",
+        measurementId: "G-S6Q0H5RHR7"
+    };
+
+    // Uygulamayı Başlat
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app); // Veritabanını başlat
+    
+    let tasks = []; 
+    let currentDate = new Date();
+    let selectedDateStr = "";
+    const totalPersonel = 5;
+
+    // Veri Dinleme (Realtime)
+    const q = query(collection(db, "tasks"));
+    onSnapshot(q, (snapshot) => {
+        tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderCalendar();
+        if(document.getElementById('modal').style.display === 'flex') openModalLogic(selectedDateStr);
+    });
+
+    // --- Takvim ve Mantık Fonksiyonları ---
+    window.renderCalendar = function() {
+        const grid = document.getElementById('calGrid');
+        grid.innerHTML = '<div style="text-align:center; font-weight:bold;">Pt</div><div style="text-align:center; font-weight:bold;">Sa</div><div style="text-align:center; font-weight:bold;">Ça</div><div style="text-align:center; font-weight:bold;">Pe</div><div style="text-align:center; font-weight:bold;">Cu</div><div style="text-align:center; font-weight:bold;">Ct</div><div style="text-align:center; font-weight:bold;">Pz</div>';
+        
+        const y = currentDate.getFullYear();
+        const m = currentDate.getMonth();
+        const monthNames = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+        document.getElementById('monthDisplay').innerText = `${monthNames[m]} ${y}`;
+
+        const firstDay = new Date(y, m, 1).getDay();
+        const startBlank = firstDay === 0 ? 6 : firstDay - 1;
+        const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+        for(let i=0; i<startBlank; i++) grid.innerHTML += '<div></div>';
+
+        for(let d=1; d<=daysInMonth; d++) {
+            let dateKey = `${d}-${m}-${y}`;
+            let dayTasks = tasks.filter(t => t.date === dateKey);
+            let cellHtml = `<div class="day-cell" onclick="openModal('${dateKey}')"><b>${d}</b>${dayTasks.map(t => `<div class="task-dot">${t.person}</div>`).join('')}</div>`;
+            grid.innerHTML += cellHtml;
+        }
+        updateStats();
+    }
+
+    window.openModal = function(dateKey) {
+        selectedDateStr = dateKey;
+        document.getElementById('dateLabel').innerText = dateKey.replace(/-/g, '.');
+        openModalLogic(dateKey);
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function openModalLogic(dateKey) {
+        const list = document.getElementById('dayList');
+        const dayTasks = tasks.filter(t => t.date === dateKey);
+        list.innerHTML = dayTasks.length === 0 ? "Henüz görev yok." : dayTasks.map(t => `<div style="border-bottom:1px solid #ddd; padding:5px; display:flex; justify-content:space-between;"><span><b>${t.person}</b> - ${t.project}</span><button class="btn-del" onclick="removeTask('${t.id}')">Sil</button></div>`).join('');
+    }
+
+    window.closeModal = function() { document.getElementById('modal').style.display = 'none'; }
+
+    window.addTask = async function() {
+        const person = document.getElementById('inpPerson').value;
+        const project = document.getElementById('inpProj').value;
+        const loc = document.getElementById('inpLoc').value;
+        if(!project) return alert("Proje adı giriniz");
+        try {
+            await addDoc(collection(db, "tasks"), { date: selectedDateStr, person, project, location: loc, createdAt: new Date() });
+            document.getElementById('inpProj').value = ""; document.getElementById('inpLoc').value = "";
+        } catch (e) { alert("Hata: " + e.message); }
+    }
+
+    window.removeTask = async function(docId) { if(confirm("Silmek istiyor musunuz?")) await deleteDoc(doc(db, "tasks", docId)); }
+    window.changeMonth = function(dir) { currentDate.setMonth(currentDate.getMonth() + dir); renderCalendar(); }
+    
+    function updateStats() {
+        let targetKey = selectedDateStr || `${new Date().getDate()}-${new Date().getMonth()}-${new Date().getFullYear()}`;
+        let dailyTasks = tasks.filter(t => t.date === targetKey);
+        let uniquePeople = new Set(dailyTasks.map(t => t.person)).size;
+        document.getElementById('s-total').innerText = totalPersonel;
+        document.getElementById('s-active').innerText = uniquePeople;
+        document.getElementById('s-idle').innerText = totalPersonel - uniquePeople;
+    }
+
+    renderCalendar();
+</script>
+
+</body>
+</html>
