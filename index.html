@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip ERP (V15 - Tam Yönetim)</title>
+    <title>Ekip Takip ERP (V15 - Anlık Durum)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c3e50">
@@ -78,9 +78,7 @@
         .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
         .form-col { flex: 1; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; background: #fff; }
-        /* Readonly input stili */
         input:disabled { background-color: #e9ecef; cursor: not-allowed; color: #6c757d; }
-        
         label { font-size: 0.8rem; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
         .btn { border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; width: 100%; font-size: 0.95rem; margin-bottom: 5px;}
         .btn-save { background: var(--success); }
@@ -100,7 +98,7 @@
         @media (min-width: 600px) { .card-list { grid-template-columns: 1fr 1fr; } }
         
         .info-card { background: var(--white); padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; border-left: 5px solid #ccc; position: relative;}
-        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 10px; }
+        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 5px; }
         .info-card.active { border-left-color: var(--success); }
         .info-card.busy { border-left-color: var(--danger); }
         
@@ -108,18 +106,12 @@
         .badge-green { background: #d1e7dd; color: #0f5132; }
         .badge-red { background: #f8d7da; color: #842029; }
         .badge-gray { background: #e2e3e5; color: #41464b; }
-        .badge-yellow { background: #fff3cd; color: #664d03; }
         
-        .future-list { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eee; width: 100%; }
-        .future-title { font-size: 0.75rem; color: #999; font-weight: bold; margin-bottom: 5px; display: block; }
+        /* Gelecek Program Listesi */
+        .future-list { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #eee; width: 100%; }
+        .future-title { font-size: 0.7rem; color: #999; font-weight: bold; margin-bottom: 4px; display: block; text-transform: uppercase;}
         .future-item { font-size: 0.8rem; color: #555; margin-bottom: 3px; display: flex; justify-content: space-between; }
-        .future-date { font-weight: bold; color: var(--accent); margin-right: 5px; }
-
-        /* Listeler (Kullanıcı/Araç) */
-        .user-card { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-        .role-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: white; }
-        .role-admin { background: var(--accent); }
-        .role-staff { background: #95a5a6; }
+        .future-date { font-weight: bold; color: var(--primary); margin-right: 5px; }
 
         /* Multi-Select */
         .multi-select-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
@@ -195,10 +187,10 @@
         <div id="view-calendar" class="view-section active">
             <div class="dashboard-stats">
                 <div class="stat-box border-blue"><small>Toplam</small><span class="stat-val" id="stat-total">0</span></div>
-                <div class="stat-box border-red"><small>Sahada</small><span class="stat-val" id="stat-active">0</span></div>
-                <div class="stat-box border-green"><small>Boşta</small><span class="stat-val" id="stat-idle">0</span></div>
+                <div class="stat-box border-red"><small>Sahada (Seçili Gün)</small><span class="stat-val" id="stat-active">0</span></div>
+                <div class="stat-box border-green"><small>Boşta (Seçili Gün)</small><span class="stat-val" id="stat-idle">0</span></div>
             </div>
-            <div style="text-align:center; margin-bottom:10px; color:#666; font-size:0.8rem;">Seçili: <b id="statsDateLabel">Bugün</b></div>
+            <div style="text-align:center; margin-bottom:10px; color:#666; font-size:0.8rem;">Seçili Tarih: <b id="statsDateLabel">Bugün</b></div>
             
             <div class="calendar-header">
                 <button onclick="changeMonth(-1)" style="padding:5px 15px;">&#9664;</button>
@@ -258,8 +250,8 @@
 
         <div id="view-team" class="view-section">
             <div style="text-align:center; margin-bottom:15px; color:#666;">
-                <h3 style="margin:0; color:var(--primary);">Personel Durumu</h3>
-                <small>Tarih: <span id="teamViewDate">Bugün</span></small>
+                <h3 style="margin:0; color:var(--primary);">Anlık Durum (Bugün)</h3>
+                <small>Ve Gelecek Planları</small>
             </div>
             <div id="teamListArea" class="card-list"></div>
         </div>
@@ -275,6 +267,10 @@
                     <div class="form-col"><label>Kalibrasyon Tarihi</label><input type="date" id="d-calib"></div>
                 </div>
                 <button class="btn btn-save" onclick="addDevice()">Cihazı Kaydet</button>
+            </div>
+            <div style="text-align:center; margin-bottom:15px; margin-top:15px; color:#666;">
+                <h3 style="margin:0; color:var(--primary);">Cihaz Durumu (Bugün)</h3>
+                <small>Ve Gelecek Planları</small>
             </div>
             <div id="deviceListArea" class="card-list"></div>
         </div>
@@ -384,7 +380,7 @@
     let currentUser=null, userRole='staff';
     let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), editingProjId=null;
     let pickerYear = new Date().getFullYear();
-    let editingUserEmail = null; // Düzenlenen kullanıcının emaili
+    let editingUserEmail = null;
 
     // AUTH
     onAuthStateChanged(auth, async (user) => {
@@ -452,8 +448,10 @@
             tasks=[]; s.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
             renderCalendar();
             if(document.getElementById('taskModal').style.display === 'flex') openModalLogic(selectedDateStr);
-            const d = selectedDateStr || getCurrentDateStr();
-            updateStats(d); renderTeamStatus(d); renderDeviceList();
+            // NOT: Burası artık seçili tarihi değil, daima BUGÜNÜ baz alacak.
+            renderTeamStatus(); 
+            renderDeviceList();
+            updateStats(selectedDateStr); // İstatistikler hala seçili güne göre olsun
         });
     }
 
@@ -488,7 +486,13 @@
         document.querySelectorAll('.dropdown-content input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
 
-    // CİHAZLAR
+    // HELPER: Tarih Parse
+    function parseDateStr(str) {
+        const [d, m, y] = str.split('-').map(Number);
+        return new Date(y, m, d);
+    }
+
+    // CİHAZLAR (ANLIK DURUM + FULL PLAN)
     window.addDevice = async () => {
         const name=document.getElementById('d-name').value, serial=document.getElementById('d-serial').value, calib=document.getElementById('d-calib').value;
         if(!name) return alert("Ad girin");
@@ -498,24 +502,32 @@
     window.deleteDevice = async (id) => { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, "devices", id)); }
     
     function renderDeviceList() {
+        // BU FONKSİYON ARTIK DAİMA BUGÜNÜ REFERANS ALIR
         const todayStr = getCurrentDateStr();
-        const parseDate = (str) => { const [d, m, y] = str.split('-').map(Number); return new Date(y, m, d); };
-        const todayDate = parseDate(todayStr);
+        const todayDate = parseDateStr(todayStr);
 
         document.getElementById('deviceListArea').innerHTML = devices.map(d => {
             let calibStatus = "";
             if(d.calib && new Date(d.calib) < new Date()) calibStatus = '<span style="color:red;">(Kalibrasyon Geçmiş!)</span>';
 
+            // Bugün aktif mi?
             const todayTasks = tasks.filter(t => t.date === todayStr);
             const activeTask = todayTasks.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name); 
             
+            // Gelecek Planı (Bugünden sonraki tüm işler)
             const upcomingTasks = tasks.filter(t => {
-                const tDate = parseDate(t.date);
+                const tDate = parseDateStr(t.date);
                 return tDate > todayDate && (Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name);
-            }).sort((a, b) => parseDate(a.date) - parseDate(b.date));
+            }).sort((a, b) => parseDateStr(a.date) - parseDateStr(b.date));
 
             let statusHtml = activeTask ? `<div class="badge badge-red">🔴 ŞU AN: ${activeTask.projectName}</div>` : `<div class="badge badge-green">🟢 BOŞTA</div>`;
-            let futureHtml = upcomingTasks.length > 0 ? `<div class="future-list"><span class="future-title">Gelecek Program:</span>` + upcomingTasks.map(t => `<div class="future-item"><span class="future-date">${t.date}:</span> <span>${t.projectName}</span></div>`).join('') + `</div>` : '';
+            
+            let futureHtml = "";
+            if (upcomingTasks.length > 0) {
+                futureHtml = `<div class="future-list"><span class="future-title">Gelecek Program:</span>` + 
+                upcomingTasks.map(t => `<div class="future-item"><span class="future-date">${t.date}:</span> <span>${t.projectName}</span></div>`).join('') + 
+                `</div>`;
+            }
 
             return `<div class="info-card ${activeTask ? 'busy' : 'active'}">
                 <div class="info-card-header">
@@ -523,6 +535,50 @@
                     ${userRole==='admin' ? `<button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none;">🗑</button>`:''}
                 </div>
                 <div style="text-align:right; margin-bottom:5px;">${statusHtml}</div>
+                ${futureHtml}
+            </div>`;
+        }).join('');
+    }
+
+    // PERSONEL DURUMU (ANLIK DURUM + FULL PLAN)
+    function renderTeamStatus() {
+        // BU FONKSİYON ARTIK DAİMA BUGÜNÜ REFERANS ALIR
+        const todayStr = getCurrentDateStr();
+        const todayDate = parseDateStr(todayStr);
+
+        document.getElementById('teamListArea').innerHTML = users.map(u => {
+            // Bugün aktif mi?
+            const dt = tasks.filter(t=>t.date===todayStr);
+            const at = dt.find(t => Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
+            const vStr = at ? (Array.isArray(at.plate) ? at.plate.join(", ") : at.plate) : '';
+
+            // Gelecek Planı
+            const upcomingTasks = tasks.filter(t => {
+                const tDate = parseDateStr(t.date);
+                return tDate > todayDate && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
+            }).sort((a, b) => parseDateStr(a.date) - parseDateStr(b.date));
+
+            let statusHtml = at 
+                ? `<div class="badge badge-red">🔴 SAHADA</div>` 
+                : `<div class="badge badge-green">🟢 BOŞTA</div>`;
+                
+            let detailHtml = at 
+                ? `<p>📍 ${at.projectName}</p><p>🚗 ${vStr||''}</p>` 
+                : `<p>Müsait</p>`;
+
+            let futureHtml = "";
+            if (upcomingTasks.length > 0) {
+                futureHtml = `<div class="future-list"><span class="future-title">Gelecek Program:</span>` + 
+                upcomingTasks.map(t => `<div class="future-item"><span class="future-date">${t.date}:</span> <span>${t.projectName}</span></div>`).join('') + 
+                `</div>`;
+            }
+
+            return `<div class="info-card ${at?'busy':'active'}">
+                <div class="info-card-header">
+                    <div><h4>${u.name} <small style="font-size:0.7rem">(${u.title||''})</small></h4></div>
+                    ${statusHtml}
+                </div>
+                <div>${detailHtml}</div>
                 ${futureHtml}
             </div>`;
         }).join('');
@@ -543,7 +599,7 @@
             </div>`).join('');
     }
 
-    // --- KULLANICI YÖNETİMİ (V15 DÜZENLEME EKLENDİ) ---
+    // KULLANICI YÖNETİMİ
     window.addUserToDB = async () => {
         const name=document.getElementById('u-name').value, title=document.getElementById('u-title').value, email=document.getElementById('u-email').value, role=document.getElementById('u-role').value;
         if(!name || !email) return alert("Eksik bilgi");
@@ -551,22 +607,17 @@
         alert("Kullanıcı eklendi."); document.getElementById('u-name').value=""; document.getElementById('u-email').value=""; document.getElementById('u-title').value="";
     };
     
-    // Kullanıcı Düzenleme Fonksiyonları
     window.editUser = (email) => {
         const u = users.find(x => x.email === email);
         if(!u) return;
-        // Formu doldur
         document.getElementById('u-name').value = u.name;
         document.getElementById('u-title').value = u.title || '';
         document.getElementById('u-email').value = u.email;
-        document.getElementById('u-email').disabled = true; // Emaili kilitle
+        document.getElementById('u-email').disabled = true;
         document.getElementById('u-role').value = u.role;
-        
         editingUserEmail = email;
         
-        // Butonları değiştir
         document.getElementById('userFormTitle').innerText = "Kullanıcı Düzenle";
-        document.getElementById('projectFormContainer')?.classList.add('editing'); // Görsel efekt (varsa)
         document.getElementById('btn-user-add').style.display = 'none';
         document.getElementById('btn-user-update').style.display = 'block';
         document.getElementById('btn-user-cancel').style.display = 'block';
@@ -576,7 +627,6 @@
         const name = document.getElementById('u-name').value;
         const title = document.getElementById('u-title').value;
         const role = document.getElementById('u-role').value;
-        
         await updateDoc(doc(db, "users", editingUserEmail), { name, title, role });
         cancelUserEdit();
     };
@@ -586,9 +636,8 @@
         document.getElementById('u-name').value = "";
         document.getElementById('u-title').value = "";
         document.getElementById('u-email').value = "";
-        document.getElementById('u-email').disabled = false; // Emaili aç
+        document.getElementById('u-email').disabled = false;
         document.getElementById('u-role').value = "staff";
-        
         document.getElementById('userFormTitle').innerText = "Yeni Kullanıcı Tanımla";
         document.getElementById('btn-user-add').style.display = 'block';
         document.getElementById('btn-user-update').style.display = 'none';
@@ -687,8 +736,9 @@
         selectedDateStr = dk;
         document.getElementById('modalDateText').innerText = dk.replace(/-/g, '.');
         document.getElementById('statsDateLabel').innerText = dk.replace(/-/g, '.');
-        document.getElementById('teamViewDate').innerText = dk.replace(/-/g, '.');
-        openModalLogic(dk); updateStats(dk); renderTeamStatus(dk);
+        // Dikkat: openModal takvim seçimini yapar ama Ekip/Cihaz listesini BOZMAZ. Onlar hep BUGÜN kalır.
+        updateStats(dk); 
+        openModalLogic(dk);
         document.getElementById('taskModal').style.display = 'flex';
     }
     function openModalLogic(dk) {
@@ -729,38 +779,6 @@
         dt.forEach(t => { if(Array.isArray(t.person)) t.person.forEach(p => activePeople.add(p)); else activePeople.add(t.person); });
         const act = activePeople.size; const tot = users.length;
         document.getElementById('stat-total').innerText=tot; document.getElementById('stat-active').innerText=act; document.getElementById('stat-idle').innerText=Math.max(0, tot-act);
-    }
-    
-    function renderTeamStatus(dk) {
-        const todayStr = getCurrentDateStr();
-        const parseDate = (str) => { const [d, m, y] = str.split('-').map(Number); return new Date(y, m, d); };
-        const todayDate = parseDate(todayStr);
-
-        document.getElementById('teamListArea').innerHTML = users.map(u => {
-            const dt = tasks.filter(t=>t.date===dk);
-            const at = dt.find(t => Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
-            const vStr = at ? (Array.isArray(at.plate) ? at.plate.join(", ") : at.plate) : '';
-
-            const upcomingTasks = tasks
-                .filter(t => {
-                    const tDate = parseDate(t.date);
-                    return tDate > todayDate && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
-                })
-                .sort((a, b) => parseDate(a.date) - parseDate(b.date));
-
-            let statusHtml = at ? `<div class="badge badge-green">SAHADA</div>` : `<div class="badge badge-gray">BOŞTA</div>`;
-            let detailHtml = at ? `<p>📍 ${at.projectName}</p><p>🚗 ${vStr||''}</p>` : `<p>Müsait</p>`;
-            let futureHtml = upcomingTasks.length > 0 ? `<div class="future-list"><span class="future-title">Gelecek Program:</span>` + upcomingTasks.map(t => `<div class="future-item"><span class="future-date">${t.date}:</span> <span>${t.projectName}</span></div>`).join('') + `</div>` : '';
-
-            return `<div class="info-card ${at?'active':''}">
-                <div class="info-card-header">
-                    <div><h4>${u.name} <small style="font-size:0.7rem">(${u.title||''})</small></h4></div>
-                    ${statusHtml}
-                </div>
-                <div>${detailHtml}</div>
-                ${futureHtml}
-            </div>`;
-        }).join('');
     }
     
     window.closeModal = () => document.getElementById('taskModal').style.display = 'none';
