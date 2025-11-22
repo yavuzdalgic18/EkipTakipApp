@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip ERP (V9.4 - Final)</title>
+    <title>Ekip Takip ERP (V10 - Araç & Ünvan)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c3e50">
@@ -32,18 +32,15 @@
         .login-box button { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-top: 5px;}
         
         .hidden { display: none !important; }
-        
-        /* Admin only elemanlar varsayılan gizli, JS ile açılır */
         .admin-only { display: none; } 
 
         /* GENEL STİLLER */
-        nav { background: var(--primary); padding: 0; display: flex; justify-content: space-around; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .nav-tab { padding: 15px 0; color: #bdc3c7; cursor: pointer; font-weight: bold; font-size: 0.9rem; text-align: center; flex: 1; border-bottom: 4px solid transparent; }
+        nav { background: var(--primary); padding: 0; display: flex; justify-content: space-around; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto;}
+        .nav-tab { padding: 15px 10px; color: #bdc3c7; cursor: pointer; font-weight: bold; font-size: 0.85rem; text-align: center; flex: 1; border-bottom: 4px solid transparent; white-space: nowrap;}
         .nav-tab.active { color: white; border-bottom-color: var(--accent); background: rgba(255,255,255,0.1); }
         
         .container { max-width: 1100px; margin: 15px auto; padding: 0 10px; padding-bottom: 80px; }
         
-        /* TAB GEÇİŞLERİ */
         .view-section { display: none; animation: fadeIn 0.3s; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -131,6 +128,7 @@
         <div id="registerArea" class="hidden" style="margin-top:15px; background:#f9f9f9; padding:10px; border-radius:5px;">
             <h4 style="margin:0 0 10px 0;">Kayıt Ol</h4>
             <input type="text" id="regName" placeholder="Ad Soyad">
+            <input type="text" id="regTitle" placeholder="Ünvan (Örn: Şantiye Şefi) - İsteğe bağlı">
             <input type="email" id="regEmail" placeholder="E-Posta">
             <input type="password" id="regPass" placeholder="Şifre (En az 6 hane)">
             <button onclick="handleRegister()" style="background:#27ae60;">Kaydol ve Başla</button>
@@ -148,6 +146,7 @@
         <div class="nav-tab active" onclick="switchTab('calendar')">📅 Takvim</div>
         <div class="nav-tab" onclick="switchTab('projects')">📂 Projeler</div>
         <div class="nav-tab" onclick="switchTab('team')">👥 Durum</div>
+        <div class="nav-tab admin-only" onclick="switchTab('vehicles')">🚗 Araçlar</div>
         <div class="nav-tab admin-only" onclick="switchTab('users')">⚙️ Kullanıcı</div>
     </nav>
 
@@ -201,18 +200,33 @@
             <div id="teamListArea" class="team-grid"></div>
         </div>
 
-        <div id="view-users" class="view-section">
+        <div id="view-vehicles" class="view-section admin-only">
+            <div class="project-form">
+                <h3 style="margin-top:0; color:var(--primary);">Yeni Araç Ekle</h3>
+                <div class="form-row">
+                    <div class="form-col"><label>Plaka</label><input type="text" id="v-plate" placeholder="34 AB 123"></div>
+                    <div class="form-col"><label>Model / Bilgi</label><input type="text" id="v-info" placeholder="Ford Ranger"></div>
+                </div>
+                <button class="btn btn-save" onclick="addVehicle()">Aracı Kaydet</button>
+            </div>
+            <h4 style="margin-bottom:10px;">Araç Listesi</h4>
+            <div id="vehicleListArea" style="background:white; border-radius:8px; overflow:hidden;"></div>
+        </div>
+
+        <div id="view-users" class="view-section admin-only">
             <div class="project-form">
                 <h3 style="margin-top:0; color:var(--primary);">Yeni Kullanıcı Tanımla</h3>
-                <p style="font-size:0.8rem; color:#666;">Buradan eklediğiniz kişi daha sonra kendi şifresini belirleyerek giriş yapabilir.</p>
-                <input type="text" id="u-name" placeholder="Ad Soyad">
+                <div class="form-row">
+                    <div class="form-col"><input type="text" id="u-name" placeholder="Ad Soyad"></div>
+                    <div class="form-col"><input type="text" id="u-title" placeholder="Ünvan (Opsiyonel)"></div>
+                </div>
                 <input type="email" id="u-email" placeholder="E-Posta">
                 <label>Yetki</label>
                 <select id="u-role">
                     <option value="staff">Personel (İzleyici)</option>
                     <option value="admin">Yönetici (Tam Yetki)</option>
                 </select>
-                <button class="btn btn-save" style="margin-top:10px;" onclick="addUserToDB()">Kullanıcıyı Sisteme Ekle</button>
+                <button class="btn btn-save" style="margin-top:10px;" onclick="addUserToDB()">Kullanıcıyı Ekle</button>
             </div>
             <h4 style="margin-bottom:10px;">Kayıtlı Kullanıcılar</h4>
             <div id="userListArea" style="background:white; border-radius:8px; overflow:hidden;"></div>
@@ -236,8 +250,8 @@
             <label>Personel</label><select id="t-person"></select>
             <label>Proje</label><select id="t-project-select"></select>
             <div class="form-row">
-                <div class="form-col"><input type="text" id="t-loc" placeholder="Konum"></div>
-                <div class="form-col"><input type="text" id="t-plate" placeholder="Plaka"></div>
+                <div class="form-col"><label>Konum</label><input type="text" id="t-loc" placeholder="Konum"></div>
+                <div class="form-col"><label>Araç</label><select id="t-plate"><option value="">Seçiniz</option></select></div>
             </div>
             <label>Cihaz</label>
             <select id="t-device">
@@ -269,7 +283,8 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let projects = [], tasks = [], users = [], currentUser = null, userRole = 'staff';
+    let projects = [], tasks = [], users = [], vehicles = [];
+    let currentUser = null, userRole = 'staff';
     let currentDate = new Date();
     let selectedDateStr = getCurrentDateStr();
     let editingProjId = null;
@@ -303,17 +318,17 @@
         signInWithEmailAndPassword(auth, email, pass).catch(err => document.getElementById('loginError').innerText = "Hata: " + err.message);
     };
     window.handleLogout = () => { signOut(auth); window.location.reload(); };
-    
     window.toggleRegister = () => { document.getElementById('registerArea').classList.toggle('hidden'); }
     
     window.handleRegister = async () => {
         const name = document.getElementById('regName').value;
+        const title = document.getElementById('regTitle').value || "";
         const email = document.getElementById('regEmail').value;
         const pass = document.getElementById('regPass').value;
         if(pass.length < 6) return alert("Şifre en az 6 karakter olmalı.");
         try {
             await createUserWithEmailAndPassword(auth, email, pass);
-            await setDoc(doc(db, "users", email), { name: name, email: email, role: 'admin' });
+            await setDoc(doc(db, "users", email), { name: name, title: title, email: email, role: 'admin' });
             alert("Kayıt başarılı! Admin olarak giriş yapıldı.");
         } catch (err) { alert("Hata: " + err.message); }
     };
@@ -321,6 +336,9 @@
     function applyPermissions() {
         const els = document.querySelectorAll('.admin-only');
         els.forEach(el => el.style.display = (userRole === 'admin') ? 'block' : 'none');
+        // Navigasyon için özel CSS display düzeltmesi
+        const adminTabs = document.querySelectorAll('.nav-tab.admin-only');
+        adminTabs.forEach(el => el.style.display = (userRole === 'admin') ? 'block' : 'none');
     }
 
     // --- VERİ AKIŞI ---
@@ -342,36 +360,65 @@
             renderUserList();
             loadDropdowns();
         });
+        onSnapshot(collection(db, "vehicles"), (snap) => {
+            vehicles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderVehicleList();
+            loadDropdowns();
+        });
     }
 
-    // --- ADMIN FONKSİYONLARI ---
+    // --- ARAÇ YÖNETİMİ ---
+    window.addVehicle = async () => {
+        const plate = document.getElementById('v-plate').value;
+        const info = document.getElementById('v-info').value;
+        if(!plate) return alert("Plaka giriniz");
+        await addDoc(collection(db, "vehicles"), { plate, info });
+        document.getElementById('v-plate').value=""; document.getElementById('v-info').value="";
+    }
+    window.deleteVehicle = async (id) => { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, "vehicles", id)); }
+    
+    function renderVehicleList() {
+        document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => `
+            <div class="user-card">
+                <div><strong>${v.plate}</strong><br><small>${v.info}</small></div>
+                <button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none;">🗑</button>
+            </div>`).join('');
+    }
+
+    // --- KULLANICI YÖNETİMİ ---
     window.addUserToDB = async () => {
         const name = document.getElementById('u-name').value;
+        const title = document.getElementById('u-title').value;
         const email = document.getElementById('u-email').value;
         const role = document.getElementById('u-role').value;
         if(!name || !email) return alert("Eksik bilgi");
-        await setDoc(doc(db, "users", email), { name, email, role });
-        alert("Kullanıcı listeye eklendi. Giriş yapabilir.");
-        document.getElementById('u-name').value = "";
-        document.getElementById('u-email').value = "";
+        await setDoc(doc(db, "users", email), { name, title, email, role });
+        alert("Kullanıcı eklendi.");
+        document.getElementById('u-name').value=""; document.getElementById('u-email').value=""; document.getElementById('u-title').value="";
     };
     window.deleteUser = async (email) => { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, "users", email)); };
 
     function renderUserList() {
         document.getElementById('userListArea').innerHTML = users.map(u => `
             <div class="user-card">
-                <div><strong>${u.name}</strong><br><small>${u.email}</small></div>
+                <div><strong>${u.name}</strong> <small>(${u.title || 'Ünvansız'})</small><br><small>${u.email}</small></div>
                 <div><span class="role-badge role-${u.role}">${u.role==='admin'?'Yönetici':'Personel'}</span>
-                ${userRole==='admin' ? `<button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none; cursor:pointer;">🗑</button>`:''}</div>
+                ${userRole==='admin' ? `<button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>`:''}</div>
             </div>`).join('');
     }
 
     function loadDropdowns() {
+        // Personel
         const names = users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
         if(document.getElementById('t-person')) document.getElementById('t-person').innerHTML = names;
         if(document.getElementById('p-manager')) document.getElementById('p-manager').innerHTML = names;
+        // Proje
         if(document.getElementById('t-project-select')) {
             document.getElementById('t-project-select').innerHTML = '<option value="">Seçiniz</option>' + projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        }
+        // Araçlar
+        if(document.getElementById('t-plate')) {
+            document.getElementById('t-plate').innerHTML = '<option value="">Araç Seç</option>' + vehicles.map(v => `<option value="${v.plate}">${v.plate} (${v.info})</option>`).join('');
         }
     }
 
@@ -467,8 +514,8 @@
         const dt = tasks.filter(t=>t.date===dk);
         document.getElementById('teamListArea').innerHTML = users.map(u => {
             const at = dt.find(t=>t.person===u.name);
-            return at ? `<div class="person-card active"><div><h4>${u.name}</h4><p>📍 ${at.projectName}</p><p>🚗 ${at.plate||''}</p></div><div class="status-badge status-active">SAHADA</div></div>`
-                      : `<div class="person-card"><div><h4>${u.name}</h4><p>Müsait</p></div><div class="status-badge status-idle">BOŞTA</div></div>`;
+            return at ? `<div class="person-card active"><div><h4>${u.name} <small style="color:#666;font-size:0.7rem">(${u.title||''})</small></h4><p>📍 ${at.projectName}</p><p>🚗 ${at.plate||''}</p></div><div class="status-badge status-active">SAHADA</div></div>`
+                      : `<div class="person-card"><div><h4>${u.name} <small style="color:#666;font-size:0.7rem">(${u.title||''})</small></h4><p>Müsait</p></div><div class="status-badge status-idle">BOŞTA</div></div>`;
         }).join('');
     }
     window.closeModal = () => document.getElementById('taskModal').style.display = 'none';
