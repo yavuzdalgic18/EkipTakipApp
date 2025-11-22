@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip ERP (V12 - Çoklu Seçim)</title>
+    <title>Ekip Takip ERP (V12.1 - Fix)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c3e50">
@@ -94,7 +94,7 @@
         .badge-red { background: #f8d7da; color: #842029; }
         .badge-gray { background: #e2e3e5; color: #41464b; }
 
-        /* --- MULTI-SELECT STİLLERİ (YENİ) --- */
+        /* --- MULTI-SELECT STİLLERİ (DÜZELTİLDİ) --- */
         .multi-select-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
         .multi-select-trigger {
             background: #fff; border: 1px solid #ddd; padding: 12px; border-radius: 6px;
@@ -109,7 +109,8 @@
         .dropdown-content.show { display: block; }
         .dropdown-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; cursor: pointer; }
         .dropdown-item:hover { background: #f9f9f9; }
-        .dropdown-item input { width: auto; margin-right: 10px; }
+        /* Checkbox tıklanınca etkileşimi kolaylaştırma */
+        .dropdown-item input { width: 20px; height: 20px; margin-right: 10px; cursor: pointer; pointer-events: auto;} 
 
         /* Modal */
         .modal-wrap { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
@@ -400,14 +401,15 @@
         });
     }
 
-    // --- MULTI SELECT LOGIC ---
+    // --- MULTI SELECT LOGIC (FIXED) ---
     window.toggleDropdown = (id) => {
         document.getElementById(id).classList.toggle("show");
     };
     
-    // Dışarı tıklandığında kapanması için
+    // Dışarı tıklandığında kapatma mantığı (Güncellendi)
     window.onclick = function(event) {
-        if (!event.target.matches('.multi-select-trigger')) {
+        // Eğer tıklanan yer bir trigger DEĞİLSE ve aynı zamanda dropdown içeriği de DEĞİLSE kapat
+        if (!event.target.matches('.multi-select-trigger') && !event.target.closest('.dropdown-content')) {
             var dropdowns = document.getElementsByClassName("dropdown-content");
             for (var i = 0; i < dropdowns.length; i++) {
                 if (dropdowns[i].classList.contains('show')) {
@@ -420,6 +422,14 @@
     function getMultiSelectValues(id) {
         const inputs = document.querySelectorAll(`#${id} input:checked`);
         return Array.from(inputs).map(input => input.value);
+    }
+
+    // Form Temizleme Fonksiyonu
+    function resetTaskForm() {
+        document.getElementById('t-loc').value = "";
+        document.getElementById('t-project-select').value = "";
+        // Checkboxları temizle
+        document.querySelectorAll('.dropdown-content input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
 
     // CİHAZLAR
@@ -440,7 +450,6 @@
             if(d.calib) {
                 if(new Date(d.calib) < new Date()) calibStatus = '<span style="color:red;">(Kalibrasyon Geçmiş!)</span>';
             }
-            // Multi-device check
             const activeTask = todayTasks.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name); 
             
             let statusHtml = activeTask ? `<div class="badge badge-red">🔴 ${activeTask.projectName}</div>` : `<div class="badge badge-green">🟢 BOŞTA</div>`;
@@ -476,11 +485,9 @@
     }
     
     function loadDropdowns() {
-        // Normal Select
         if(document.getElementById('p-manager')) document.getElementById('p-manager').innerHTML = users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
         if(document.getElementById('t-project-select')) document.getElementById('t-project-select').innerHTML = '<option value="">Seçiniz</option>' + projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
         
-        // Multi Select Loaders
         const fillMulti = (id, arr, valProp, textProp) => {
             const el = document.getElementById(id);
             if(el) el.innerHTML = arr.map(item => `
@@ -541,7 +548,6 @@
         for(let i=0; i<start; i++) grid.innerHTML+='<div></div>';
         for(let d=1; d<=days; d++) {
             let dk = `${d}-${m}-${y}`, dt = tasks.filter(t=>t.date===dk);
-            // Nokta hesabı: Görevdeki kişi sayısı kadar nokta koy
             let dots = "";
             dt.forEach(t => {
                 if(Array.isArray(t.person)) {
@@ -593,12 +599,14 @@
             date: selectedDateStr, person: per, projectName: projName, projectId: projVal,
             location: document.getElementById('t-loc').value, plate: plate, device: device
         });
+        
+        // FORM SIFIRLAMA
+        resetTaskForm();
     }
     window.delTask = async (id) => { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, "tasks", id)); }
     
     function updateStats(dk) {
         const dt = tasks.filter(t=>t.date===dk);
-        // Unique person count calculation for arrays
         let activePeople = new Set();
         dt.forEach(t => {
             if(Array.isArray(t.person)) t.person.forEach(p => activePeople.add(p));
@@ -612,9 +620,7 @@
     function renderTeamStatus(dk) {
         const dt = tasks.filter(t=>t.date===dk);
         document.getElementById('teamListArea').innerHTML = users.map(u => {
-            // Check if user is in any task's person array
             const at = dt.find(t => Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
-            
             const vStr = at ? (Array.isArray(at.plate) ? at.plate.join(", ") : at.plate) : '';
 
             return at ? `<div class="info-card active"><div><h4>${u.name} <small style="font-size:0.7rem">(${u.title||''})</small></h4><p>📍 ${at.projectName}</p><p>🚗 ${vStr||''}</p></div><div class="badge badge-green">SAHADA</div></div>`
