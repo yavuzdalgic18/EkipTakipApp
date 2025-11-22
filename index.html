@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip ERP (V9.1 - Düzeltilmiş)</title>
+    <title>Ekip Takip ERP (V9.1 - Hazır)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c3e50">
@@ -16,24 +16,21 @@
         }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: #333; -webkit-tap-highlight-color: transparent; }
         
-        /* --- DÜZELTİLEN GİRİŞ EKRANI (Scroll Eklendi) --- */
+        /* GİRİŞ EKRANI */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--primary); z-index: 9999; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            overflow-y: auto; /* Kaydırma çubuğu eklendi */
-            padding: 20px; box-sizing: border-box;
+            overflow-y: auto; padding: 20px; box-sizing: border-box;
         }
         .login-box { 
             background: white; padding: 30px; border-radius: 10px; 
             width: 100%; max-width: 350px; text-align: center; color: #333; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            margin: auto; /* Ortalamak için */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin: auto;
         }
         .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 16px;}
         .login-box button { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-top: 5px;}
         
-        /* Gizleme sınıfı */
         .hidden { display: none !important; }
         .admin-only { display: none; } 
 
@@ -47,7 +44,7 @@
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Kartlar & Takvim */
+        /* İstatistikler & Kartlar */
         .dashboard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
         .stat-box { background: var(--white); padding: 10px; border-radius: 8px; text-align: center; border-top: 4px solid #ccc; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .stat-val { display: block; font-size: 1.5rem; font-weight: bold; margin: 5px 0; }
@@ -252,15 +249,15 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- ÖNEMLİ: BURADAKİ API KEY SENİN VERDİĞİN KEY İLE AYNI OLMALI ---
+    // SENİN BİLGİLERİN (BU KISIM DÜZELTİLDİ)
     const firebaseConfig = {
-        apiKey: "AIzaSyD4XZR8JAMe-Qr20j2UGnp9mFc8En38gxY",
-        authDomain: "ekiptakipapp.firebaseapp.com",
-        projectId: "ekiptakipapp",
-        storageBucket: "ekiptakipapp.firebasestorage.app",
-        messagingSenderId: "55716082808",
-        appId: "1:55716082808:web:b144b953684fc9f80c698d",
-        measurementId: "G-S6Q0H5RHR7"
+      apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY",
+      authDomain: "ekiptakipapp.firebaseapp.com",
+      projectId: "ekiptakipapp",
+      storageBucket: "ekiptakipapp.firebasestorage.app",
+      messagingSenderId: "55716082808",
+      appId: "1:55716082808:web:b144b953684fc9f80c698d",
+      measurementId: "G-S6Q0H5RHR7"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -286,8 +283,7 @@
                 document.getElementById('app-screen').classList.remove('hidden');
                 startListeners();
             } else {
-                // Eğer veritabanında yoksa, otomatik Admin yapıp kaydedelim (İlk kurulum için kolaylık)
-                // Normalde burayı kapatmak gerekir.
+                // Hızlı kurulum: Veritabanında yoksa ilk girişte Admin olarak kaydet
                 await setDoc(doc(db, "users", user.email), { name: "Yönetici", email: user.email, role: 'admin' });
                 window.location.reload();
             }
@@ -313,9 +309,9 @@
         if(pass.length < 6) return alert("Şifre en az 6 karakter olmalı.");
         try {
             await createUserWithEmailAndPassword(auth, email, pass);
-            // Yeni kullanıcıyı DB'ye yaz (Admin olarak, ilk seferde)
+            // Yeni kullanıcıyı DB'ye yaz
             await setDoc(doc(db, "users", email), { name: name, email: email, role: 'admin' });
-            alert("Kayıt başarılı!");
+            alert("Kayıt başarılı! Admin olarak giriş yapıldı.");
         } catch (err) { alert("Hata: " + err.message); }
     };
 
