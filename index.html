@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip ERP (V13 - Gelecek Planı)</title>
+    <title>Ekip Takip ERP (V14 - Pro)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c3e50">
@@ -32,8 +32,6 @@
         .login-box button { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-top: 5px;}
         
         .hidden { display: none !important; }
-        
-        /* Admin only elemanlar varsayılan gizli, JS ile açılır */
         .admin-only { display: none; } 
 
         /* GENEL STİLLER */
@@ -43,12 +41,11 @@
         
         .container { max-width: 1100px; margin: 15px auto; padding: 0 10px; }
         
-        /* TAB GEÇİŞLERİ */
         .view-section { display: none; animation: fadeIn 0.3s; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* İstatistikler & Kartlar */
+        /* Dashboard */
         .dashboard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
         .stat-box { background: var(--white); padding: 10px; border-radius: 8px; text-align: center; border-top: 4px solid #ccc; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .stat-val { display: block; font-size: 1.5rem; font-weight: bold; margin: 5px 0; }
@@ -56,12 +53,24 @@
         .border-red { border-color: var(--danger); color: var(--danger); }
         .border-green { border-color: var(--success); color: var(--success); }
 
+        /* Takvim */
         .calendar-header { display: flex; justify-content: space-between; background: var(--white); padding: 10px; border-radius: 8px; margin-bottom: 10px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; background: var(--white); padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .day-head { text-align: center; font-weight: bold; color: #7f8c8d; margin-bottom: 5px; font-size: 0.8rem; }
         .day-cell { border: 1px solid #eee; min-height: 60px; padding: 2px; border-radius: 4px; cursor: pointer; background: #fff; font-size: 0.8rem; position: relative; }
         .day-cell.today { border: 2px solid var(--accent); }
         .task-dot { font-size: 0.65rem; background: #eaf2f8; color: var(--primary); padding: 2px 3px; margin-top: 2px; border-radius: 2px; border-left: 2px solid var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* HIZLI TARİH SEÇİCİ (YENİ) */
+        #month-picker-modal {
+            display: none; position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+            width: 300px; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 500; padding: 15px;
+        }
+        .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .year-selector button { background: #eee; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .month-btn { padding: 10px; background: #f9f9f9; border: 1px solid #eee; text-align: center; cursor: pointer; border-radius: 5px; font-size: 0.9rem; }
+        .month-btn:hover { background: var(--accent); color: white; }
 
         /* Formlar */
         .project-form { background: var(--white); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -87,7 +96,8 @@
         .card-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
         @media (min-width: 600px) { .card-list { grid-template-columns: 1fr 1fr; } }
         
-        .info-card { background: var(--white); padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; border-left: 5px solid #ccc; position: relative;}
+        .info-card { background: var(--white); padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; border-left: 5px solid #ccc; position: relative;}
+        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 10px; }
         .info-card.active { border-left-color: var(--success); }
         .info-card.busy { border-left-color: var(--danger); }
         
@@ -96,9 +106,13 @@
         .badge-red { background: #f8d7da; color: #842029; }
         .badge-gray { background: #e2e3e5; color: #41464b; }
         
-        .next-task-info { font-size: 0.75rem; color: #e67e22; margin-top: 5px; font-style: italic; display: block;}
+        /* Gelecek Program Listesi */
+        .future-list { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eee; width: 100%; }
+        .future-title { font-size: 0.75rem; color: #999; font-weight: bold; margin-bottom: 5px; display: block; }
+        .future-item { font-size: 0.8rem; color: #555; margin-bottom: 3px; display: flex; justify-content: space-between; }
+        .future-date { font-weight: bold; color: var(--accent); margin-right: 5px; }
 
-        /* --- MULTI-SELECT STİLLERİ --- */
+        /* Multi-Select */
         .multi-select-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
         .multi-select-trigger {
             background: #fff; border: 1px solid #ddd; padding: 12px; border-radius: 6px;
@@ -177,9 +191,33 @@
                 <div class="stat-box border-green"><small>Boşta</small><span class="stat-val" id="stat-idle">0</span></div>
             </div>
             <div style="text-align:center; margin-bottom:10px; color:#666; font-size:0.8rem;">Seçili: <b id="statsDateLabel">Bugün</b></div>
+            
             <div class="calendar-header">
                 <button onclick="changeMonth(-1)" style="padding:5px 15px;">&#9664;</button>
-                <h3 id="monthDisplay" style="margin:0; font-size:1rem;"></h3>
+                <div style="position:relative;">
+                    <h3 id="monthDisplay" onclick="toggleDatePicker()" style="margin:0; font-size:1rem; cursor:pointer; text-decoration:underline;"></h3>
+                    <div id="month-picker-modal">
+                        <div class="year-selector">
+                            <button onclick="changePickYear(-1)">&#9664;</button>
+                            <span id="pick-year-val" style="font-weight:bold;">2025</span>
+                            <button onclick="changePickYear(1)">&#9654;</button>
+                        </div>
+                        <div class="month-grid">
+                            <div class="month-btn" onclick="goToMonth(0)">Ocak</div>
+                            <div class="month-btn" onclick="goToMonth(1)">Şubat</div>
+                            <div class="month-btn" onclick="goToMonth(2)">Mart</div>
+                            <div class="month-btn" onclick="goToMonth(3)">Nisan</div>
+                            <div class="month-btn" onclick="goToMonth(4)">Mayıs</div>
+                            <div class="month-btn" onclick="goToMonth(5)">Haziran</div>
+                            <div class="month-btn" onclick="goToMonth(6)">Temmuz</div>
+                            <div class="month-btn" onclick="goToMonth(7)">Ağustos</div>
+                            <div class="month-btn" onclick="goToMonth(8)">Eylül</div>
+                            <div class="month-btn" onclick="goToMonth(9)">Ekim</div>
+                            <div class="month-btn" onclick="goToMonth(10)">Kasım</div>
+                            <div class="month-btn" onclick="goToMonth(11)">Aralık</div>
+                        </div>
+                    </div>
+                </div>
                 <button onclick="changeMonth(1)" style="padding:5px 15px;">&#9654;</button>
             </div>
             <div class="calendar-grid" id="calendarGrid"></div>
@@ -332,6 +370,7 @@
     let projects=[], tasks=[], users=[], vehicles=[], devices=[];
     let currentUser=null, userRole='staff';
     let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), editingProjId=null;
+    let pickerYear = new Date().getFullYear(); // Navigasyon için
 
     // AUTH
     onAuthStateChanged(auth, async (user) => {
@@ -404,34 +443,43 @@
         });
     }
 
-    // --- MULTI SELECT LOGIC (FIXED) ---
-    window.toggleDropdown = (id) => {
-        document.getElementById(id).classList.toggle("show");
-    };
-    
+    // --- DATE PICKER (YENİ) ---
+    window.toggleDatePicker = () => {
+        const el = document.getElementById('month-picker-modal');
+        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        pickerYear = currentDate.getFullYear();
+        document.getElementById('pick-year-val').innerText = pickerYear;
+    }
+    window.changePickYear = (dir) => {
+        pickerYear += dir;
+        document.getElementById('pick-year-val').innerText = pickerYear;
+    }
+    window.goToMonth = (month) => {
+        currentDate.setFullYear(pickerYear);
+        currentDate.setMonth(month);
+        renderCalendar();
+        document.getElementById('month-picker-modal').style.display = 'none';
+    }
+
+    // --- MULTI SELECT ---
+    window.toggleDropdown = (id) => { document.getElementById(id).classList.toggle("show"); };
     window.onclick = function(event) {
         if (!event.target.matches('.multi-select-trigger') && !event.target.closest('.dropdown-content')) {
             var dropdowns = document.getElementsByClassName("dropdown-content");
             for (var i = 0; i < dropdowns.length; i++) {
-                if (dropdowns[i].classList.contains('show')) {
-                    dropdowns[i].classList.remove('show');
-                }
+                if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
             }
         }
     }
-
     function getMultiSelectValues(id) {
-        const inputs = document.querySelectorAll(`#${id} input:checked`);
-        return Array.from(inputs).map(input => input.value);
+        return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(input => input.value);
     }
-
     function resetTaskForm() {
-        document.getElementById('t-loc').value = "";
-        document.getElementById('t-project-select').value = "";
+        document.getElementById('t-loc').value = ""; document.getElementById('t-project-select').value = "";
         document.querySelectorAll('.dropdown-content input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
 
-    // CİHAZLAR (AKILLI LİSTE)
+    // CİHAZLAR (AKILLI LİSTE + GELECEK PLAN)
     window.addDevice = async () => {
         const name=document.getElementById('d-name').value, serial=document.getElementById('d-serial').value, calib=document.getElementById('d-calib').value;
         if(!name) return alert("Ad girin");
@@ -442,66 +490,47 @@
     
     function renderDeviceList() {
         const todayStr = getCurrentDateStr();
-        
-        // Tarih formatını (d-m-y) Date objesine çeviren yardımcı fonksiyon
-        const parseDate = (str) => {
-            const [d, m, y] = str.split('-').map(Number);
-            return new Date(y, m, d);
-        };
-
+        const parseDate = (str) => { const [d, m, y] = str.split('-').map(Number); return new Date(y, m, d); };
         const todayDate = parseDate(todayStr);
 
         document.getElementById('deviceListArea').innerHTML = devices.map(d => {
-            // 1. Kalibrasyon Kontrolü
             let calibStatus = "";
-            if(d.calib) {
-                if(new Date(d.calib) < new Date()) calibStatus = '<span style="color:red;">(Kalibrasyon Geçmiş!)</span>';
-            }
+            if(d.calib && new Date(d.calib) < new Date()) calibStatus = '<span style="color:red;">(Kalibrasyon Geçmiş!)</span>';
 
-            // 2. Bugün Nerede?
             const todayTasks = tasks.filter(t => t.date === todayStr);
             const activeTask = todayTasks.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name); 
             
-            // 3. Gelecekteki İlk Görevi Bul
-            let futureTask = null;
-            if (!activeTask) {
-                // Bugünden sonraki tarihleri filtrele ve sırala
-                const upcoming = tasks
-                    .filter(t => {
-                        const tDate = parseDate(t.date);
-                        return tDate > todayDate && (Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name);
-                    })
-                    .sort((a, b) => parseDate(a.date) - parseDate(b.date)); // Tarihe göre sırala
-                
-                if (upcoming.length > 0) futureTask = upcoming[0];
+            // GELECEK LİSTESİ (YENİ)
+            const upcomingTasks = tasks
+                .filter(t => {
+                    const tDate = parseDate(t.date);
+                    return tDate > todayDate && (Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name);
+                })
+                .sort((a, b) => parseDate(a.date) - parseDate(b.date));
+
+            let statusHtml = activeTask 
+                ? `<div class="badge badge-red">🔴 ŞU AN: ${activeTask.projectName}</div>` 
+                : `<div class="badge badge-green">🟢 BOŞTA</div>`;
+            
+            let futureHtml = "";
+            if (upcomingTasks.length > 0) {
+                futureHtml = `<div class="future-list"><span class="future-title">Gelecek Program:</span>` + 
+                upcomingTasks.map(t => `<div class="future-item"><span class="future-date">${t.date}:</span> <span>${t.projectName}</span></div>`).join('') + 
+                `</div>`;
             }
 
-            let statusHtml = "";
-            let cardClass = "active"; // Yeşil çerçeve varsayılan
-
-            if (activeTask) {
-                statusHtml = `<div class="badge badge-red">🔴 ŞU AN: ${activeTask.projectName}</div>`;
-                cardClass = "busy"; // Kırmızı çerçeve
-            } else if (futureTask) {
-                statusHtml = `<div class="badge badge-yellow" style="color:#d35400; background:#fdebd0;">📅 ${futureTask.date}: ${futureTask.projectName}</div>`;
-            } else {
-                statusHtml = `<div class="badge badge-green">🟢 BOŞTA</div>`;
-            }
-
-            return `<div class="info-card ${cardClass}">
-                <div>
-                    <strong>${d.name}</strong> <small>(${d.serial})</small><br>
-                    <small>Kalibrasyon: ${d.calib || '-'} ${calibStatus}</small>
-                </div>
-                <div style="text-align:right">
-                    ${statusHtml}
+            return `<div class="info-card ${activeTask ? 'busy' : 'active'}">
+                <div class="info-card-header">
+                    <div><strong>${d.name}</strong> <small>(${d.serial})</small><br><small>Kalibrasyon: ${d.calib || '-'} ${calibStatus}</small></div>
                     ${userRole==='admin' ? `<button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none;">🗑</button>`:''}
                 </div>
+                <div style="text-align:right; margin-bottom:5px;">${statusHtml}</div>
+                ${futureHtml}
             </div>`;
         }).join('');
     }
 
-    // ARAÇLAR
+    // ARAÇLAR & USER & CORE
     window.addVehicle = async () => {
         const plate=document.getElementById('v-plate').value, info=document.getElementById('v-info').value;
         if(!plate) return alert("Plaka girin");
@@ -511,10 +540,10 @@
     window.deleteVehicle = async (id) => { if(confirm("Sil?")) await deleteDoc(doc(db, "vehicles", id)); }
     function renderVehicleList() {
         document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => `
-            <div class="info-card"><div><strong>${v.plate}</strong><br><small>${v.info}</small></div><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none;">🗑</button></div>`).join('');
+            <div class="info-card">
+                <div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small></div><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none;">🗑</button></div>
+            </div>`).join('');
     }
-
-    // KULLANICILAR
     window.addUserToDB = async () => {
         const name=document.getElementById('u-name').value, title=document.getElementById('u-title').value, email=document.getElementById('u-email').value, role=document.getElementById('u-role').value;
         if(!name || !email) return alert("Eksik");
@@ -533,12 +562,9 @@
         const fillMulti = (id, arr, valProp, textProp) => {
             const el = document.getElementById(id);
             if(el) el.innerHTML = arr.map(item => `
-                <label class="dropdown-item">
-                    <input type="checkbox" value="${item[valProp]}"> ${item[valProp]} <small style="margin-left:5px; color:#666;">${item[textProp]||''}</small>
-                </label>
+                <label class="dropdown-item"><input type="checkbox" value="${item[valProp]}"> ${item[valProp]} <small style="margin-left:5px; color:#666;">${item[textProp]||''}</small></label>
             `).join('');
         };
-
         fillMulti('ms-person', users, 'name', 'title');
         fillMulti('ms-plate', vehicles, 'plate', 'info');
         fillMulti('ms-device', devices, 'name', 'serial');
@@ -585,18 +611,17 @@
         const grid = document.getElementById('calendarGrid');
         grid.innerHTML = `<div class="day-head">Pzt</div><div class="day-head">Sal</div><div class="day-head">Çar</div><div class="day-head">Per</div><div class="day-head">Cum</div><div class="day-head">Cmt</div><div class="day-head">Paz</div>`;
         const y = currentDate.getFullYear(), m = currentDate.getMonth();
-        document.getElementById('monthDisplay').innerText = new Date(y, m).toLocaleDateString('tr-TR', {month:'long', year:'numeric'});
+        // Türkçe ay isimleri
+        const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+        document.getElementById('monthDisplay').innerText = `${monthNames[m]} ${y}`;
+        
         const first = new Date(y, m, 1).getDay(), start = first===0?6:first-1, days = new Date(y, m+1, 0).getDate();
         for(let i=0; i<start; i++) grid.innerHTML+='<div></div>';
         for(let d=1; d<=days; d++) {
-            let dk = `${d}-${m}-${y}`, dt = tasks.filter(t=>t.date===dk);
-            let dots = "";
+            let dk = `${d}-${m}-${y}`, dt = tasks.filter(t=>t.date===dk), dots = "";
             dt.forEach(t => {
-                if(Array.isArray(t.person)) {
-                    t.person.forEach(p => dots += `<div class="task-dot">${p}</div>`);
-                } else {
-                    dots += `<div class="task-dot">${t.person}</div>`;
-                }
+                if(Array.isArray(t.person)) t.person.forEach(p => dots += `<div class="task-dot">${p}</div>`);
+                else dots += `<div class="task-dot">${t.person}</div>`;
             });
             let cls = (dk===getCurrentDateStr())?"day-cell today":"day-cell";
             grid.innerHTML += `<div class="${cls}" onclick="openModal('${dk}')"><b>${d}</b>${dots}</div>`;
@@ -631,10 +656,8 @@
         const plate = getMultiSelectValues('ms-plate');
         const device = getMultiSelectValues('ms-device');
         const projVal = document.getElementById('t-project-select').value;
-        
         if(!projVal) return alert("Proje Seç");
         if(per.length === 0) return alert("En az 1 personel seçiniz");
-
         const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
         
         await addDoc(collection(db, "tasks"), {
@@ -648,48 +671,56 @@
     function updateStats(dk) {
         const dt = tasks.filter(t=>t.date===dk);
         let activePeople = new Set();
-        dt.forEach(t => {
-            if(Array.isArray(t.person)) t.person.forEach(p => activePeople.add(p));
-            else activePeople.add(t.person);
-        });
+        dt.forEach(t => { if(Array.isArray(t.person)) t.person.forEach(p => activePeople.add(p)); else activePeople.add(t.person); });
         const act = activePeople.size; const tot = users.length;
         document.getElementById('stat-total').innerText=tot; document.getElementById('stat-active').innerText=act; document.getElementById('stat-idle').innerText=Math.max(0, tot-act);
     }
     
-    // PERSONEL DURUMU (AKILLI LİSTE)
+    // PERSONEL DURUMU (GELECEK PLANLI)
     function renderTeamStatus(dk) {
         const todayStr = getCurrentDateStr();
         const parseDate = (str) => { const [d, m, y] = str.split('-').map(Number); return new Date(y, m, d); };
         const todayDate = parseDate(todayStr);
 
         document.getElementById('teamListArea').innerHTML = users.map(u => {
-            const dt = tasks.filter(t=>t.date===dk); // Seçili günün görevleri
+            const dt = tasks.filter(t=>t.date===dk);
             const at = dt.find(t => Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
-            
-            // Bugünün görevi yoksa, gelecek ilk görevi bul
-            let futureTask = null;
-            if (!at && dk === todayStr) { // Sadece 'Bugün' sekmesindeyken gelecek tahmini yap
-                const upcoming = tasks
-                    .filter(t => {
-                        const tDate = parseDate(t.date);
-                        return tDate > todayDate && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
-                    })
-                    .sort((a, b) => parseDate(a.date) - parseDate(b.date));
-                if (upcoming.length > 0) futureTask = upcoming[0];
-            }
-
             const vStr = at ? (Array.isArray(at.plate) ? at.plate.join(", ") : at.plate) : '';
 
-            if (at) {
-                return `<div class="info-card active"><div><h4>${u.name} <small style="font-size:0.7rem">(${u.title||''})</small></h4><p>📍 ${at.projectName}</p><p>🚗 ${vStr||''}</p></div><div class="badge badge-green">SAHADA</div></div>`;
-            } else if (futureTask) {
-                return `<div class="info-card"><div><h4>${u.name} <small style="font-size:0.7rem">(${u.title||''})</small></h4><p class="next-task-info">Sonraki: ${futureTask.date} - ${futureTask.projectName}</p></div><div class="badge badge-yellow" style="color:#d35400; background:#fdebd0;">PLANLI</div></div>`;
-            } else {
-                return `<div class="info-card"><div><h4>${u.name} <small style="font-size:0.7rem">(${u.title||''})</small></h4><p>Müsait</p></div><div class="badge badge-gray">BOŞTA</div></div>`;
+            // Gelecek Planı
+            const upcomingTasks = tasks
+                .filter(t => {
+                    const tDate = parseDate(t.date);
+                    return tDate > todayDate && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
+                })
+                .sort((a, b) => parseDate(a.date) - parseDate(b.date));
+
+            let statusHtml = at 
+                ? `<div class="badge badge-green">SAHADA</div>` 
+                : `<div class="badge badge-gray">BOŞTA</div>`;
+                
+            let detailHtml = at 
+                ? `<p>📍 ${at.projectName}</p><p>🚗 ${vStr||''}</p>` 
+                : `<p>Müsait</p>`;
+
+            let futureHtml = "";
+            if (upcomingTasks.length > 0) {
+                futureHtml = `<div class="future-list"><span class="future-title">Gelecek Program:</span>` + 
+                upcomingTasks.map(t => `<div class="future-item"><span class="future-date">${t.date}:</span> <span>${t.projectName}</span></div>`).join('') + 
+                `</div>`;
             }
+
+            return `<div class="info-card ${at?'active':''}">
+                <div class="info-card-header">
+                    <div><h4>${u.name} <small style="font-size:0.7rem">(${u.title||''})</small></h4></div>
+                    ${statusHtml}
+                </div>
+                <div>${detailHtml}</div>
+                ${futureHtml}
+            </div>`;
         }).join('');
     }
-
+    
     window.closeModal = () => document.getElementById('taskModal').style.display = 'none';
     window.changeMonth = (d) => { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
     function getCurrentDateStr() { const d=new Date(); return `${d.getDate()}-${d.getMonth()}-${d.getFullYear()}`; }
