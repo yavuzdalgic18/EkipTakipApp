@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip ERP (V9.1 - Hazır)</title>
+    <title>Ekip Takip ERP (V9.2 - Final)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c3e50">
@@ -196,7 +196,7 @@
             <div id="teamListArea" class="team-grid"></div>
         </div>
 
-        <div id="view-users" class="view-section admin-only">
+        <div id="view-users" class="view-section">
             <div class="project-form">
                 <h3 style="margin-top:0; color:var(--primary);">Yeni Kullanıcı Tanımla</h3>
                 <p style="font-size:0.8rem; color:#666;">Buradan eklediğiniz kişi daha sonra kendi şifresini belirleyerek giriş yapabilir.</p>
@@ -249,7 +249,6 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // SENİN BİLGİLERİN (BU KISIM DÜZELTİLDİ)
     const firebaseConfig = {
       apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY",
       authDomain: "ekiptakipapp.firebaseapp.com",
@@ -283,7 +282,6 @@
                 document.getElementById('app-screen').classList.remove('hidden');
                 startListeners();
             } else {
-                // Hızlı kurulum: Veritabanında yoksa ilk girişte Admin olarak kaydet
                 await setDoc(doc(db, "users", user.email), { name: "Yönetici", email: user.email, role: 'admin' });
                 window.location.reload();
             }
@@ -309,7 +307,6 @@
         if(pass.length < 6) return alert("Şifre en az 6 karakter olmalı.");
         try {
             await createUserWithEmailAndPassword(auth, email, pass);
-            // Yeni kullanıcıyı DB'ye yaz
             await setDoc(doc(db, "users", email), { name: name, email: email, role: 'admin' });
             alert("Kayıt başarılı! Admin olarak giriş yapıldı.");
         } catch (err) { alert("Hata: " + err.message); }
