@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip ERP (V10 - Araç & Ünvan)</title>
+    <title>Ekip Takip ERP (V10.1 - Final Fix)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c3e50">
@@ -41,6 +41,7 @@
         
         .container { max-width: 1100px; margin: 15px auto; padding: 0 10px; padding-bottom: 80px; }
         
+        /* TAB GEÇİŞLERİ */
         .view-section { display: none; animation: fadeIn 0.3s; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -200,7 +201,7 @@
             <div id="teamListArea" class="team-grid"></div>
         </div>
 
-        <div id="view-vehicles" class="view-section admin-only">
+        <div id="view-vehicles" class="view-section">
             <div class="project-form">
                 <h3 style="margin-top:0; color:var(--primary);">Yeni Araç Ekle</h3>
                 <div class="form-row">
@@ -213,7 +214,7 @@
             <div id="vehicleListArea" style="background:white; border-radius:8px; overflow:hidden;"></div>
         </div>
 
-        <div id="view-users" class="view-section admin-only">
+        <div id="view-users" class="view-section">
             <div class="project-form">
                 <h3 style="margin-top:0; color:var(--primary);">Yeni Kullanıcı Tanımla</h3>
                 <div class="form-row">
