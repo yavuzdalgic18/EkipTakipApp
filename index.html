@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip ERP (V11 - Cihazlar)</title>
+    <title>Ekip Takip ERP (V12 - Çoklu Seçim)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2c3e50">
@@ -14,7 +14,7 @@
             --primary: #2c3e50; --accent: #3498db; --success: #27ae60;
             --warning: #f39c12; --danger: #c0392b; --bg: #f4f7f6; --white: #ffffff;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: #333; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: #333; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
         
         /* GİRİŞ EKRANI */
         #login-screen {
@@ -39,7 +39,7 @@
         .nav-tab { padding: 15px 10px; color: #bdc3c7; cursor: pointer; font-weight: bold; font-size: 0.8rem; text-align: center; flex: 1; border-bottom: 4px solid transparent; white-space: nowrap; }
         .nav-tab.active { color: white; border-bottom-color: var(--accent); background: rgba(255,255,255,0.1); }
         
-        .container { max-width: 1100px; margin: 15px auto; padding: 0 10px; padding-bottom: 80px; }
+        .container { max-width: 1100px; margin: 15px auto; padding: 0 10px; }
         
         .view-section { display: none; animation: fadeIn 0.3s; }
         .view-section.active { display: block; }
@@ -81,19 +81,35 @@
         .profit-plus { color: var(--success); font-weight: bold; }
         .profit-minus { color: var(--danger); font-weight: bold; }
 
-        /* Kartlar (Personel, Araç, Cihaz) */
+        /* Kartlar */
         .card-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
         @media (min-width: 600px) { .card-list { grid-template-columns: 1fr 1fr; } }
         
         .info-card { background: var(--white); padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; border-left: 5px solid #ccc; position: relative;}
-        .info-card.active { border-left-color: var(--success); } /* Yeşil */
-        .info-card.busy { border-left-color: var(--danger); } /* Kırmızı */
+        .info-card.active { border-left-color: var(--success); }
+        .info-card.busy { border-left-color: var(--danger); }
         
         .badge { padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
         .badge-green { background: #d1e7dd; color: #0f5132; }
         .badge-red { background: #f8d7da; color: #842029; }
         .badge-gray { background: #e2e3e5; color: #41464b; }
-        .badge-yellow { background: #fff3cd; color: #664d03; }
+
+        /* --- MULTI-SELECT STİLLERİ (YENİ) --- */
+        .multi-select-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
+        .multi-select-trigger {
+            background: #fff; border: 1px solid #ddd; padding: 12px; border-radius: 6px;
+            cursor: pointer; font-size: 16px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .multi-select-trigger::after { content: '▼'; font-size: 0.8rem; color: #666; }
+        .dropdown-content {
+            display: none; position: absolute; top: 100%; left: 0; width: 100%;
+            background: #fff; border: 1px solid #ddd; border-radius: 6px;
+            max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .dropdown-content.show { display: block; }
+        .dropdown-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; cursor: pointer; }
+        .dropdown-item:hover { background: #f9f9f9; }
+        .dropdown-item input { width: auto; margin-right: 10px; }
 
         /* Modal */
         .modal-wrap { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
@@ -210,11 +226,6 @@
                 </div>
                 <button class="btn btn-save" onclick="addDevice()">Cihazı Kaydet</button>
             </div>
-            
-            <div style="text-align:center; margin-bottom:15px;">
-                <h3 style="margin:0; color:var(--primary);">Cihaz Envanteri & Durum</h3>
-                <small style="color:#666;">Anlık Takip (Bugün)</small>
-            </div>
             <div id="deviceListArea" class="card-list"></div>
         </div>
 
@@ -265,14 +276,31 @@
         <div class="admin-only">
             <hr>
             <h4 style="margin:10px 0; color:var(--accent);">Yeni Atama</h4>
-            <label>Personel</label><select id="t-person"></select>
-            <label>Proje</label><select id="t-project-select"></select>
+            
+            <label>Personel (Çoklu Seçim)</label>
+            <div class="multi-select-wrapper">
+                <div class="multi-select-trigger" onclick="toggleDropdown('ms-person')">Seçiniz...</div>
+                <div class="dropdown-content" id="ms-person"></div>
+            </div>
+
+            <label>Proje</label>
+            <select id="t-project-select"></select>
             <div class="form-row">
                 <div class="form-col"><input type="text" id="t-loc" placeholder="Konum"></div>
-                <div class="form-col"><select id="t-plate"><option value="">Araç Seç</option></select></div>
             </div>
-            <label>Cihaz</label>
-            <select id="t-device"><option value="">Cihaz Seç</option></select>
+
+            <label>Araç (Çoklu Seçim)</label>
+            <div class="multi-select-wrapper">
+                <div class="multi-select-trigger" onclick="toggleDropdown('ms-plate')">Araç Seçiniz...</div>
+                <div class="dropdown-content" id="ms-plate"></div>
+            </div>
+
+            <label>Cihaz (Çoklu Seçim)</label>
+            <div class="multi-select-wrapper">
+                <div class="multi-select-trigger" onclick="toggleDropdown('ms-device')">Cihaz Seçiniz...</div>
+                <div class="dropdown-content" id="ms-device"></div>
+            </div>
+
             <button class="btn btn-save" style="margin-top:15px;" onclick="saveTask()">Atama Yap</button>
         </div>
     </div>
@@ -338,7 +366,7 @@
         if(pass.length < 6) return alert("Şifre 6+ olmalı");
         try {
             await createUserWithEmailAndPassword(auth, email, pass);
-            await setDoc(doc(db, "users", email), { name, title, email, role: 'admin' });
+            await setDoc(doc(db, "users", email), { name: name, title: title, email: email, role: 'admin' });
             alert("Başarılı!");
         } catch (err) { alert("Hata: " + err.message); }
     };
@@ -356,7 +384,6 @@
             arr.length=0; s.docs.forEach(d=>arr.push({id:d.id, ...d.data()})); 
             if(cb) cb(); loadDropdowns();
         });
-        
         load("projects", projects, renderProjects);
         load("vehicles", vehicles, renderVehicleList);
         load("devices", devices, renderDeviceList);
@@ -373,6 +400,28 @@
         });
     }
 
+    // --- MULTI SELECT LOGIC ---
+    window.toggleDropdown = (id) => {
+        document.getElementById(id).classList.toggle("show");
+    };
+    
+    // Dışarı tıklandığında kapanması için
+    window.onclick = function(event) {
+        if (!event.target.matches('.multi-select-trigger')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                if (dropdowns[i].classList.contains('show')) {
+                    dropdowns[i].classList.remove('show');
+                }
+            }
+        }
+    }
+
+    function getMultiSelectValues(id) {
+        const inputs = document.querySelectorAll(`#${id} input:checked`);
+        return Array.from(inputs).map(input => input.value);
+    }
+
     // CİHAZLAR
     window.addDevice = async () => {
         const name=document.getElementById('d-name').value, serial=document.getElementById('d-serial').value, calib=document.getElementById('d-calib').value;
@@ -383,88 +432,69 @@
     window.deleteDevice = async (id) => { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, "devices", id)); }
     
     function renderDeviceList() {
-        // Cihazın bugün nerede olduğunu bul
         const todayStr = getCurrentDateStr();
         const todayTasks = tasks.filter(t => t.date === todayStr);
 
         document.getElementById('deviceListArea').innerHTML = devices.map(d => {
-            // Kalibrasyon Kontrolü
             let calibStatus = "";
             if(d.calib) {
-                const calDate = new Date(d.calib);
-                const now = new Date();
-                if(calDate < now) calibStatus = '<span style="color:red; font-weight:bold;">(Kalibrasyon Geçmiş!)</span>';
+                if(new Date(d.calib) < new Date()) calibStatus = '<span style="color:red;">(Kalibrasyon Geçmiş!)</span>';
             }
-
-            // Kullanım Durumu Kontrolü
-            // Görevde cihazın ID'si yerine adı kaydedildiği için isme göre arıyoruz (Basit versiyon)
-            const activeTask = todayTasks.find(t => t.device === d.name); 
+            // Multi-device check
+            const activeTask = todayTasks.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name); 
             
-            let statusHtml = activeTask 
-                ? `<div class="badge badge-red">🔴 ${activeTask.projectName}</div>` 
-                : `<div class="badge badge-green">🟢 BOŞTA</div>`;
+            let statusHtml = activeTask ? `<div class="badge badge-red">🔴 ${activeTask.projectName}</div>` : `<div class="badge badge-green">🟢 BOŞTA</div>`;
 
-            return `
-            <div class="info-card ${activeTask ? 'busy' : 'active'}">
-                <div>
-                    <strong>${d.name}</strong> <small>(${d.serial})</small><br>
-                    <small>Kalibrasyon: ${d.calib || '-'} ${calibStatus}</small>
-                </div>
-                <div style="text-align:right">
-                    ${statusHtml}
-                    ${userRole==='admin' ? `<button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none;">🗑</button>`:''}
-                </div>
+            return `<div class="info-card ${activeTask ? 'busy' : 'active'}">
+                <div><strong>${d.name}</strong> <small>(${d.serial})</small><br><small>Kalibrasyon: ${d.calib || '-'} ${calibStatus}</small></div>
+                <div style="text-align:right">${statusHtml} ${userRole==='admin' ? `<button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none;">🗑</button>`:''}</div>
             </div>`;
         }).join('');
     }
 
-    // ARAÇLAR
+    // ARAÇLAR & USER & CORE
     window.addVehicle = async () => {
         const plate=document.getElementById('v-plate').value, info=document.getElementById('v-info').value;
         if(!plate) return alert("Plaka girin");
         await addDoc(collection(db, "vehicles"), { plate, info });
         document.getElementById('v-plate').value="";
     }
-    window.deleteVehicle = async (id) => { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, "vehicles", id)); }
+    window.deleteVehicle = async (id) => { if(confirm("Sil?")) await deleteDoc(doc(db, "vehicles", id)); }
     function renderVehicleList() {
         document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => `
-            <div class="info-card">
-                <div><strong>${v.plate}</strong><br><small>${v.info}</small></div>
-                <button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none;">🗑</button>
-            </div>`).join('');
+            <div class="info-card"><div><strong>${v.plate}</strong><br><small>${v.info}</small></div><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none;">🗑</button></div>`).join('');
     }
-
-    // KULLANICILAR & DROPDOWN
     window.addUserToDB = async () => {
         const name=document.getElementById('u-name').value, title=document.getElementById('u-title').value, email=document.getElementById('u-email').value, role=document.getElementById('u-role').value;
         if(!name || !email) return alert("Eksik");
         await setDoc(doc(db, "users", email), { name, title, email, role });
-        alert("Eklendi");
-        document.getElementById('u-name').value=""; document.getElementById('u-email').value="";
+        alert("Eklendi"); document.getElementById('u-name').value=""; document.getElementById('u-email').value="";
     };
     window.deleteUser = async (e) => { if(confirm("Sil?")) await deleteDoc(doc(db, "users", e)); }
     function renderUserList() {
-        document.getElementById('userListArea').innerHTML = users.map(u => `
-            <div class="user-card">
-                <div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small></div>
-                <div><span style="font-size:0.7rem; font-weight:bold;">${u.role==='admin'?'Yönetici':'Personel'}</span>
-                ${userRole==='admin'?`<button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>`:''}</div>
-            </div>`).join('');
+        document.getElementById('userListArea').innerHTML = users.map(u => `<div class="user-card"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small></div><div><span class="badge badge-gray">${u.role}</span> ${userRole==='admin'?`<button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>`:''}</div></div>`).join('');
     }
     
     function loadDropdowns() {
-        const fill = (id, arr, mapFn) => {
+        // Normal Select
+        if(document.getElementById('p-manager')) document.getElementById('p-manager').innerHTML = users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+        if(document.getElementById('t-project-select')) document.getElementById('t-project-select').innerHTML = '<option value="">Seçiniz</option>' + projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        
+        // Multi Select Loaders
+        const fillMulti = (id, arr, valProp, textProp) => {
             const el = document.getElementById(id);
-            if(el) el.innerHTML = `<option value="">Seçiniz</option>` + arr.map(mapFn).join('');
-        }
-        fill('t-person', users, u => `<option value="${u.name}">${u.name}</option>`);
-        fill('p-manager', users, u => `<option value="${u.name}">${u.name}</option>`);
-        fill('t-project-select', projects, p => `<option value="${p.id}">${p.name}</option>`);
-        fill('t-plate', vehicles, v => `<option value="${v.plate}">${v.plate} (${v.info})</option>`);
-        fill('t-device', devices, d => `<option value="${d.name}">${d.name} (${d.serial})</option>`);
+            if(el) el.innerHTML = arr.map(item => `
+                <label class="dropdown-item">
+                    <input type="checkbox" value="${item[valProp]}"> ${item[valProp]} <small style="margin-left:5px; color:#666;">${item[textProp]||''}</small>
+                </label>
+            `).join('');
+        };
+
+        fillMulti('ms-person', users, 'name', 'title');
+        fillMulti('ms-plate', vehicles, 'plate', 'info');
+        fillMulti('ms-device', devices, 'name', 'serial');
     }
 
-    // CORE
     window.switchTab = (tab) => {
         document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
         document.querySelectorAll('.nav-tab').forEach(e => e.classList.remove('active'));
@@ -473,7 +503,6 @@
         if(clicked) clicked.classList.add('active');
     }
 
-    // PROJE
     window.submitProject = async () => {
         const name=document.getElementById('p-name').value, manager=document.getElementById('p-manager').value, cost=parseFloat(document.getElementById('p-cost').value)||0, offer=parseFloat(document.getElementById('p-offer').value)||0;
         if(!name) return alert("Ad girin");
@@ -484,8 +513,7 @@
         const p = projects.find(x=>x.id===id);
         document.getElementById('p-name').value=p.name; document.getElementById('p-manager').value=p.manager;
         document.getElementById('p-cost').value=p.cost; document.getElementById('p-offer').value=p.offer;
-        editingProjId=id;
-        document.getElementById('projectFormContainer').classList.add('editing');
+        editingProjId=id; document.getElementById('projectFormContainer').classList.add('editing');
         document.getElementById('btn-save').style.display='none'; document.getElementById('btn-update').style.display='block'; document.getElementById('btn-cancel').style.display='block';
     }
     window.cancelEdit = () => {
@@ -503,7 +531,7 @@
         applyPermissions();
     }
 
-    // TAKVİM
+    // TAKVİM & GÖREV
     function renderCalendar() {
         const grid = document.getElementById('calendarGrid');
         grid.innerHTML = `<div class="day-head">Pzt</div><div class="day-head">Sal</div><div class="day-head">Çar</div><div class="day-head">Per</div><div class="day-head">Cum</div><div class="day-head">Cmt</div><div class="day-head">Paz</div>`;
@@ -512,11 +540,21 @@
         const first = new Date(y, m, 1).getDay(), start = first===0?6:first-1, days = new Date(y, m+1, 0).getDate();
         for(let i=0; i<start; i++) grid.innerHTML+='<div></div>';
         for(let d=1; d<=days; d++) {
-            let dk = `${d}-${m}-${y}`, dt = tasks.filter(t=>t.date===dk), dots = dt.map(t=>`<div class="task-dot">${t.person}</div>`).join('');
+            let dk = `${d}-${m}-${y}`, dt = tasks.filter(t=>t.date===dk);
+            // Nokta hesabı: Görevdeki kişi sayısı kadar nokta koy
+            let dots = "";
+            dt.forEach(t => {
+                if(Array.isArray(t.person)) {
+                    t.person.forEach(p => dots += `<div class="task-dot">${p}</div>`);
+                } else {
+                    dots += `<div class="task-dot">${t.person}</div>`;
+                }
+            });
             let cls = (dk===getCurrentDateStr())?"day-cell today":"day-cell";
             grid.innerHTML += `<div class="${cls}" onclick="openModal('${dk}')"><b>${d}</b>${dots}</div>`;
         }
     }
+
     window.openModal = (dk) => {
         selectedDateStr = dk;
         document.getElementById('modalDateText').innerText = dk.replace(/-/g, '.');
@@ -527,33 +565,59 @@
     }
     function openModalLogic(dk) {
         const dt = tasks.filter(t=>t.date===dk);
-        document.getElementById('dayTaskList').innerHTML = dt.length ? dt.map(t => `
+        document.getElementById('dayTaskList').innerHTML = dt.length ? dt.map(t => {
+            const pStr = Array.isArray(t.person) ? t.person.join(", ") : t.person;
+            const vStr = Array.isArray(t.plate) ? t.plate.join(", ") : (t.plate || '-');
+            const dStr = Array.isArray(t.device) ? t.device.join(", ") : (t.device || '-');
+            return `
             <div class="task-detail-item">
                 ${userRole==='admin' ? `<button class="del-btn" onclick="delTask('${t.id}')">×</button>` : ''}
-                <div style="font-weight:bold; color:var(--primary);">${t.person}</div>
+                <div style="font-weight:bold; color:var(--primary);">${pStr}</div>
                 <div>📍 ${t.projectName} (${t.location})</div>
-                <div style="font-size:0.8rem; color:#666;">🚗 ${t.plate||'-'} | 🧰 ${t.device||'-'}</div>
-            </div>`).join('') : '<div style="text-align:center;color:#999">Görev yok</div>';
+                <div style="font-size:0.8rem; color:#666;">🚗 ${vStr} | 🧰 ${dStr}</div>
+            </div>`;
+        }).join('') : '<div style="text-align:center;color:#999">Görev yok</div>';
     }
     window.saveTask = async () => {
-        const per = document.getElementById('t-person').value, projVal = document.getElementById('t-project-select').value;
+        const per = getMultiSelectValues('ms-person');
+        const plate = getMultiSelectValues('ms-plate');
+        const device = getMultiSelectValues('ms-device');
+        const projVal = document.getElementById('t-project-select').value;
+        
         if(!projVal) return alert("Proje Seç");
+        if(per.length === 0) return alert("En az 1 personel seçiniz");
+
         const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
+        
         await addDoc(collection(db, "tasks"), {
             date: selectedDateStr, person: per, projectName: projName, projectId: projVal,
-            location: document.getElementById('t-loc').value, plate: document.getElementById('t-plate').value, device: document.getElementById('t-device').value
+            location: document.getElementById('t-loc').value, plate: plate, device: device
         });
     }
     window.delTask = async (id) => { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, "tasks", id)); }
+    
     function updateStats(dk) {
-        const dt = tasks.filter(t=>t.date===dk), act = new Set(dt.map(t=>t.person)).size, tot = users.length;
+        const dt = tasks.filter(t=>t.date===dk);
+        // Unique person count calculation for arrays
+        let activePeople = new Set();
+        dt.forEach(t => {
+            if(Array.isArray(t.person)) t.person.forEach(p => activePeople.add(p));
+            else activePeople.add(t.person);
+        });
+        
+        const act = activePeople.size;
+        const tot = users.length;
         document.getElementById('stat-total').innerText=tot; document.getElementById('stat-active').innerText=act; document.getElementById('stat-idle').innerText=Math.max(0, tot-act);
     }
     function renderTeamStatus(dk) {
         const dt = tasks.filter(t=>t.date===dk);
         document.getElementById('teamListArea').innerHTML = users.map(u => {
-            const at = dt.find(t=>t.person===u.name);
-            return at ? `<div class="info-card active"><div><h4>${u.name} <small style="font-size:0.7rem">(${u.title||''})</small></h4><p>📍 ${at.projectName}</p><p>🚗 ${at.plate||''}</p></div><div class="badge badge-green">SAHADA</div></div>`
+            // Check if user is in any task's person array
+            const at = dt.find(t => Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
+            
+            const vStr = at ? (Array.isArray(at.plate) ? at.plate.join(", ") : at.plate) : '';
+
+            return at ? `<div class="info-card active"><div><h4>${u.name} <small style="font-size:0.7rem">(${u.title||''})</small></h4><p>📍 ${at.projectName}</p><p>🚗 ${vStr||''}</p></div><div class="badge badge-green">SAHADA</div></div>`
                       : `<div class="info-card"><div><h4>${u.name} <small style="font-size:0.7rem">(${u.title||''})</small></h4><p>Müsait</p></div><div class="badge badge-gray">BOŞTA</div></div>`;
         }).join('');
     }
