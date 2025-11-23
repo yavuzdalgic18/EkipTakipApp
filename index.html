@@ -3,356 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip ERP (V15 - Anlık Durum)</title>
+    <title>Ekip Takip Pro (V17.1 - Full)</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2c3e50">
+    <meta name="theme-color" content="#4facfe">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #2c3e50; --accent: #3498db; --success: #27ae60;
-            --warning: #f39c12; --danger: #c0392b; --bg: #f4f7f6; --white: #ffffff;
+            --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-color: #f3f5f9;
+            --text-main: #2d3436;
+            --nav-height: 70px;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; color: #333; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
-        
-        /* GİRİŞ EKRANI */
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--primary); z-index: 9999; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            overflow-y: auto; padding: 20px; box-sizing: border-box;
-        }
-        .login-box { 
-            background: white; padding: 30px; border-radius: 10px; 
-            width: 100%; max-width: 350px; text-align: center; color: #333; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); margin: auto;
-        }
-        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 16px;}
-        .login-box button { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-top: 5px;}
-        
-        .hidden { display: none !important; }
-        .admin-only { display: none; } 
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: calc(var(--nav-height) + 20px); color: var(--text-main); }
 
-        /* GENEL STİLLER */
-        nav { background: var(--primary); padding: 0; display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow-x: auto; }
-        .nav-tab { padding: 15px 10px; color: #bdc3c7; cursor: pointer; font-weight: bold; font-size: 0.8rem; text-align: center; flex: 1; border-bottom: 4px solid transparent; white-space: nowrap; }
-        .nav-tab.active { color: white; border-bottom-color: var(--accent); background: rgba(255,255,255,0.1); }
+        /* GİRİŞ EKRANI */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary-grad); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 30px; }
+        .login-box { background: rgba(255,255,255,0.95); padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #eee; border-radius: 12px; background: #f9f9f9; }
+        .login-box button { width: 100%; padding: 15px; background: #764ba2; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
+
+        /* HEADER */
+        .app-header { padding: 20px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .app-header h1 { margin: 0; font-size: 1.5rem; color: #333; }
+        .header-icons { display: flex; gap: 10px; }
+        .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; font-size: 1.2rem; border: none; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+        /* KARTLAR */
+        .hero-card { background: var(--primary-grad); border-radius: 25px; padding: 25px; color: white; box-shadow: 0 15px 30px rgba(118, 75, 162, 0.3); margin-bottom: 25px; position: relative; overflow: hidden; }
+        .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
+        .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
         
-        .container { max-width: 1100px; margin: 15px auto; padding: 0 10px; }
+        .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         
-        .view-section { display: none; animation: fadeIn 0.3s; }
+        /* TAKVİM */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .day-head { text-align: center; color: #999; font-size: 0.8rem; font-weight: 600; }
+        .day-cell { background: #f4f6f8; border-radius: 12px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; cursor: pointer; position: relative; border: 2px solid transparent; }
+        .day-cell.today { border-color: #764ba2; color: #764ba2; background: #fff; }
+        .dot-indicator { width: 6px; height: 6px; background: #764ba2; border-radius: 50%; position: absolute; bottom: 5px; }
+
+        /* BOTTOM NAV */
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1); z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; color: #b2bec3; cursor: pointer; width: 60px; transition: 0.3s; }
+        .nav-item .icon { font-size: 1.4rem; margin-bottom: 2px; }
+        .nav-item.active { color: #764ba2; transform: translateY(-5px); }
+
+        /* LİSTE ÖGELERİ */
+        .person-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f0f0f0; }
+        .status-dot { padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+        .st-active { background: #d1fae5; color: #065f46; }
+        .st-idle { background: #f3f4f6; color: #374151; }
+        .st-plan { background: #fef3c7; color: #d97706; }
+
+        /* FORMLAR */
+        input, select { width: 100%; padding: 15px; border: 1px solid #eee; background: #f9f9f9; border-radius: 12px; font-family: 'Poppins', sans-serif; margin-bottom: 10px; outline: none; }
+        .btn-main { width: 100%; padding: 15px; background: var(--primary-grad); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
+
+        /* MODAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); z-index: 2000; display: none; justify-content: center; align-items: end; }
+        .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 25px 25px 0 0; padding: 30px; animation: slideUp 0.3s; max-height: 85vh; overflow-y: auto; }
+        @media (min-width: 600px) { .modal-overlay { align-items: center; } .modal-card { border-radius: 25px; width: 90%; } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* MULTI SELECT */
+        .multi-select-area { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
+        .ms-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #f5f5f5; }
+        .ms-item input { width: 20px; margin: 0 10px 0 0; }
+
+        .hidden { display: none !important; }
+        .admin-only { display: none; }
+        .view-section { display: none; animation: fadeIn 0.4s; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Dashboard */
-        .dashboard-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .stat-box { background: var(--white); padding: 10px; border-radius: 8px; text-align: center; border-top: 4px solid #ccc; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .stat-val { display: block; font-size: 1.5rem; font-weight: bold; margin: 5px 0; }
-        .border-blue { border-color: var(--accent); color: var(--accent); }
-        .border-red { border-color: var(--danger); color: var(--danger); }
-        .border-green { border-color: var(--success); color: var(--success); }
-
-        /* Takvim */
-        .calendar-header { display: flex; justify-content: space-between; background: var(--white); padding: 10px; border-radius: 8px; margin-bottom: 10px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; background: var(--white); padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .day-head { text-align: center; font-weight: bold; color: #7f8c8d; margin-bottom: 5px; font-size: 0.8rem; }
-        .day-cell { border: 1px solid #eee; min-height: 60px; padding: 2px; border-radius: 4px; cursor: pointer; background: #fff; font-size: 0.8rem; position: relative; }
-        .day-cell.today { border: 2px solid var(--accent); }
-        .task-dot { font-size: 0.65rem; background: #eaf2f8; color: var(--primary); padding: 2px 3px; margin-top: 2px; border-radius: 2px; border-left: 2px solid var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* Tarih Seçici Modal */
-        #month-picker-modal {
-            display: none; position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
-            width: 300px; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 500; padding: 15px;
-        }
-        .year-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .year-selector button { background: #eee; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
-        .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .month-btn { padding: 10px; background: #f9f9f9; border: 1px solid #eee; text-align: center; cursor: pointer; border-radius: 5px; font-size: 0.9rem; }
-        .month-btn:hover { background: var(--accent); color: white; }
-
-        /* Formlar */
-        .project-form { background: var(--white); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .project-form.editing { border-left-color: var(--warning); background: #fffbf0; }
-        .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .form-col { flex: 1; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; background: #fff; }
-        input:disabled { background-color: #e9ecef; cursor: not-allowed; color: #6c757d; }
-        label { font-size: 0.8rem; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
-        .btn { border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; width: 100%; font-size: 0.95rem; margin-bottom: 5px;}
-        .btn-save { background: var(--success); }
-        .btn-update { background: var(--warning); display: none; }
-        .btn-cancel { background: #95a5a6; display: none; }
-
-        /* Tablo */
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; background: var(--white); border-radius: 8px; min-width: 500px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-        th { background: var(--primary); color: white; }
-        .profit-plus { color: var(--success); font-weight: bold; }
-        .profit-minus { color: var(--danger); font-weight: bold; }
-
-        /* Kartlar */
-        .card-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        @media (min-width: 600px) { .card-list { grid-template-columns: 1fr 1fr; } }
-        
-        .info-card { background: var(--white); padding: 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; border-left: 5px solid #ccc; position: relative;}
-        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 5px; }
-        .info-card.active { border-left-color: var(--success); }
-        .info-card.busy { border-left-color: var(--danger); }
-        
-        .badge { padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
-        .badge-green { background: #d1e7dd; color: #0f5132; }
-        .badge-red { background: #f8d7da; color: #842029; }
-        .badge-gray { background: #e2e3e5; color: #41464b; }
-        
-        /* Gelecek Program Listesi */
-        .future-list { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #eee; width: 100%; }
-        .future-title { font-size: 0.7rem; color: #999; font-weight: bold; margin-bottom: 4px; display: block; text-transform: uppercase;}
-        .future-item { font-size: 0.8rem; color: #555; margin-bottom: 3px; display: flex; justify-content: space-between; }
-        .future-date { font-weight: bold; color: var(--primary); margin-right: 5px; }
-
-        /* Multi-Select */
-        .multi-select-wrapper { position: relative; width: 100%; margin-bottom: 15px; }
-        .multi-select-trigger {
-            background: #fff; border: 1px solid #ddd; padding: 12px; border-radius: 6px;
-            cursor: pointer; font-size: 16px; display: flex; justify-content: space-between; align-items: center;
-        }
-        .multi-select-trigger::after { content: '▼'; font-size: 0.8rem; color: #666; }
-        .dropdown-content {
-            display: none; position: absolute; top: 100%; left: 0; width: 100%;
-            background: #fff; border: 1px solid #ddd; border-radius: 6px;
-            max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .dropdown-content.show { display: block; }
-        .dropdown-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; cursor: pointer; }
-        .dropdown-item:hover { background: #f9f9f9; }
-        .dropdown-item input { width: 20px; height: 20px; margin-right: 10px; cursor: pointer; pointer-events: auto;}
-
-        /* Modal */
-        .modal-wrap { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
-        .modal-content { background: var(--white); padding: 20px; width: 90%; max-width: 400px; border-radius: 12px; max-height: 90vh; overflow-y: auto; }
-        .task-detail-item { border-bottom: 1px solid #eee; padding: 10px 0; position: relative; }
-        .del-btn { position: absolute; top: 10px; right: 0; color: var(--danger); background: none; border: none; font-size: 1.2rem; cursor: pointer; }
-
-        /* Profil Bar */
-        .profile-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px; color: white; background: #34495e; font-size: 0.9rem;}
-        .logout-btn { background: none; border: 1px solid #ffffffaa; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
-    <div style="margin-bottom: 20px; text-align: center; color: white;">
-        <h1>🚀 Ekip Takip</h1>
-        <p>Varlık & Operasyon Yönetimi</p>
-    </div>
     <div class="login-box">
-        <h3 style="margin-top:0;">Giriş Yap</h3>
+        <h3>Hoşgeldiniz 👋</h3>
         <input type="email" id="loginEmail" placeholder="E-Posta">
         <input type="password" id="loginPass" placeholder="Şifre">
-        <button onclick="handleLogin()">Giriş</button>
-        <div id="loginError" style="color:red; margin-top:10px; font-size:0.9rem;"></div>
-        <hr style="margin: 20px 0; border-top:1px solid #eee;">
-        <button onclick="toggleRegister()" style="background:none; color:#3498db; padding:0; width:auto; text-decoration:underline; border:none;">Yeni Kayıt</button>
-        <div id="registerArea" class="hidden" style="margin-top:15px; background:#f9f9f9; padding:10px; border-radius:5px;">
-            <h4 style="margin:0 0 10px 0;">Kayıt Ol</h4>
+        <button onclick="handleLogin()">Giriş Yap</button>
+        <div id="loginError" style="color:red; margin-top:10px; font-size:0.8rem;"></div>
+        <p onclick="toggleRegister()" style="cursor:pointer; margin-top:15px; font-size:0.9rem;">Hesap Oluştur</p>
+        
+        <div id="registerArea" class="hidden" style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
             <input type="text" id="regName" placeholder="Ad Soyad">
-            <input type="text" id="regTitle" placeholder="Ünvan (Opsiyonel)">
+            <input type="text" id="regTitle" placeholder="Ünvan">
             <input type="email" id="regEmail" placeholder="E-Posta">
-            <input type="password" id="regPass" placeholder="Şifre (En az 6 hane)">
+            <input type="password" id="regPass" placeholder="Şifre (6+)">
             <button onclick="handleRegister()" style="background:#27ae60;">Kaydol</button>
         </div>
     </div>
 </div>
 
 <div id="app-screen" class="hidden">
-    <div class="profile-bar">
-        <span id="welcomeUser">...</span>
-        <button class="logout-btn" onclick="handleLogout()">Çıkış</button>
+    <div class="app-header">
+        <div>
+            <small style="color:#999;">Merhaba,</small>
+            <h1 id="welcomeUser">Kullanıcı</h1>
+        </div>
+        <div class="header-icons">
+            <button class="icon-btn" onclick="requestNotificationPermission()">🔔</button>
+            <button class="icon-btn" onclick="handleLogout()">🚪</button>
+        </div>
     </div>
-
-    <nav>
-        <div class="nav-tab active" onclick="switchTab('calendar')">📅 Takvim</div>
-        <div class="nav-tab" onclick="switchTab('projects')">📂 Projeler</div>
-        <div class="nav-tab" onclick="switchTab('team')">👥 Ekip</div>
-        <div class="nav-tab" onclick="switchTab('devices')">🧰 Cihaz</div>
-        <div class="nav-tab admin-only" onclick="switchTab('vehicles')">🚗 Araç</div>
-        <div class="nav-tab admin-only" onclick="switchTab('users')">⚙️ Yetki</div>
-    </nav>
 
     <div class="container">
         
         <div id="view-calendar" class="view-section active">
-            <div class="dashboard-stats">
-                <div class="stat-box border-blue"><small>Toplam</small><span class="stat-val" id="stat-total">0</span></div>
-                <div class="stat-box border-red"><small>Sahada (Seçili Gün)</small><span class="stat-val" id="stat-active">0</span></div>
-                <div class="stat-box border-green"><small>Boşta (Seçili Gün)</small><span class="stat-val" id="stat-idle">0</span></div>
+            <div class="hero-card">
+                <h3 style="margin:0; opacity:0.9;">Günlük Durum</h3>
+                <h1 style="margin:5px 0;" id="statsDateLabel">Bugün</h1>
+                <div class="hero-stat-grid">
+                    <div class="hero-stat-item"><span id="stat-total">0</span> <small>Ekip</small></div>
+                    <div class="hero-stat-item"><span id="stat-active">0</span> <small>Sahada</small></div>
+                    <div class="hero-stat-item"><span id="stat-idle">0</span> <small>Boşta</small></div>
+                </div>
             </div>
-            <div style="text-align:center; margin-bottom:10px; color:#666; font-size:0.8rem;">Seçili Tarih: <b id="statsDateLabel">Bugün</b></div>
-            
-            <div class="calendar-header">
-                <button onclick="changeMonth(-1)" style="padding:5px 15px;">&#9664;</button>
-                <div style="position:relative;">
-                    <h3 id="monthDisplay" onclick="toggleDatePicker()" style="margin:0; font-size:1rem; cursor:pointer; text-decoration:underline;"></h3>
-                    <div id="month-picker-modal">
-                        <div class="year-selector">
-                            <button onclick="changePickYear(-1)">&#9664;</button>
-                            <span id="pick-year-val" style="font-weight:bold;">2025</span>
-                            <button onclick="changePickYear(1)">&#9654;</button>
-                        </div>
-                        <div class="month-grid">
-                            <div class="month-btn" onclick="goToMonth(0)">Ocak</div>
-                            <div class="month-btn" onclick="goToMonth(1)">Şubat</div>
-                            <div class="month-btn" onclick="goToMonth(2)">Mart</div>
-                            <div class="month-btn" onclick="goToMonth(3)">Nisan</div>
-                            <div class="month-btn" onclick="goToMonth(4)">Mayıs</div>
-                            <div class="month-btn" onclick="goToMonth(5)">Haziran</div>
-                            <div class="month-btn" onclick="goToMonth(6)">Temmuz</div>
-                            <div class="month-btn" onclick="goToMonth(7)">Ağustos</div>
-                            <div class="month-btn" onclick="goToMonth(8)">Eylül</div>
-                            <div class="month-btn" onclick="goToMonth(9)">Ekim</div>
-                            <div class="month-btn" onclick="goToMonth(10)">Kasım</div>
-                            <div class="month-btn" onclick="goToMonth(11)">Aralık</div>
-                        </div>
+
+            <div class="modern-card">
+                <div class="card-header-row">
+                    <h3 class="card-title" id="monthDisplay">Takvim</h3>
+                    <div>
+                        <button onclick="changeMonth(-1)" style="border:none; bg:none; cursor:pointer;">◀</button>
+                        <button onclick="changeMonth(1)" style="border:none; bg:none; cursor:pointer;">▶</button>
                     </div>
                 </div>
-                <button onclick="changeMonth(1)" style="padding:5px 15px;">&#9654;</button>
+                <div class="calendar-grid" id="calendarGrid"></div>
             </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
         </div>
 
         <div id="view-projects" class="view-section">
-            <div id="projectFormContainer" class="project-form admin-only">
-                <h3 id="formTitle" style="margin-top:0; color:var(--primary); font-size:1.1rem;">Yeni Proje</h3>
-                <div class="form-row">
-                    <div class="form-col"><label>Proje Adı</label><input type="text" id="p-name"></div>
-                    <div class="form-col"><label>Sorumlu</label><select id="p-manager"></select></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-col"><label>Maliyet</label><input type="number" id="p-cost"></div>
-                    <div class="form-col"><label>Teklif</label><input type="number" id="p-offer"></div>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <button id="btn-save" class="btn btn-save" onclick="submitProject()">Kaydet</button>
-                    <button id="btn-update" class="btn btn-update" onclick="submitProject()">Güncelle</button>
-                    <button id="btn-cancel" class="btn btn-cancel" onclick="cancelEdit()">Vazgeç</button>
-                </div>
+            <h2 style="margin-left:10px;">Projeler</h2>
+            <div class="admin-only modern-card">
+                <h3 class="card-title">Yeni Proje</h3>
+                <input type="text" id="p-name" placeholder="Proje Adı">
+                <select id="p-manager"></select>
+                <button class="btn-main" onclick="submitProject()">Kaydet</button>
             </div>
-            <div class="table-wrap">
-                <table id="projectTable">
-                    <thead><tr><th>Proje</th><th>Sorumlu</th><th>Kar/Zarar</th><th class="admin-only">İşlem</th></tr></thead>
-                    <tbody id="projectListBody"></tbody>
-                </table>
-            </div>
+            <div class="modern-card" id="projectListBody"></div>
         </div>
 
         <div id="view-team" class="view-section">
-            <div style="text-align:center; margin-bottom:15px; color:#666;">
-                <h3 style="margin:0; color:var(--primary);">Anlık Durum (Bugün)</h3>
-                <small>Ve Gelecek Planları</small>
-            </div>
-            <div id="teamListArea" class="card-list"></div>
+            <h2 style="margin-left:10px;">Ekip Durumu</h2>
+            <div class="modern-card" id="teamListArea"></div>
         </div>
 
-        <div id="view-devices" class="view-section">
-            <div class="project-form admin-only">
-                <h3 style="margin-top:0; color:var(--primary);">Yeni Cihaz Ekle</h3>
-                <div class="form-row">
-                    <div class="form-col"><label>Cihaz Adı / Model</label><input type="text" id="d-name" placeholder="Örn: Fluke Termal"></div>
-                    <div class="form-col"><label>Seri No</label><input type="text" id="d-serial" placeholder="SN-12345"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-col"><label>Kalibrasyon Tarihi</label><input type="date" id="d-calib"></div>
-                </div>
-                <button class="btn btn-save" onclick="addDevice()">Cihazı Kaydet</button>
-            </div>
-            <div style="text-align:center; margin-bottom:15px; margin-top:15px; color:#666;">
-                <h3 style="margin:0; color:var(--primary);">Cihaz Durumu (Bugün)</h3>
-                <small>Ve Gelecek Planları</small>
-            </div>
-            <div id="deviceListArea" class="card-list"></div>
-        </div>
-
-        <div id="view-vehicles" class="view-section">
-            <div class="project-form">
-                <h3 style="margin-top:0; color:var(--primary);">Yeni Araç Ekle</h3>
-                <div class="form-row">
-                    <div class="form-col"><label>Plaka</label><input type="text" id="v-plate" placeholder="34 AB 123"></div>
-                    <div class="form-col"><label>Model / Bilgi</label><input type="text" id="v-info" placeholder="Ford Ranger"></div>
-                </div>
-                <button class="btn btn-save" onclick="addVehicle()">Aracı Kaydet</button>
-            </div>
-            <h4 style="margin-bottom:10px;">Araç Listesi</h4>
-            <div id="vehicleListArea" class="card-list"></div>
-        </div>
-
-        <div id="view-users" class="view-section">
-            <div id="userFormContainer" class="project-form">
-                <h3 id="userFormTitle" style="margin-top:0; color:var(--primary);">Yeni Kullanıcı Tanımla</h3>
-                <div class="form-row">
-                    <div class="form-col"><input type="text" id="u-name" placeholder="Ad Soyad"></div>
-                    <div class="form-col"><input type="text" id="u-title" placeholder="Ünvan"></div>
-                </div>
+        <div id="view-more" class="view-section">
+            <h2 style="margin-left:10px;">Yönetim</h2>
+            
+            <div class="admin-only modern-card">
+                <h3 class="card-title">Kullanıcı Ekle</h3>
+                <input type="text" id="u-name" placeholder="Ad Soyad">
                 <input type="email" id="u-email" placeholder="E-Posta">
-                <label>Yetki</label>
-                <select id="u-role">
-                    <option value="staff">Personel (İzleyici)</option>
-                    <option value="admin">Yönetici (Tam Yetki)</option>
-                </select>
-                
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button id="btn-user-add" class="btn btn-save" onclick="addUserToDB()">Kullanıcıyı Ekle</button>
-                    <button id="btn-user-update" class="btn btn-update" onclick="updateUserDB()">Güncelle</button>
-                    <button id="btn-user-cancel" class="btn btn-cancel" onclick="cancelUserEdit()">Vazgeç</button>
+                <select id="u-role"><option value="staff">Personel</option><option value="admin">Yönetici</option></select>
+                <button class="btn-main" onclick="addUserToDB()">Ekle</button>
+            </div>
+
+            <div class="modern-card">
+                <h3 class="card-title">Cihazlar</h3>
+                <div id="deviceListArea"></div>
+                <div class="admin-only" style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+                    <input type="text" id="d-name" placeholder="Yeni Cihaz">
+                    <button class="btn-main" onclick="addDevice()">Cihaz Ekle</button>
                 </div>
             </div>
-            <h4 style="margin-bottom:10px;">Kayıtlı Kullanıcılar</h4>
-            <div id="userListArea" style="background:white; border-radius:8px; overflow:hidden;"></div>
         </div>
 
     </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('calendar')"><span class="icon">📅</span>Takvim</div>
+        <div class="nav-item" onclick="switchTab('projects')"><span class="icon">📂</span>Proje</div>
+        <div class="nav-item" onclick="switchTab('team')"><span class="icon">👥</span>Ekip</div>
+        <div class="nav-item" onclick="switchTab('more')"><span class="icon">⚙️</span>Diğer</div>
+    </div>
 </div>
 
-<div class="modal-wrap" id="taskModal">
-    <div class="modal-content">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <h3 style="margin:0;">Görev Detayı</h3>
-            <span onclick="closeModal()" style="cursor:pointer; font-size:1.8rem; color:#666;">&times;</span>
+<div class="modal-overlay" id="taskModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+            <h2 style="margin:0;">Görevler</h2>
+            <button onclick="closeModal()" style="background:none; border:none; font-size:1.5rem;">✕</button>
         </div>
-        <p id="modalDateText" style="color:#888; font-size:0.9rem; margin-top:-10px;"></p>
-        <div id="dayTaskList" style="background:#f8f8f8; padding:10px; margin-bottom:15px; border-radius:6px; max-height:150px; overflow-y:auto;"></div>
+        <p id="modalDateText" style="color:#888;"></p>
+        <div id="dayTaskList" style="margin-bottom:20px;"></div>
 
         <div class="admin-only">
-            <hr>
-            <h4 style="margin:10px 0; color:var(--accent);">Yeni Atama</h4>
-            
-            <label>Personel (Çoklu Seçim)</label>
-            <div class="multi-select-wrapper">
-                <div class="multi-select-trigger" onclick="toggleDropdown('ms-person')">Seçiniz...</div>
-                <div class="dropdown-content" id="ms-person"></div>
-            </div>
-
-            <label>Proje</label>
-            <select id="t-project-select"></select>
-            <div class="form-row">
-                <div class="form-col"><input type="text" id="t-loc" placeholder="Konum"></div>
-            </div>
-
-            <label>Araç (Çoklu Seçim)</label>
-            <div class="multi-select-wrapper">
-                <div class="multi-select-trigger" onclick="toggleDropdown('ms-plate')">Araç Seçiniz...</div>
-                <div class="dropdown-content" id="ms-plate"></div>
-            </div>
-
-            <label>Cihaz (Çoklu Seçim)</label>
-            <div class="multi-select-wrapper">
-                <div class="multi-select-trigger" onclick="toggleDropdown('ms-device')">Cihaz Seçiniz...</div>
-                <div class="dropdown-content" id="ms-device"></div>
-            </div>
-
-            <button class="btn btn-save" style="margin-top:15px;" onclick="saveTask()">Atama Yap</button>
+            <h3 style="font-size:1rem;">Yeni Atama</h3>
+            <label>Personel</label><div class="multi-select-area" id="ms-person"></div>
+            <label>Proje</label><select id="t-project-select"></select>
+            <input type="text" id="t-loc" placeholder="Konum">
+            <label>Araçlar</label><div class="multi-select-area" id="ms-plate"></div>
+            <label>Cihazlar</label><div class="multi-select-area" id="ms-device"></div>
+            <button class="btn-main" onclick="saveTask()">Kaydet</button>
         </div>
     </div>
 </div>
@@ -378,9 +231,7 @@
 
     let projects=[], tasks=[], users=[], vehicles=[], devices=[];
     let currentUser=null, userRole='staff';
-    let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), editingProjId=null;
-    let pickerYear = new Date().getFullYear();
-    let editingUserEmail = null;
+    let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), isFirstLoad=true;
 
     // AUTH
     onAuthStateChanged(auth, async (user) => {
@@ -389,7 +240,7 @@
             if (userDoc.exists()) {
                 const userData = userDoc.data();
                 currentUser = userData; userRole = userData.role;
-                document.getElementById('welcomeUser').innerText = `👋 ${userData.name}`;
+                document.getElementById('welcomeUser').innerText = userData.name.split(' ')[0];
                 applyPermissions();
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
@@ -407,7 +258,7 @@
     window.handleLogin = () => {
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPass').value;
-        signInWithEmailAndPassword(auth, email, pass).catch(err => document.getElementById('loginError').innerText = "Hata: " + err.message);
+        signInWithEmailAndPassword(auth, email, pass).catch(err => document.getElementById('loginError').innerText = err.message);
     };
     window.handleLogout = () => { signOut(auth); window.location.reload(); };
     window.toggleRegister = () => { document.getElementById('registerArea').classList.toggle('hidden'); }
@@ -416,20 +267,24 @@
         const title = document.getElementById('regTitle').value;
         const email = document.getElementById('regEmail').value;
         const pass = document.getElementById('regPass').value;
-        if(pass.length < 6) return alert("Şifre 6+ olmalı");
         try {
             await createUserWithEmailAndPassword(auth, email, pass);
-            await setDoc(doc(db, "users", email), { name: name, title: title, email: email, role: 'admin' });
-            alert("Başarılı!");
-        } catch (err) { alert("Hata: " + err.message); }
+            await setDoc(doc(db, "users", email), { name, title, email, role: 'admin' });
+        } catch (err) { alert(err.message); }
     };
 
     function applyPermissions() {
-        const els = document.querySelectorAll('.admin-only');
-        els.forEach(el => el.style.display = (userRole === 'admin') ? 'block' : 'none');
-        const adminTabs = document.querySelectorAll('.nav-tab.admin-only');
-        adminTabs.forEach(el => el.style.display = (userRole === 'admin') ? 'block' : 'none');
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = (userRole === 'admin') ? 'block' : 'none');
     }
+
+    // BİLDİRİM İZNİ
+    window.requestNotificationPermission = () => {
+        if (!("Notification" in window)) return alert("Desteklenmiyor");
+        Notification.requestPermission().then(perm => {
+            if (perm === "granted") alert("Bildirimler Açık! 🔔");
+            else alert("Reddedildi.");
+        });
+    };
 
     // DATA
     function startListeners() {
@@ -438,352 +293,186 @@
             if(cb) cb(); loadDropdowns();
         });
         load("projects", projects, renderProjects);
-        load("vehicles", vehicles, renderVehicleList);
         load("devices", devices, renderDeviceList);
-        onSnapshot(collection(db, "users"), (s) => { 
-            users=[]; s.docs.forEach(d=>users.push(d.data())); 
-            renderUserList(); loadDropdowns();
-        });
-        onSnapshot(collection(db, "tasks"), (s) => {
-            tasks=[]; s.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
+        onSnapshot(collection(db, "users"), (s) => { users=[]; s.docs.forEach(d=>users.push(d.data())); renderTeamStatus(); loadDropdowns(); });
+        
+        // GÖREVLER VE BİLDİRİM
+        onSnapshot(collection(db, "tasks"), (snapshot) => {
+            // Bildirim Kontrolü
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added" && !isFirstLoad) {
+                    const data = change.doc.data();
+                    const isForMe = Array.isArray(data.person) ? data.person.includes(currentUser.name) : data.person === currentUser.name;
+                    if (isForMe && Notification.permission === "granted") {
+                        new Notification("🔔 Yeni Görev!", { body: `${data.date}: ${data.projectName}` });
+                    }
+                }
+            });
+
+            tasks=[]; snapshot.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
             renderCalendar();
-            if(document.getElementById('taskModal').style.display === 'flex') openModalLogic(selectedDateStr);
-            // NOT: Burası artık seçili tarihi değil, daima BUGÜNÜ baz alacak.
-            renderTeamStatus(); 
-            renderDeviceList();
-            updateStats(selectedDateStr); // İstatistikler hala seçili güne göre olsun
+            if(document.querySelector('.modal-overlay').style.display === 'flex') openModalLogic(selectedDateStr);
+            updateStats(getCurrentDateStr()); renderTeamStatus(); renderDeviceList();
+            isFirstLoad = false;
         });
     }
 
-    // DATE PICKER
-    window.toggleDatePicker = () => {
-        const el = document.getElementById('month-picker-modal');
-        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
-        pickerYear = currentDate.getFullYear();
-        document.getElementById('pick-year-val').innerText = pickerYear;
-    }
-    window.changePickYear = (dir) => { pickerYear += dir; document.getElementById('pick-year-val').innerText = pickerYear; }
-    window.goToMonth = (month) => {
-        currentDate.setFullYear(pickerYear); currentDate.setMonth(month);
-        renderCalendar(); document.getElementById('month-picker-modal').style.display = 'none';
-    }
-
-    // MULTI SELECT
-    window.toggleDropdown = (id) => { document.getElementById(id).classList.toggle("show"); };
-    window.onclick = function(event) {
-        if (!event.target.matches('.multi-select-trigger') && !event.target.closest('.dropdown-content')) {
-            var dropdowns = document.getElementsByClassName("dropdown-content");
-            for (var i = 0; i < dropdowns.length; i++) {
-                if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
-            }
-        }
-    }
-    function getMultiSelectValues(id) {
-        return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(input => input.value);
-    }
-    function resetTaskForm() {
-        document.getElementById('t-loc').value = ""; document.getElementById('t-project-select').value = "";
-        document.querySelectorAll('.dropdown-content input[type="checkbox"]').forEach(cb => cb.checked = false);
-    }
-
-    // HELPER: Tarih Parse
-    function parseDateStr(str) {
-        const [d, m, y] = str.split('-').map(Number);
-        return new Date(y, m, d);
-    }
-
-    // CİHAZLAR (ANLIK DURUM + FULL PLAN)
-    window.addDevice = async () => {
-        const name=document.getElementById('d-name').value, serial=document.getElementById('d-serial').value, calib=document.getElementById('d-calib').value;
-        if(!name) return alert("Ad girin");
-        await addDoc(collection(db, "devices"), { name, serial, calib });
-        document.getElementById('d-name').value=""; document.getElementById('d-serial').value="";
-    }
-    window.deleteDevice = async (id) => { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, "devices", id)); }
-    
-    function renderDeviceList() {
-        // BU FONKSİYON ARTIK DAİMA BUGÜNÜ REFERANS ALIR
-        const todayStr = getCurrentDateStr();
-        const todayDate = parseDateStr(todayStr);
-
-        document.getElementById('deviceListArea').innerHTML = devices.map(d => {
-            let calibStatus = "";
-            if(d.calib && new Date(d.calib) < new Date()) calibStatus = '<span style="color:red;">(Kalibrasyon Geçmiş!)</span>';
-
-            // Bugün aktif mi?
-            const todayTasks = tasks.filter(t => t.date === todayStr);
-            const activeTask = todayTasks.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name); 
-            
-            // Gelecek Planı (Bugünden sonraki tüm işler)
-            const upcomingTasks = tasks.filter(t => {
-                const tDate = parseDateStr(t.date);
-                return tDate > todayDate && (Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name);
-            }).sort((a, b) => parseDateStr(a.date) - parseDateStr(b.date));
-
-            let statusHtml = activeTask ? `<div class="badge badge-red">🔴 ŞU AN: ${activeTask.projectName}</div>` : `<div class="badge badge-green">🟢 BOŞTA</div>`;
-            
-            let futureHtml = "";
-            if (upcomingTasks.length > 0) {
-                futureHtml = `<div class="future-list"><span class="future-title">Gelecek Program:</span>` + 
-                upcomingTasks.map(t => `<div class="future-item"><span class="future-date">${t.date}:</span> <span>${t.projectName}</span></div>`).join('') + 
-                `</div>`;
-            }
-
-            return `<div class="info-card ${activeTask ? 'busy' : 'active'}">
-                <div class="info-card-header">
-                    <div><strong>${d.name}</strong> <small>(${d.serial})</small><br><small>Kalibrasyon: ${d.calib || '-'} ${calibStatus}</small></div>
-                    ${userRole==='admin' ? `<button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none;">🗑</button>`:''}
-                </div>
-                <div style="text-align:right; margin-bottom:5px;">${statusHtml}</div>
-                ${futureHtml}
-            </div>`;
-        }).join('');
-    }
-
-    // PERSONEL DURUMU (ANLIK DURUM + FULL PLAN)
-    function renderTeamStatus() {
-        // BU FONKSİYON ARTIK DAİMA BUGÜNÜ REFERANS ALIR
-        const todayStr = getCurrentDateStr();
-        const todayDate = parseDateStr(todayStr);
-
-        document.getElementById('teamListArea').innerHTML = users.map(u => {
-            // Bugün aktif mi?
-            const dt = tasks.filter(t=>t.date===todayStr);
-            const at = dt.find(t => Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
-            const vStr = at ? (Array.isArray(at.plate) ? at.plate.join(", ") : at.plate) : '';
-
-            // Gelecek Planı
-            const upcomingTasks = tasks.filter(t => {
-                const tDate = parseDateStr(t.date);
-                return tDate > todayDate && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
-            }).sort((a, b) => parseDateStr(a.date) - parseDateStr(b.date));
-
-            let statusHtml = at 
-                ? `<div class="badge badge-red">🔴 SAHADA</div>` 
-                : `<div class="badge badge-green">🟢 BOŞTA</div>`;
-                
-            let detailHtml = at 
-                ? `<p>📍 ${at.projectName}</p><p>🚗 ${vStr||''}</p>` 
-                : `<p>Müsait</p>`;
-
-            let futureHtml = "";
-            if (upcomingTasks.length > 0) {
-                futureHtml = `<div class="future-list"><span class="future-title">Gelecek Program:</span>` + 
-                upcomingTasks.map(t => `<div class="future-item"><span class="future-date">${t.date}:</span> <span>${t.projectName}</span></div>`).join('') + 
-                `</div>`;
-            }
-
-            return `<div class="info-card ${at?'busy':'active'}">
-                <div class="info-card-header">
-                    <div><h4>${u.name} <small style="font-size:0.7rem">(${u.title||''})</small></h4></div>
-                    ${statusHtml}
-                </div>
-                <div>${detailHtml}</div>
-                ${futureHtml}
-            </div>`;
-        }).join('');
-    }
-
-    // ARAÇLAR
-    window.addVehicle = async () => {
-        const plate=document.getElementById('v-plate').value, info=document.getElementById('v-info').value;
-        if(!plate) return alert("Plaka girin");
-        await addDoc(collection(db, "vehicles"), { plate, info });
-        document.getElementById('v-plate').value="";
-    }
-    window.deleteVehicle = async (id) => { if(confirm("Sil?")) await deleteDoc(doc(db, "vehicles", id)); }
-    function renderVehicleList() {
-        document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => `
-            <div class="info-card">
-                <div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small></div><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none;">🗑</button></div>
-            </div>`).join('');
-    }
-
-    // KULLANICI YÖNETİMİ
-    window.addUserToDB = async () => {
-        const name=document.getElementById('u-name').value, title=document.getElementById('u-title').value, email=document.getElementById('u-email').value, role=document.getElementById('u-role').value;
-        if(!name || !email) return alert("Eksik bilgi");
-        await setDoc(doc(db, "users", email), { name, title, email, role });
-        alert("Kullanıcı eklendi."); document.getElementById('u-name').value=""; document.getElementById('u-email').value=""; document.getElementById('u-title').value="";
-    };
-    
-    window.editUser = (email) => {
-        const u = users.find(x => x.email === email);
-        if(!u) return;
-        document.getElementById('u-name').value = u.name;
-        document.getElementById('u-title').value = u.title || '';
-        document.getElementById('u-email').value = u.email;
-        document.getElementById('u-email').disabled = true;
-        document.getElementById('u-role').value = u.role;
-        editingUserEmail = email;
-        
-        document.getElementById('userFormTitle').innerText = "Kullanıcı Düzenle";
-        document.getElementById('btn-user-add').style.display = 'none';
-        document.getElementById('btn-user-update').style.display = 'block';
-        document.getElementById('btn-user-cancel').style.display = 'block';
-    };
-
-    window.updateUserDB = async () => {
-        const name = document.getElementById('u-name').value;
-        const title = document.getElementById('u-title').value;
-        const role = document.getElementById('u-role').value;
-        await updateDoc(doc(db, "users", editingUserEmail), { name, title, role });
-        cancelUserEdit();
-    };
-
-    window.cancelUserEdit = () => {
-        editingUserEmail = null;
-        document.getElementById('u-name').value = "";
-        document.getElementById('u-title').value = "";
-        document.getElementById('u-email').value = "";
-        document.getElementById('u-email').disabled = false;
-        document.getElementById('u-role').value = "staff";
-        document.getElementById('userFormTitle').innerText = "Yeni Kullanıcı Tanımla";
-        document.getElementById('btn-user-add').style.display = 'block';
-        document.getElementById('btn-user-update').style.display = 'none';
-        document.getElementById('btn-user-cancel').style.display = 'none';
-    };
-
-    window.deleteUser = async (e) => { if(confirm("Bu kullanıcı silinsin mi?")) await deleteDoc(doc(db, "users", e)); }
-    
-    function renderUserList() {
-        document.getElementById('userListArea').innerHTML = users.map(u => `
-            <div class="user-card">
-                <div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small></div>
-                <div>
-                    <span class="badge badge-gray">${u.role}</span>
-                    ${userRole==='admin' ? `
-                        <button onclick="editUser('${u.email}')" style="border:none; bg:none; font-size:1.1rem; margin-right:5px;">✎</button>
-                        <button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button>
-                    ` : ''}
-                </div>
-            </div>`).join('');
-    }
-    
-    function loadDropdowns() {
-        if(document.getElementById('p-manager')) document.getElementById('p-manager').innerHTML = users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
-        if(document.getElementById('t-project-select')) document.getElementById('t-project-select').innerHTML = '<option value="">Seçiniz</option>' + projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-        
-        const fillMulti = (id, arr, valProp, textProp) => {
-            const el = document.getElementById(id);
-            if(el) el.innerHTML = arr.map(item => `
-                <label class="dropdown-item"><input type="checkbox" value="${item[valProp]}"> ${item[valProp]} <small style="margin-left:5px; color:#666;">${item[textProp]||''}</small></label>
-            `).join('');
-        };
-        fillMulti('ms-person', users, 'name', 'title');
-        fillMulti('ms-plate', vehicles, 'plate', 'info');
-        fillMulti('ms-device', devices, 'name', 'serial');
-    }
-
+    // FONKSİYONLAR
     window.switchTab = (tab) => {
         document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
-        document.querySelectorAll('.nav-tab').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
         document.getElementById('view-' + tab).classList.add('active');
-        const clicked = [...document.querySelectorAll('.nav-tab')].find(el => el.getAttribute('onclick').includes(tab));
-        if(clicked) clicked.classList.add('active');
+        event.currentTarget.classList.add('active');
     }
 
-    window.submitProject = async () => {
-        const name=document.getElementById('p-name').value, manager=document.getElementById('p-manager').value, cost=parseFloat(document.getElementById('p-cost').value)||0, offer=parseFloat(document.getElementById('p-offer').value)||0;
-        if(!name) return alert("Ad girin");
-        if(editingProjId) { await updateDoc(doc(db, "projects", editingProjId), {name, manager, cost, offer}); cancelEdit(); }
-        else { await addDoc(collection(db, "projects"), {name, manager, cost, offer}); }
-    }
-    window.editProject = (id) => {
-        const p = projects.find(x=>x.id===id);
-        document.getElementById('p-name').value=p.name; document.getElementById('p-manager').value=p.manager;
-        document.getElementById('p-cost').value=p.cost; document.getElementById('p-offer').value=p.offer;
-        editingProjId=id; document.getElementById('projectFormContainer').classList.add('editing');
-        document.getElementById('btn-save').style.display='none'; document.getElementById('btn-update').style.display='block'; document.getElementById('btn-cancel').style.display='block';
-    }
-    window.cancelEdit = () => {
-        editingProjId=null; document.getElementById('projectFormContainer').classList.remove('editing');
-        document.getElementById('p-name').value=""; document.getElementById('p-cost').value=""; document.getElementById('p-offer').value="";
-        document.getElementById('btn-save').style.display='block'; document.getElementById('btn-update').style.display='none'; document.getElementById('btn-cancel').style.display='none';
-    }
-    window.deleteProject = async (id) => { if(confirm("Sil?")) await deleteDoc(doc(db, "projects", id)); }
-    function renderProjects() {
-        document.getElementById('projectListBody').innerHTML = projects.map(p => {
-            const pf = p.offer - p.cost;
-            const acts = userRole==='admin' ? `<button onclick="editProject('${p.id}')" style="border:none; bg:none;">✎</button><button onclick="deleteProject('${p.id}')" style="color:red; border:none; bg:none;">🗑</button>` : '';
-            return `<tr><td><b>${p.name}</b></td><td>${p.manager}</td><td class="money ${pf>=0?'profit-plus':'profit-minus'}">${pf}</td><td class="admin-only">${acts}</td></tr>`;
-        }).join('');
-        applyPermissions();
-    }
+    window.changeMonth = (d) => { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
+    function getCurrentDateStr() { const d=new Date(); return `${d.getDate()}-${d.getMonth()}-${d.getFullYear()}`; }
+    function parseDateStr(str) { const [d, m, y] = str.split('-').map(Number); return new Date(y, m, d); }
 
-    // TAKVİM & GÖREV
     function renderCalendar() {
         const grid = document.getElementById('calendarGrid');
-        grid.innerHTML = `<div class="day-head">Pzt</div><div class="day-head">Sal</div><div class="day-head">Çar</div><div class="day-head">Per</div><div class="day-head">Cum</div><div class="day-head">Cmt</div><div class="day-head">Paz</div>`;
+        grid.innerHTML = `<div class="day-head">Pt</div><div class="day-head">Sa</div><div class="day-head">Ça</div><div class="day-head">Pe</div><div class="day-head">Cu</div><div class="day-head">Ct</div><div class="day-head">Pz</div>`;
         const y = currentDate.getFullYear(), m = currentDate.getMonth();
-        const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-        document.getElementById('monthDisplay').innerText = `${monthNames[m]} ${y}`;
+        const names = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+        document.getElementById('monthDisplay').innerText = `${names[m]} ${y}`;
         
         const first = new Date(y, m, 1).getDay(), start = first===0?6:first-1, days = new Date(y, m+1, 0).getDate();
         for(let i=0; i<start; i++) grid.innerHTML+='<div></div>';
         for(let d=1; d<=days; d++) {
-            let dk = `${d}-${m}-${y}`, dt = tasks.filter(t=>t.date===dk), dots = "";
-            dt.forEach(t => {
-                if(Array.isArray(t.person)) t.person.forEach(p => dots += `<div class="task-dot">${p}</div>`);
-                else dots += `<div class="task-dot">${t.person}</div>`;
-            });
+            let dk = `${d}-${m}-${y}`, dt = tasks.filter(t=>t.date===dk);
+            let dots = dt.length > 0 ? `<div class="dot-indicator"></div>` : '';
             let cls = (dk===getCurrentDateStr())?"day-cell today":"day-cell";
-            grid.innerHTML += `<div class="${cls}" onclick="openModal('${dk}')"><b>${d}</b>${dots}</div>`;
+            grid.innerHTML += `<div class="${cls}" onclick="openModal('${dk}')">${d}${dots}</div>`;
         }
     }
 
     window.openModal = (dk) => {
         selectedDateStr = dk;
         document.getElementById('modalDateText').innerText = dk.replace(/-/g, '.');
-        document.getElementById('statsDateLabel').innerText = dk.replace(/-/g, '.');
-        // Dikkat: openModal takvim seçimini yapar ama Ekip/Cihaz listesini BOZMAZ. Onlar hep BUGÜN kalır.
-        updateStats(dk); 
         openModalLogic(dk);
-        document.getElementById('taskModal').style.display = 'flex';
+        document.querySelector('.modal-overlay').style.display = 'flex';
     }
+    window.closeModal = () => document.querySelector('.modal-overlay').style.display = 'none';
+
     function openModalLogic(dk) {
         const dt = tasks.filter(t=>t.date===dk);
         document.getElementById('dayTaskList').innerHTML = dt.length ? dt.map(t => {
             const pStr = Array.isArray(t.person) ? t.person.join(", ") : t.person;
-            const vStr = Array.isArray(t.plate) ? t.plate.join(", ") : (t.plate || '-');
-            const dStr = Array.isArray(t.device) ? t.device.join(", ") : (t.device || '-');
-            return `
-            <div class="task-detail-item">
-                ${userRole==='admin' ? `<button class="del-btn" onclick="delTask('${t.id}')">×</button>` : ''}
-                <div style="font-weight:bold; color:var(--primary);">${pStr}</div>
-                <div>📍 ${t.projectName} (${t.location})</div>
-                <div style="font-size:0.8rem; color:#666;">🚗 ${vStr} | 🧰 ${dStr}</div>
+            return `<div style="padding:10px; background:#f9f9f9; border-radius:8px; margin-bottom:5px; border-left:4px solid #764ba2;">
+                <strong>${pStr}</strong><br>📍 ${t.projectName}
+                ${userRole==='admin' ? `<button onclick="delTask('${t.id}')" style="float:right; border:none; background:none; color:red;">🗑</button>` : ''}
             </div>`;
         }).join('') : '<div style="text-align:center;color:#999">Görev yok</div>';
     }
+
+    // ACTIONS
     window.saveTask = async () => {
-        const per = getMultiSelectValues('ms-person');
-        const plate = getMultiSelectValues('ms-plate');
-        const device = getMultiSelectValues('ms-device');
+        const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
         const projVal = document.getElementById('t-project-select').value;
-        if(!projVal) return alert("Proje Seç");
-        if(per.length === 0) return alert("En az 1 personel seçiniz");
+        if(!projVal || per.length===0) return alert("Eksik seçim");
         const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
         
         await addDoc(collection(db, "tasks"), {
             date: selectedDateStr, person: per, projectName: projName, projectId: projVal,
-            location: document.getElementById('t-loc').value, plate: plate, device: device
+            location: document.getElementById('t-loc').value, device: dev, plate: plate
         });
-        resetTaskForm();
+        // Reset form
+        document.getElementById('t-loc').value=""; document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false);
     }
-    window.delTask = async (id) => { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, "tasks", id)); }
-    
+    window.delTask = async (id) => { if(confirm("Sil?")) await deleteDoc(doc(db, "tasks", id)); }
+
+    window.submitProject = async () => {
+        const name=document.getElementById('p-name').value;
+        if(!name) return alert("Ad girin");
+        await addDoc(collection(db, "projects"), { name, manager: document.getElementById('p-manager').value });
+        document.getElementById('p-name').value="";
+    }
+
+    window.addUserToDB = async () => {
+        const name=document.getElementById('u-name').value, email=document.getElementById('u-email').value, role=document.getElementById('u-role').value;
+        if(!name || !email) return alert("Eksik");
+        await setDoc(doc(db, "users", email), { name, email, role });
+        alert("Eklendi");
+    };
+
+    window.addDevice = async () => {
+        const name=document.getElementById('d-name').value;
+        if(!name) return alert("Ad girin");
+        await addDoc(collection(db, "devices"), { name });
+        document.getElementById('d-name').value="";
+    }
+
+    // RENDER
+    function renderTeamStatus() {
+        const todayStr = getCurrentDateStr(), todayDate = parseDateStr(todayStr);
+        document.getElementById('teamListArea').innerHTML = users.map(u => {
+            const dt = tasks.filter(t=>t.date===todayStr);
+            const at = dt.find(t => Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
+            let statusClass = at ? "st-active" : "st-idle";
+            let statusText = at ? "SAHADA" : "BOŞTA";
+            let desc = at ? `📍 ${at.projectName}` : "Müsait";
+
+            const upcoming = tasks.filter(t => {
+                return parseDateStr(t.date) > todayDate && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
+            }).sort((a,b) => parseDateStr(a.date)-parseDateStr(b.date))[0];
+
+            let futureHtml = upcoming ? `<small style="color:#e67e22; display:block; margin-top:5px;">📅 Sonraki: ${upcoming.date}</small>` : '';
+
+            return `<div class="person-row">
+                <div style="display:flex; align-items:center;">
+                    <div class="avatar-circle" style="width:40px;height:40px;background:#eee;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-right:10px;">${u.name.charAt(0)}</div>
+                    <div><div style="font-weight:600;">${u.name}</div><div style="font-size:0.8rem; color:#666;">${desc}</div>${futureHtml}</div>
+                </div>
+                <div class="status-dot ${statusClass}">${statusText}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function renderDeviceList() {
+        const todayStr = getCurrentDateStr();
+        document.getElementById('deviceListArea').innerHTML = devices.map(d => {
+            const dt = tasks.filter(t=>t.date===todayStr);
+            const at = dt.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name);
+            let color = at ? "#e74c3c" : "#27ae60";
+            let status = at ? `KULLANIMDA` : "BOŞTA";
+            return `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                <strong>${d.name}</strong> <span style="color:${color}; font-size:0.8rem; font-weight:bold;">${status}</span>
+            </div>`;
+        }).join('');
+    }
+
+    function renderProjects() {
+        document.getElementById('projectListBody').innerHTML = projects.map(p => `
+            <div style="padding:15px; border-bottom:1px solid #eee;">
+                <strong>${p.name}</strong><br><small style="color:#999;">${p.manager||'-'}</small>
+            </div>
+        `).join('');
+    }
+
     function updateStats(dk) {
         const dt = tasks.filter(t=>t.date===dk);
-        let activePeople = new Set();
-        dt.forEach(t => { if(Array.isArray(t.person)) t.person.forEach(p => activePeople.add(p)); else activePeople.add(t.person); });
-        const act = activePeople.size; const tot = users.length;
-        document.getElementById('stat-total').innerText=tot; document.getElementById('stat-active').innerText=act; document.getElementById('stat-idle').innerText=Math.max(0, tot-act);
+        let activeSet = new Set();
+        dt.forEach(t => { if(Array.isArray(t.person)) t.person.forEach(p=>activeSet.add(p)); else activeSet.add(t.person); });
+        document.getElementById('stat-total').innerText = users.length;
+        document.getElementById('stat-active').innerText = activeSet.size;
+        document.getElementById('stat-idle').innerText = Math.max(0, users.length - activeSet.size);
     }
-    
-    window.closeModal = () => document.getElementById('taskModal').style.display = 'none';
-    window.changeMonth = (d) => { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
-    function getCurrentDateStr() { const d=new Date(); return `${d.getDate()}-${d.getMonth()}-${d.getFullYear()}`; }
+
+    function loadDropdowns() {
+        if(document.getElementById('p-manager')) document.getElementById('p-manager').innerHTML = users.map(u => `<option>${u.name}</option>`).join('');
+        if(document.getElementById('t-project-select')) document.getElementById('t-project-select').innerHTML = `<option value="">Seç</option>`+projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        
+        const fillMulti = (id, arr, key) => {
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = arr.map(i => `<div class="ms-item"><input type="checkbox" value="${i[key]}">${i[key]}</div>`).join('');
+        }
+        fillMulti('ms-person', users, 'name');
+        fillMulti('ms-device', devices, 'name');
+        fillMulti('ms-plate', vehicles, 'plate');
+    }
+
+    function getMultiSelectValues(id) { return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i=>i.value); }
+
 </script>
 </body>
 </html>
