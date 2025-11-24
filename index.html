@@ -3,227 +3,289 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip (Kurtarma Sürümü)</title>
+    <title>Ekip Takip Pro (V27.1 - Final)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
     <style>
-        :root { --primary: #667eea; --secondary: #764ba2; --bg: #f3f5f9; --text: #2d3436; --nav-height: 70px; }
+        :root { --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f3f5f9; --text-main: #2d3436; --nav-height: 75px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding: 0; padding-bottom: 100px; color: var(--text); }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
 
         /* GİRİŞ EKRANI */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary), var(--secondary)); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary-grad); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         .login-box { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
         .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; background: #f9f9f9; font-size: 16px; }
-        .login-box button { width: 100%; padding: 15px; background: var(--secondary); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .login-box button { width: 100%; padding: 15px; background: #764ba2; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 10px; }
         
-        /* GENEL UI */
+        /* HEADER & NAV */
+        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header-icons { display: flex; gap: 10px; }
+        .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; }
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
+        .bottom-nav::-webkit-scrollbar { display: none; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; }
+        .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
+        .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
+
+        /* KARTLAR */
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
+        .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .hero-card { background: var(--primary-grad); border-radius: 25px; padding: 25px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3); }
+        .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
+        .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
+        
+        /* LİSTE ELEMANLARI */
+        .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .info-card.active { border-left-color: #27ae60; } 
+        .info-card.busy { border-left-color: #e74c3c; } 
+        .info-card.custody { border-left-color: #f39c12; }
+
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+        .badge-green { background: #d1fae5; color: #065f46; } 
+        .badge-red { background: #fee2e2; color: #991b1b; } 
+        .badge-orange { background: #ffedd5; color: #9a3412; } 
+        .badge-gray { background: #f3f4f6; color: #374151; }
+        
+        /* EKİP KARTI */
+        .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
+        .person-info { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
+        
+        /* TAKVİM */
+        .calendar-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .day-head { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        .day-cell { background: #f8f9fa; min-height: 80px; border-radius: 8px; padding: 4px; font-size: 0.8rem; position: relative; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; }
+        .day-cell b { align-self: center; margin-bottom: 4px; color: #333; }
+        .day-cell.today { border: 2px solid #764ba2; background: white; }
+        .task-dot { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+        /* FORM */
+        input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; }
+        .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 5px; }
+        .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; margin-left: 5px; }
+        .btn-outline-red { background: white; border: 1px solid #e74c3c; color: #e74c3c; } 
+        .btn-outline-blue { background: white; border: 1px solid #3498db; color: #3498db; }
+        
+        /* RAPOR FİLTRE */
+        .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
+        .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
+        
+        /* MODAL & PICKER */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: end; }
+        .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; }
+        #month-picker-modal { display: none; position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 300px; background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 500; padding: 15px; }
+        .year-selector { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .month-btn { padding: 10px; background: #f9f9f9; text-align: center; cursor: pointer; border-radius: 5px; font-size: 0.8rem; }
+
         .hidden { display: none !important; }
         .admin-only { display: none; }
         .view-section { display: none; animation: fadeIn 0.3s; } .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-
-        /* KARTLAR */
-        .hero-card { background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 20px; padding: 25px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3); }
-        .hero-stats { display: flex; justify-content: space-around; margin-top: 15px; text-align: center; }
-        .hero-stats span { font-size: 1.5rem; font-weight: bold; display: block; }
-        
-        .modern-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        
-        /* TAKVİM */
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .day-head { text-align: center; font-size: 0.7rem; color: #888; }
-        .day { background: #f8f9fa; min-height: 80px; border-radius: 8px; padding: 5px; font-size: 0.8rem; cursor: pointer; display: flex; flex-direction: column; }
-        .day.today { border: 2px solid var(--secondary); background: white; }
-        .task-dot { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 4px; margin-top: 2px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        /* LİSTE ELEMANLARI */
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .info-card.active { border-left-color: #27ae60; } .info-card.busy { border-left-color: #e74c3c; } .info-card.custody { border-left-color: #f39c12; }
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; }
-        .bg-green { background: #d1fae5; color: #065f46; } .bg-red { background: #fee2e2; color: #991b1b; } .bg-orange { background: #ffedd5; color: #9a3412; }
-
-        /* FORM */
-        input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; outline: none; }
-        .btn { width: 100%; padding: 12px; background: var(--secondary); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; margin-top: 5px;}
-        .btn-sm { padding: 5px 10px; font-size: 0.8rem; width: auto; border-radius: 6px; }
-
-        /* ALT MENÜ */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; height: var(--nav-height); border-top-left-radius: 20px; border-top-right-radius: 20px; display: flex; align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 1000; overflow-x: auto; padding: 0 10px; }
-        .nav-item { flex: 1; min-width: 70px; display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #999; cursor: pointer; }
-        .nav-item.active { color: var(--secondary); font-weight: bold; }
-        .nav-item span { font-size: 1.4rem; margin-bottom: 2px; }
-
-        /* MODAL */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 90%; max-width: 500px; padding: 25px; border-radius: 20px; max-height: 85vh; overflow-y: auto; }
-        
         /* Multi Select */
-        .ms-area { border: 1px solid #eee; border-radius: 10px; padding: 10px; max-height: 120px; overflow-y: auto; margin-bottom: 10px; }
-        .ms-opt { display: flex; align-items: center; margin-bottom: 5px; } .ms-opt input { width: auto; margin-right: 10px; }
-
-        /* Table */
+        .multi-select-area { background: #f9f9f9; border: 1px solid #eee; border-radius: 10px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
+        .ms-item { display: flex; align-items: center; margin-bottom: 8px; } .ms-item input { width: 20px; margin: 0 10px 0 0; }
+        
+        /* TABLO */
         .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        .log-table td { padding: 8px; border-bottom: 1px solid #eee; }
+        .log-table th { text-align: left; padding: 10px; background: #f4f6f8; }
+        .log-table td { padding: 10px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2>Ekip Takip</h2>
-        <input type="email" id="lemail" placeholder="E-Posta">
-        <input type="password" id="lpass" placeholder="Şifre">
-        <button onclick="login()">Giriş Yap</button>
-        <p onclick="document.getElementById('reg-area').classList.toggle('hidden')" style="margin-top:15px; cursor:pointer; color:#667eea;">Hesap Oluştur</p>
-        <div id="reg-area" class="hidden">
-            <input type="text" id="rname" placeholder="Ad Soyad">
-            <input type="text" id="rtitle" placeholder="Ünvan">
-            <input type="email" id="remail" placeholder="E-Posta">
-            <input type="password" id="rpass" placeholder="Şifre">
-            <button onclick="register()">Kaydol</button>
+        <h2>Ekip Takip Pro</h2>
+        <input type="email" id="loginEmail" placeholder="E-Posta">
+        <input type="password" id="loginPass" placeholder="Şifre">
+        <button onclick="handleLogin()">Giriş Yap</button>
+        <div id="loginError" style="color:red; margin-top:10px; font-size:0.8rem;"></div>
+        <p style="margin-top:20px; color:#764ba2; cursor:pointer; font-size:0.9rem;" onclick="document.getElementById('registerArea').classList.toggle('hidden')">Yeni Hesap</p>
+        <div id="registerArea" class="hidden" style="margin-top:15px;">
+            <input type="text" id="regName" placeholder="Ad Soyad">
+            <input type="text" id="regTitle" placeholder="Ünvan">
+            <input type="email" id="regEmail" placeholder="E-Posta">
+            <input type="password" id="regPass" placeholder="Şifre">
+            <button onclick="handleRegister()" style="background:#27ae60;">Kaydol</button>
         </div>
     </div>
 </div>
 
 <div id="app-screen" class="hidden">
     <div class="app-header">
-        <h3 style="margin:0;" id="user-display">Kullanıcı</h3>
-        <button class="btn btn-sm" onclick="logout()" style="background:#e74c3c;">Çıkış</button>
+        <div><small style="color:#888;">Merhaba,</small><h2 style="margin:0;" id="welcomeUser">Kullanıcı</h2></div>
+        <div class="header-icons"><button class="icon-btn" onclick="requestNotificationPermission()">🔔</button><button class="icon-btn" onclick="handleLogout()">🚪</button></div>
     </div>
 
     <div class="container">
         
-        <div id="tab-cal" class="view-section active">
+        <div id="view-calendar" class="view-section active">
             <div class="hero-card">
-                <h2 style="margin:0;" id="stats-date">Bugün</h2>
-                <div class="hero-stats">
-                    <div class="stat-item"><span id="s-total">0</span>Ekip</div>
-                    <div class="stat-item"><span id="s-active">0</span>Sahada</div>
-                    <div class="stat-item"><span id="s-idle">0</span>Boşta</div>
+                <div class="hero-stat-grid">
+                    <div class="hero-stat-item"><span id="stat-total">0</span><small>Ekip</small></div>
+                    <div class="hero-stat-item"><span id="stat-active">0</span><small>Sahada</small></div>
+                    <div class="hero-stat-item"><span id="stat-idle">0</span><small>Boşta</small></div>
                 </div>
             </div>
             <div class="modern-card">
-                <div class="cal-header">
-                    <button class="btn-sm" onclick="moveMonth(-1)">◀</button>
-                    <h3 style="margin:0;" id="month-label">Ay</h3>
-                    <button class="btn-sm" onclick="moveMonth(1)">▶</button>
+                <div class="calendar-nav-row">
+                    <button class="icon-btn" style="width:35px; height:35px;" onclick="changeMonth(-1)">◀</button>
+                    <div style="position:relative; text-align:center;">
+                        <h3 style="margin:0; cursor:pointer; text-decoration:underline;" id="monthDisplay" onclick="toggleDatePicker()">Takvim</h3>
+                        <div id="month-picker-modal">
+                            <div class="year-selector"><button onclick="changePickYear(-1)">◀</button><span id="pick-year-val">2025</span><button onclick="changePickYear(1)">▶</button></div>
+                            <div class="month-grid">
+                                <div class="month-btn" onclick="goToMonth(0)">Oca</div><div class="month-btn" onclick="goToMonth(1)">Şub</div><div class="month-btn" onclick="goToMonth(2)">Mar</div>
+                                <div class="month-btn" onclick="goToMonth(3)">Nis</div><div class="month-btn" onclick="goToMonth(4)">May</div><div class="month-btn" onclick="goToMonth(5)">Haz</div>
+                                <div class="month-btn" onclick="goToMonth(6)">Tem</div><div class="month-btn" onclick="goToMonth(7)">Ağu</div><div class="month-btn" onclick="goToMonth(8)">Eyl</div>
+                                <div class="month-btn" onclick="goToMonth(9)">Eki</div><div class="month-btn" onclick="goToMonth(10)">Kas</div><div class="month-btn" onclick="goToMonth(11)">Ara</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="icon-btn" style="width:35px; height:35px;" onclick="changeMonth(1)">▶</button>
                 </div>
-                <div class="cal-grid" id="cal-grid"></div>
+                <div class="calendar-grid" id="calendarGrid"></div>
             </div>
         </div>
 
-        <div id="tab-proj" class="view-section">
-            <div class="admin-only modern-card">
-                <h3>Yeni Proje</h3>
+        <div id="view-projects" class="view-section">
+            <div class="admin-only modern-card" id="projectFormContainer">
+                <h3 id="projectFormTitle">Yeni Proje</h3>
                 <input type="text" id="p-name" placeholder="Proje Adı">
-                <select id="p-man"></select>
-                <div style="display:flex; gap:5px;"><input type="date" id="p-start"><input type="date" id="p-end"></div>
+                <select id="p-manager"></select>
+                <div style="display:flex; gap:5px;">
+                    <div style="flex:1"><label style="font-size:0.7rem;">Başlangıç</label><input type="date" id="p-start"></div>
+                    <div style="flex:1"><label style="font-size:0.7rem;">Bitiş (Opsiyonel)</label><input type="date" id="p-end"></div>
+                </div>
                 <div style="display:flex; gap:5px;"><input type="number" id="p-cost" placeholder="Maliyet"><input type="number" id="p-offer" placeholder="Teklif"></div>
-                <button class="btn" onclick="addProj()">Kaydet</button>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-p-save" onclick="submitProject()">Kaydet</button>
+                    <button class="btn-main" id="btn-p-update" onclick="updateProjectDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-p-cancel" onclick="cancelProjectEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
             </div>
-            <div class="modern-card" id="proj-list"></div>
+            <div class="modern-card" id="projectListBody"></div>
         </div>
 
-        <div id="tab-team" class="view-section">
-            <div class="modern-card" id="team-list"></div>
+        <div id="view-team" class="view-section">
+            <div class="modern-card" id="teamListArea"></div>
         </div>
 
-        <div id="tab-dev" class="view-section">
-            <div class="admin-only modern-card">
-                <h3>Yeni Cihaz</h3>
-                <input type="text" id="d-name" placeholder="Ad">
-                <input type="text" id="d-ser" placeholder="Seri No">
-                <input type="date" id="d-cal">
-                <button class="btn" onclick="addDev()">Ekle</button>
+        <div id="view-devices" class="view-section">
+            <div class="admin-only modern-card" id="deviceFormContainer">
+                <h3 id="deviceFormTitle">Yeni Cihaz</h3>
+                <input type="text" id="d-name" placeholder="Cihaz Adı">
+                <input type="text" id="d-serial" placeholder="Seri No">
+                <label>Kalibrasyon:</label><input type="date" id="d-calib">
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-d-save" onclick="addDevice()">Ekle</button>
+                    <button class="btn-main" id="btn-d-update" onclick="updateDeviceDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-d-cancel" onclick="cancelDeviceEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
             </div>
-            <div id="dev-list"></div>
+            <div class="modern-card"><div id="deviceListArea" class="card-list"></div></div>
         </div>
 
-        <div id="tab-veh" class="view-section">
-            <div class="admin-only modern-card">
-                <h3>Yeni Araç</h3>
+        <div id="view-vehicles" class="view-section">
+            <div class="admin-only modern-card" id="vehicleFormContainer">
+                <h3 id="vehicleFormTitle">Yeni Araç</h3>
                 <input type="text" id="v-plate" placeholder="Plaka">
                 <input type="text" id="v-info" placeholder="Model">
-                <input type="date" id="v-insp">
-                <button class="btn" onclick="addVeh()">Ekle</button>
+                <label>Muayene Tarihi:</label><input type="date" id="v-inspection">
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-v-save" onclick="addVehicle()">Kaydet</button>
+                    <button class="btn-main" id="btn-v-update" onclick="updateVehicleDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-v-cancel" onclick="cancelVehicleEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
             </div>
-            <div id="veh-list"></div>
+            <div class="modern-card"><div id="vehicleListArea" class="card-list"></div></div>
         </div>
 
-        <div id="tab-user" class="view-section admin-only">
-            <div class="modern-card">
-                <h3>Kullanıcı Ekle</h3>
-                <input type="text" id="u-name" placeholder="Ad">
+        <div id="view-users" class="view-section">
+            <div class="admin-only modern-card">
+                <h3 id="userFormTitle">Kullanıcı Yönetimi</h3>
+                <input type="text" id="u-name" placeholder="Ad Soyad">
                 <input type="text" id="u-title" placeholder="Ünvan">
                 <input type="email" id="u-email" placeholder="E-Posta">
                 <select id="u-role"><option value="staff">Personel</option><option value="admin">Yönetici</option></select>
-                <button class="btn" onclick="addUser()">Ekle</button>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-user-add" onclick="addUserToDB()">Ekle</button>
+                    <button class="btn-main" id="btn-user-update" onclick="updateUserDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-user-cancel" onclick="cancelUserEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
             </div>
-            <div class="modern-card" id="user-list"></div>
+            <div class="modern-card" id="userListArea"></div>
         </div>
 
-        <div id="tab-rep" class="view-section admin-only">
+        <div id="view-reports" class="view-section">
             <div class="modern-card">
-                <label>Ay Seç:</label>
-                <input type="month" id="r-date" onchange="renderLogs()">
+                <label>Dönem:</label>
+                <input type="month" id="reportDateSelector" onchange="filterReports()" style="width:100%;">
             </div>
             <div class="modern-card">
                 <h3>Zimmet Geçmişi</h3>
-                <div style="max-height:300px; overflow-y:auto;"><table class="log-table" id="log-table"></table></div>
+                <div class="report-filters" style="display:flex; gap:5px; margin-bottom:10px;">
+                    <button class="filter-btn active" onclick="setReportFilter('all', this)">Tümü</button>
+                    <button class="filter-btn" onclick="setReportFilter('vehicle', this)">Araç</button>
+                    <button class="filter-btn" onclick="setReportFilter('device', this)">Cihaz</button>
+                </div>
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table class="log-table" id="logTable" style="width:100%; font-size:0.8rem;"></table>
+                </div>
             </div>
-            <div class="modern-card">
-                <h3>Çalışma Günleri</h3>
-                <table class="log-table" id="eff-table"></table>
+             <div class="modern-card">
+                <h3>Personel Aylık Çalışma Gün Sayısı</h3>
+                <table class="log-table" id="personnelReportTable" style="width:100%;"><tbody id="personnelReportBody"></tbody></table>
             </div>
         </div>
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="goTab('cal')"><span>📅</span>Takvim</div>
-        <div class="nav-item" onclick="goTab('proj')"><span>📂</span>Proje</div>
-        <div class="nav-item" onclick="goTab('team')"><span>👥</span>Ekip</div>
-        <div class="nav-item" onclick="goTab('veh')"><span>🚗</span>Araç</div>
-        <div class="nav-item" onclick="goTab('dev')"><span>🧰</span>Cihaz</div>
-        <div class="nav-item admin-only" onclick="goTab('user')"><span>⚙️</span>Yetki</div>
-        <div class="nav-item admin-only" onclick="goTab('rep')"><span>📊</span>Rapor</div>
+        <div class="nav-item active" onclick="switchTab('calendar')"><span class="icon">📅</span>Takvim</div>
+        <div class="nav-item" onclick="switchTab('projects')"><span class="icon">📂</span>Proje</div>
+        <div class="nav-item" onclick="switchTab('team')"><span class="icon">👥</span>Ekip</div>
+        <div class="nav-item" onclick="switchTab('vehicles')"><span class="icon">🚗</span>Araç</div>
+        <div class="nav-item" onclick="switchTab('devices')"><span class="icon">🧰</span>Cihaz</div>
+        <div class="nav-item admin-only" onclick="switchTab('users')"><span class="icon">⚙️</span>Yetki</div>
+        <div class="nav-item admin-only" onclick="switchTab('reports')"><span class="icon">📊</span>Rapor</div>
     </div>
 </div>
 
-<div class="modal" id="taskModal">
-    <div class="modal-content">
-        <h3>Görevler <span onclick="document.getElementById('taskModal').style.display='none'" style="float:right;cursor:pointer;">✕</span></h3>
-        <p id="tm-date"></p>
-        <div id="tm-list" style="margin-bottom:15px;"></div>
-        <div class="admin-only">
-            <hr>
-            <h4>Atama Yap</h4>
-            <label>Personel:</label><div class="ms-area" id="ms-per"></div>
-            <label>Proje:</label><select id="t-proj"></select>
-            <input type="text" id="t-loc" placeholder="Konum">
-            <label>Araç:</label><div class="ms-area" id="ms-veh"></div>
-            <label>Cihaz:</label><div class="ms-area" id="ms-dev"></div>
-            <button class="btn" onclick="saveTask()">Kaydet</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="custodyModal">
-    <div class="modal-content">
+<div class="modal-overlay" id="custodyModal" onclick="if(event.target===this) closeCustodyModal()">
+    <div class="modal-card">
         <h3>Zimmetle</h3>
-        <p id="cm-name"></p>
-        <select id="c-per"></select>
-        <button class="btn" onclick="saveCustody()">Kaydet</button>
-        <button class="btn" style="background:#ccc" onclick="document.getElementById('custodyModal').style.display='none'">İptal</button>
+        <p id="custodyItemName" style="color:#666;"></p>
+        <label>Personel Seç:</label><select id="c-person"></select>
+        <button class="btn-main" onclick="saveCustody()">Kaydet</button>
+        <button class="btn-main" onclick="closeCustodyModal()" style="background:#95a5a6; margin-top:10px;">İptal</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="taskModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;"><h2>Görevler</h2><span onclick="closeModal()" style="font-size:1.5rem; cursor:pointer;">✕</span></div>
+        <p id="modalDateText"></p>
+        <div id="dayTaskList" style="margin-bottom:20px;"></div>
+        <div class="admin-only">
+            <h3>Yeni Atama</h3>
+            <label>Personel</label><div class="multi-select-area" id="ms-person"></div>
+            <label>Proje</label><select id="t-project-select"></select>
+            <input type="text" id="t-loc" placeholder="Konum">
+            <label>Araçlar</label><div class="multi-select-area" id="ms-plate"></div>
+            <label>Cihazlar</label><div class="multi-select-area" id="ms-device"></div>
+            <div id="conflictWarning" style="color:red; font-size:0.8rem; margin:10px 0;"></div>
+            <button class="btn-main" onclick="saveTask()">Kaydet</button>
+        </div>
     </div>
 </div>
 
@@ -232,6 +294,7 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // --- FIREBASE ANAHTARLARI (GİRİLMİŞ) ---
     const firebaseConfig = {
       apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY",
       authDomain: "ekiptakipapp.firebaseapp.com",
@@ -246,24 +309,34 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let users=[], projects=[], tasks=[], vehicles=[], devices=[], logs=[];
-    let curUser, role='staff', curDate=new Date(), selDate;
-    let custodyId, custodyType;
+    // ONESIGNAL
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.init({ appId: "08d90e98-c6b4-429c-aab5-f11164ddc881" });
+    });
+
+    let projects=[], tasks=[], users=[], vehicles=[], devices=[], logs=[];
+    let currentUser=null, userRole='staff';
+    let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), isFirstLoad=true;
+    let pickerYear = new Date().getFullYear(), editingUserEmail=null, editingVehicleId=null, editingDeviceId=null, editingProjectId=null;
+    let custodyTargetId = null, custodyType = null;
+    let currentReportFilter = 'all', currentReportDate = new Date().toISOString().slice(0, 7);
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            const u = await getDoc(doc(db, "users", user.email));
-            if (u.exists()) {
-                curUser=u.data(); role=curUser.role;
-                document.getElementById('welcomeUser').innerText = curUser.name.split(' ')[0];
-                document.querySelectorAll('.admin-only').forEach(e=>e.style.display=(role==='admin'?'block':'none'));
-                document.querySelectorAll('.nav-item.admin-only').forEach(e=>e.style.display=(role==='admin'?'flex':'none'));
+            const userDoc = await getDoc(doc(db, "users", user.email));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                currentUser = userData; userRole = userData.role;
+                document.getElementById('welcomeUser').innerText = userData.name.split(' ')[0];
+                applyPermissions();
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
-                document.getElementById('r-date').value = new Date().toISOString().slice(0,7);
-                startData();
+                OneSignalDeferred.push(function(OneSignal) { OneSignal.login(user.email); });
+                document.getElementById('reportDateSelector').value = currentReportDate;
+                startListeners();
             } else {
-                await setDoc(doc(db,"users",user.email),{name:"Yönetici",email:user.email,role:"admin"});
+                await setDoc(doc(db, "users", user.email), { name: "Yönetici", email: user.email, role: 'admin' });
                 window.location.reload();
             }
         } else {
@@ -272,142 +345,213 @@
         }
     });
 
-    window.login = () => signInWithEmailAndPassword(auth, document.getElementById('lemail').value, document.getElementById('lpass').value).catch(e=>alert(e.message));
-    window.logout = () => signOut(auth).then(()=>window.location.reload());
-    window.register = async () => {
+    window.handleLogin = () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        signInWithEmailAndPassword(auth, email, pass).catch(err => document.getElementById('loginError').innerText = err.message);
+    };
+    window.handleLogout = () => { signOut(auth); window.location.reload(); };
+    window.toggleRegister = () => { document.getElementById('registerArea').classList.toggle('hidden'); }
+    window.handleRegister = async () => {
+        const name = document.getElementById('regName').value;
+        const title = document.getElementById('regTitle').value;
+        const email = document.getElementById('regEmail').value;
+        const pass = document.getElementById('regPass').value;
         try {
-            const em=document.getElementById('remail').value;
-            await createUserWithEmailAndPassword(auth, em, document.getElementById('rpass').value);
-            await setDoc(doc(db,"users",em), {name:document.getElementById('rname').value, title:document.getElementById('rtitle').value, email:em, role:'admin'});
-        } catch(e){alert(e.message)}
+            await createUserWithEmailAndPassword(auth, email, pass);
+            await setDoc(doc(db, "users", email), { name, title, email, role: 'admin' });
+        } catch (err) { alert(err.message); }
+    };
+
+    function applyPermissions() {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = (userRole === 'admin') ? 'block' : 'none');
+        document.querySelectorAll('.nav-item.admin-only').forEach(el => el.style.display = (userRole === 'admin') ? 'flex' : 'none');
     }
 
-    function startData() {
-        const load = (c, arr, cb) => onSnapshot(collection(db, c), s => { arr.length=0; s.forEach(d=>arr.push({id:d.id,...d.data()})); if(cb)cb(); loadDrops(); });
-        load("users", users, renderUsers);
-        load("projects", projects, renderProjects);
-        load("vehicles", vehicles, renderVehicles);
-        load("devices", devices, renderDevices);
-        
-        onSnapshot(query(collection(db, "logs"), orderBy("date", "desc"), limit(100)), s=>{ logs=[]; s.forEach(d=>logs.push(d.data())); renderLogs(); });
+    window.requestNotificationPermission = () => {
+        if (!("Notification" in window)) return alert("Desteklenmiyor");
+        Notification.requestPermission().then(perm => { if (perm === "granted") alert("Bildirimler Açık! 🔔"); });
+    };
 
-        onSnapshot(collection(db, "tasks"), s => {
-            tasks=[]; s.forEach(d=>tasks.push({id:d.id,...d.data()}));
-            renderCal(); renderTeam(); updateStats(new Date().toISOString().split('T')[0]); renderLogs();
+    function startListeners() {
+        const load = (col, arr, cb) => onSnapshot(collection(db, col), (s) => { 
+            arr.length=0; s.docs.forEach(d=>arr.push({id:d.id, ...d.data()})); 
+            if(cb) cb(); loadDropdowns();
+        });
+        load("projects", projects, renderProjects);
+        load("vehicles", vehicles, renderVehicleList);
+        load("devices", devices, renderDeviceList);
+        onSnapshot(collection(db, "users"), (s) => { users=[]; s.docs.forEach(d=>users.push(d.data())); renderTeamStatus(); renderUserList(); loadDropdowns(); });
+        
+        const logsQuery = query(collection(db, "logs"), orderBy("date", "desc"), limit(500));
+        onSnapshot(logsQuery, (s) => { logs = []; s.docs.forEach(d => logs.push(d.data())); filterReports(); });
+
+        onSnapshot(collection(db, "tasks"), (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added" && !isFirstLoad) {
+                    const data = change.doc.data();
+                    const isForMe = Array.isArray(data.person) ? data.person.includes(currentUser.name) : data.person === currentUser.name;
+                    if (isForMe && Notification.permission === "granted") sendOneSignalNotification([currentUser.email], `Yeni görev: ${data.projectName}`);
+                }
+            });
+            tasks=[]; snapshot.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
+            renderCalendar();
+            if(document.querySelector('.modal-overlay').style.display === 'flex') openModalLogic(selectedDateStr);
+            updateStats(getCurrentDateStr()); renderTeamStatus(); renderDeviceList(); filterReports();
+            isFirstLoad = false;
         });
     }
 
-    // TABS
-    window.goTab = (t) => {
-        document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
-        document.getElementById('tab-'+t).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
-        event.currentTarget.classList.add('active');
+    // YENİ REST API KEY GİRİLDİ
+    async function sendOneSignalNotification(userEmails, message) {
+        const ONESIGNAL_APP_ID = "08d90e98-c6b4-429c-aab5-f11164ddc881";
+        const REST_API_KEY = "os_v2_app_bdmq5gggwrbjzkvv6eiwjxoiqfdusl6xjs3ej45uxfpqouat22pacfo2jydfmyjfy4yti7xbfsrpk24f6gbptzzfmayrp27sr72ulnq";
+
+        const options = {
+            method: 'POST',
+            headers: { accept: 'application/json', 'Authorization': 'Basic ' + REST_API_KEY, 'content-type': 'application/json' },
+            body: JSON.stringify({
+                app_id: ONESIGNAL_APP_ID,
+                include_aliases: { "external_id": userEmails },
+                target_channel: "push",
+                contents: { "en": message, "tr": message },
+                headings: { "en": "Yeni Görev", "tr": "Görev Atandı 🚀" }
+            })
+        };
+        try { await fetch('https://onesignal.com/api/v1/notifications', options); } catch (e) { console.log(e); }
     }
 
-    // CALENDAR
-    window.moveMonth = (m) => { curDate.setMonth(curDate.getMonth()+m); renderCal(); }
-    function renderCal() {
-        const m=curDate.getMonth(), y=curDate.getFullYear();
-        document.getElementById('monthDisplay').innerText = `${m+1}/${y}`;
-        const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
-        let h = ""; for(let i=0; i<(first===0?6:first-1); i++) h+=`<div></div>`;
-        const today = new Date().toISOString().split('T')[0];
-        for(let d=1; d<=days; d++) {
-            const dk = `${d}-${m}-${y}`;
-            const dt = tasks.filter(t=>t.date===dk);
-            let dots=""; dt.forEach(t=>{ if(Array.isArray(t.person)) t.person.forEach(p=>dots+=`<span class="task-dot">${p}</span>`); else dots+=`<span class="task-dot">${t.person}</span>`; });
-            h+=`<div class="day-cell ${dk===today?'today':''}" onclick="openModal('${dk}')"><b>${d}</b>${dots}</div>`;
-        }
-        document.getElementById('calGrid').innerHTML = h;
+    async function addLog(type, item, action, person) {
+        await addDoc(collection(db, "logs"), { date: new Date().toISOString(), type: type, item: item, action: action, person: person, admin: currentUser.name });
     }
-    window.openModal = (dk) => {
-        selDate=dk; document.getElementById('tm-date').innerText=dk;
-        const dt=tasks.filter(t=>t.date===dk);
-        document.getElementById('tm-list').innerHTML = dt.map(t=>`
-            <div style="padding:10px; background:#f9f9f9; border-radius:8px; margin-bottom:5px;">
-                <strong>${Array.isArray(t.person)?t.person.join(', '):t.person}</strong><br>${t.projectName}
-                ${role==='admin'?`<button onclick="delTask('${t.id}')" style="float:right; color:red; border:none;">🗑</button>`:''}
-            </div>`).join('') || 'Görev Yok';
-        document.getElementById('taskModal').style.display='flex';
-    }
-
-    // CRUD
-    window.saveTask = async () => {
-        const per = getMulti('ms-per'), dev = getMulti('ms-dev'), veh = getMulti('ms-veh');
-        const pid = document.getElementById('t-proj').value;
-        if(!pid || per.length===0) return alert("Eksik");
-        const pn = projects.find(p=>p.id===pid).name;
-        await addDoc(collection(db,"tasks"), { date:selDate, person:per, projectName:pn, projectId:pid, location:document.getElementById('t-loc').value, device:dev, plate:veh });
-        document.getElementById('taskModal').style.display='none';
-    }
-    window.delTask = (id) => deleteDoc(doc(db,"tasks",id)).then(()=>document.getElementById('taskModal').style.display='none');
+    window.setReportFilter = (filter, btn) => { currentReportFilter = filter; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); filterReports(); }
+    window.filterReports = () => { currentReportDate = document.getElementById('reportDateSelector').value; renderLogs(); renderPersonnelReport(); }
     
-    window.addProj = () => addDoc(collection(db,"projects"),{name:document.getElementById('p-name').value, manager:document.getElementById('p-man').value, start:document.getElementById('p-start').value, end:document.getElementById('p-end').value, cost:document.getElementById('p-cost').value, offer:document.getElementById('p-offer').value}).then(()=>document.getElementById('p-name').value="");
-    window.addVeh = () => addDoc(collection(db,"vehicles"),{plate:document.getElementById('v-plate').value, info:document.getElementById('v-info').value, inspectionDate:document.getElementById('v-insp').value, currentHolder:null}).then(()=>document.getElementById('v-plate').value="");
-    window.addDev = () => addDoc(collection(db,"devices"),{name:document.getElementById('d-name').value, serial:document.getElementById('d-ser').value, calib:document.getElementById('d-cal').value, currentHolder:null}).then(()=>document.getElementById('d-name').value="");
-    window.addUser = () => setDoc(doc(db,"users",document.getElementById('u-email').value),{name:document.getElementById('u-name').value, title:document.getElementById('u-title').value, email:document.getElementById('u-email').value, role:document.getElementById('u-role').value}).then(()=>alert("Eklendi"));
-
-    // ZIMMET
-    window.openCustody = (type, id, name) => { custodyType=type; custodyId=id; document.getElementById('cm-name').innerText=name; document.getElementById('custodyModal').style.display='flex'; }
-    window.saveCustody = async () => {
-        const p = document.getElementById('c-per').value;
-        await updateDoc(doc(db, custodyType==='vehicle'?'vehicles':'devices', custodyId), {currentHolder:p});
-        await addDoc(collection(db,"logs"), {date:new Date().toISOString(), type:custodyType, item:document.getElementById('cm-name').innerText, action:'take', person:p, admin:curUser.name});
-        document.getElementById('custodyModal').style.display='none';
-    }
-    window.dropItem = async (col, id, name) => {
-        if(confirm("İade?")) {
-            await updateDoc(doc(db,col,id), {currentHolder:null});
-            await addDoc(collection(db,"logs"), {date:new Date().toISOString(), type:col, item:name, action:'return', person:'-', admin:curUser.name});
-        }
-    }
-
-    // RENDERS
-    function renderProjects() { document.getElementById('projectList').innerHTML=projects.map(p=>`<div class="info-card"><strong>${p.name}</strong> (${p.start||'-'})<br><small>${p.manager}</small></div>`).join(''); }
-    function renderVehicles() { document.getElementById('veh-list').innerHTML=vehicles.map(v=>`<div class="info-card ${v.currentHolder?'custody':'active'}"><div><strong>${v.plate}</strong> ${v.info}</div>${v.currentHolder?`<span class="badge bg-orange">${v.currentHolder}</span> ${role==='admin'?`<button class="btn-sm btn-outline-red" onclick="dropItem('vehicles','${v.id}','${v.plate}')">İade</button>`:''}` : (role==='admin'?`<button class="btn-sm btn-outline-blue" onclick="openCustody('vehicle','${v.id}','${v.plate}')">Ver</button>`:'<span class="badge bg-green">BOŞTA</span>')}</div>`).join(''); }
-    function renderDevices() { document.getElementById('dev-list').innerHTML=devices.map(d=>`<div class="info-card ${d.currentHolder?'custody':'active'}"><div><strong>${d.name}</strong> (${d.serial})</div>${d.currentHolder?`<span class="badge bg-orange">${d.currentHolder}</span> ${role==='admin'?`<button class="btn-sm btn-outline-red" onclick="dropItem('devices','${d.id}','${d.name}')">İade</button>`:''}` : (role==='admin'?`<button class="btn-sm btn-outline-blue" onclick="openCustody('device','${d.id}','${d.name}')">Ver</button>`:'<span class="badge bg-green">BOŞTA</span>')}</div>`).join(''); }
-    function renderUsers() { document.getElementById('userList').innerHTML=users.map(u=>`<div class="info-card"><strong>${u.name}</strong> <small>${u.title||''}</small><br>${u.email}</div>`).join(''); }
-    
-    function renderTeam() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('teamList').innerHTML=users.map(u=>{
-            const dt = tasks.filter(t=>t.date===today);
-            const at = dt.find(t=>Array.isArray(t.person)?t.person.includes(u.name):t.person===u.name);
-            return `<div class="person-row"><div style="display:flex;align-items:center;"><div class="avatar">${u.name.charAt(0)}</div><strong>${u.name}</strong></div><span class="badge ${at?'bg-green':'bg-gray'}">${at?'SAHADA':'BOŞTA'}</span></div>`;
+    function renderLogs() {
+        const table = document.getElementById('logTable');
+        const filteredLogs = logs.filter(l => {
+            const logMonth = l.date.substring(0, 7); const typeMatch = currentReportFilter === 'all' || l.type === currentReportFilter;
+            return logMonth === currentReportDate && typeMatch;
+        });
+        if (filteredLogs.length === 0) { table.innerHTML = '<tr><td>Kayıt yok.</td></tr>'; return; }
+        table.innerHTML = filteredLogs.map(l => {
+            const d = new Date(l.date);
+            const dateStr = `${d.getDate()}.${d.getMonth()+1} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+            const actionClass = l.action === 'take' ? 'action-take' : 'action-return';
+            const actionText = l.action === 'take' ? 'Teslim Aldı' : 'İade Etti';
+            const icon = l.type === 'vehicle' ? '🚗' : '🧰';
+            return `<tr><td><span class="log-date">${dateStr}</span></td><td>${icon} <strong>${l.person}</strong><br>${l.item} <span class="log-action ${actionClass}">${actionText}</span></td></tr>`;
         }).join('');
     }
-    function updateStats() {
-        const today = new Date().toISOString().split('T')[0];
-        const dt = tasks.filter(t=>t.date===today);
-        let act=0; dt.forEach(t=>{ if(Array.isArray(t.person)) act+=t.person.length; else act++; });
-        document.getElementById('s-total').innerText=users.length; document.getElementById('s-active').innerText=act; document.getElementById('s-idle').innerText=Math.max(0,users.length-act);
-    }
-    function renderLogs() {
-        const ym = document.getElementById('r-date').value; 
-        if(!ym) return;
-        const fl = logs.filter(l=>l.date.startsWith(ym));
-        document.getElementById('log-table').innerHTML = fl.map(l=>`<tr><td>${l.date.slice(0,10)}</td><td>${l.person} ${l.action==='take'?'Aldı':'Verdi'}: ${l.item}</td></tr>`).join('');
-        
-        // Efor
-        const cnt={}; users.forEach(u=>cnt[u.name]=0);
-        tasks.forEach(t=>{
-            if(t.date.startsWith(ym.split('-')[1])) { // Basit tarih kontrolü
-                 if(Array.isArray(t.person)) t.person.forEach(p=>{if(cnt[p]!==undefined)cnt[p]++}); else if(cnt[t.person]!==undefined)cnt[t.person]++;
+    function renderPersonnelReport() {
+        const [year, month] = currentReportDate.split('-').map(Number);
+        const reportData = {}; users.forEach(u => reportData[u.name] = 0);
+        tasks.forEach(t => {
+            const tDate = parseDateStr(t.date);
+            if (tDate.getFullYear() === year && tDate.getMonth() === (month - 1)) {
+                if (Array.isArray(t.person)) t.person.forEach(p => { if(reportData[p] !== undefined) reportData[p]++; });
+                else if(reportData[t.person] !== undefined) reportData[t.person]++;
             }
         });
-        document.getElementById('eff-table').innerHTML=Object.keys(cnt).map(k=>`<tr><td>${k}</td><td>${cnt[k]} Gün</td></tr>`).join('');
+        document.getElementById('personnelReportBody').innerHTML = Object.keys(reportData).map(key => `<tr><td>${key}</td><td style="font-weight:bold;">${reportData[key]} Gün</td></tr>`).join('');
     }
 
-    // DROPDOWNS
-    function loadDrops() {
-        const sel = (id, arr) => { if(document.getElementById(id)) document.getElementById(id).innerHTML=arr.map(x=>`<option>${x.name}</option>`).join(''); }
-        const ms = (id, arr, k) => { if(document.getElementById(id)) document.getElementById(id).innerHTML=arr.map(x=>`<div class="ms-opt"><input type="checkbox" value="${x[k]}">${x[k]}</div>`).join(''); }
-        sel('p-man', users); sel('c-per', users);
-        ms('ms-per', users, 'name'); ms('ms-veh', vehicles, 'plate'); ms('ms-dev', devices, 'name');
-        if(document.getElementById('t-proj')) document.getElementById('t-proj').innerHTML=`<option value="">Seç</option>`+projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+    window.openCustodyModal = (type, id, name, extra) => {
+        custodyType = type; custodyTargetId = id;
+        document.getElementById('custodyItemName').innerText = `${name} (${extra||''})`;
+        document.getElementById('c-person').innerHTML = users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+        document.getElementById('custodyModal').style.display = 'flex';
     }
-    function getMulti(id){return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i=>i.value);}
+    window.closeCustodyModal = () => document.getElementById('custodyModal').style.display = 'none';
+    window.saveCustody = async () => {
+        const person = document.getElementById('c-person').value;
+        const collectionName = custodyType === 'vehicle' ? 'vehicles' : 'devices';
+        await updateDoc(doc(db, collectionName, custodyTargetId), { currentHolder: person });
+        const itemName = document.getElementById('custodyItemName').innerText;
+        await addLog(custodyType, itemName, 'take', person);
+        closeCustodyModal();
+    }
+    window.returnItem = async (type, id) => {
+        if(confirm("İade?")) {
+            const collectionName = type === 'vehicle' ? 'vehicles' : 'devices';
+            let prevHolder = "Bilinmiyor";
+            const itemDoc = type === 'vehicle' ? vehicles.find(v=>v.id===id) : devices.find(d=>d.id===id);
+            if(itemDoc) prevHolder = itemDoc.currentHolder;
+            await updateDoc(doc(db, collectionName, id), { currentHolder: null });
+            let itemDetail = itemDoc ? (type==='vehicle' ? `${itemDoc.plate}` : `${itemDoc.name}`) : '';
+            await addLog(type, itemDetail, 'return', prevHolder);
+        }
+    }
+
+    window.saveTask = async () => {
+        const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
+        const projVal = document.getElementById('t-project-select').value;
+        if(!projVal || per.length===0) return alert("Eksik seçim");
+
+        let conflictMsg = "";
+        dev.forEach(dName => {
+            const deviceObj = devices.find(d => d.name === dName);
+            if (deviceObj && deviceObj.currentHolder && !per.includes(deviceObj.currentHolder)) {
+                conflictMsg += `⚠️ ${dName} cihazı şu an ${deviceObj.currentHolder} zimmetinde!\n`;
+            }
+        });
+        if (conflictMsg && !confirm(`DİKKAT:\n${conflictMsg}\nYine de atamak istiyor musunuz?`)) return;
+
+        const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
+        await addDoc(collection(db, "tasks"), { date: selectedDateStr, person: per, projectName: projName, projectId: projVal, location: document.getElementById('t-loc').value, device: dev, plate: plate });
+        document.getElementById('t-loc').value=""; document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false);
+        const targetEmails = users.filter(u => per.includes(u.name)).map(u => u.email);
+        if(targetEmails.length > 0) sendOneSignalNotification(targetEmails, `${selectedDateStr}: ${projName} projesindesin.`);
+    }
+    window.delTask = async (id) => { if(confirm("Sil?")) await deleteDoc(doc(db, "tasks", id)); }
+
+    window.addVehicle=async()=>{const p=document.getElementById('v-plate').value,i=document.getElementById('v-info').value,ins=document.getElementById('v-inspection').value; if(!p)return; await addDoc(collection(db,"vehicles"),{plate:p,info:i,inspectionDate:ins,currentHolder:null}); resetVehicleForm();}
+    window.updateVehicleDB=async()=>{await updateDoc(doc(db,"vehicles",editingVehicleId),{plate:document.getElementById('v-plate').value,info:document.getElementById('v-info').value,inspectionDate:document.getElementById('v-inspection').value}); resetVehicleForm();}
+    window.editVehicle=(id)=>{const v=vehicles.find(x=>x.id===id); if(!v)return; document.getElementById('v-plate').value=v.plate; document.getElementById('v-info').value=v.info; document.getElementById('v-inspection').value=v.inspectionDate||""; editingVehicleId=id; document.getElementById('vehicleFormTitle').innerText="Düzenle"; document.getElementById('btn-v-save').style.display='none'; document.getElementById('btn-v-update').style.display='block'; document.getElementById('btn-v-cancel').style.display='block';}
+    window.cancelVehicleEdit=resetVehicleForm;
+    function resetVehicleForm(){editingVehicleId=null; document.getElementById('v-plate').value=""; document.getElementById('v-info').value=""; document.getElementById('v-inspection').value=""; document.getElementById('vehicleFormTitle').innerText="Yeni Araç Ekle"; document.getElementById('btn-v-save').style.display='block'; document.getElementById('btn-v-update').style.display='none'; document.getElementById('btn-v-cancel').style.display='none';}
+    window.deleteVehicle=async(id)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"vehicles",id));}
+    function renderVehicleList(){document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => { let inspHtml = v.inspectionDate ? (new Date(v.inspectionDate) < new Date() ? `<small style="color:red; display:block;">⚠️ Muayene: ${v.inspectionDate}</small>` : `<small style="color:#666;">📅 Muayene: ${v.inspectionDate}</small>`) : ""; let zimmetHtml = v.currentHolder ? `<div style="margin-top:5px;"><span class="badge badge-orange">👤 ${v.currentHolder}</span> ${userRole==='admin'?`<button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade Al</button>`:''}</div>` : (userRole==='admin' ? `<div style="margin-top:5px;"><button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}','${v.info}')">Zimmetle</button></div>` : ''); return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small>${inspHtml}</div>${userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div>${zimmetHtml}</div>`; }).join('');}
+
+    window.addDevice=async()=>{const n=document.getElementById('d-name').value; if(!n)return; await addDoc(collection(db,"devices"),{name:n,serial:document.getElementById('d-serial').value,calib:document.getElementById('d-calib').value,currentHolder:null}); document.getElementById('d-name').value="";document.getElementById('d-serial').value="";document.getElementById('d-calib').value="";}
+    window.updateDeviceDB=async()=>{await updateDoc(doc(db,"devices",editingDeviceId),{name:document.getElementById('d-name').value,serial:document.getElementById('d-serial').value,calib:document.getElementById('d-calib').value}); resetDeviceForm();}
+    window.editDevice=(id)=>{const d=devices.find(x=>x.id===id); if(!d)return; document.getElementById('d-name').value=d.name; document.getElementById('d-serial').value=d.serial; document.getElementById('d-calib').value=d.calib||""; editingDeviceId=id; document.getElementById('deviceFormTitle').innerText="Düzenle"; document.getElementById('btn-d-save').style.display='none'; document.getElementById('btn-d-update').style.display='block'; document.getElementById('btn-d-cancel').style.display='block';}
+    window.cancelDeviceEdit=resetDeviceForm;
+    function resetDeviceForm(){editingDeviceId=null; document.getElementById('d-name').value=""; document.getElementById('d-serial').value=""; document.getElementById('d-calib').value=""; document.getElementById('deviceFormTitle').innerText="Yeni Cihaz Ekle"; document.getElementById('btn-d-save').style.display='block'; document.getElementById('btn-d-update').style.display='none'; document.getElementById('btn-d-cancel').style.display='none';}
+    window.deleteDevice=async(id)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"devices",id));}
+    function renderDeviceList(){document.getElementById('deviceListArea').innerHTML = devices.map(d => { let statusBadge = `<span class="badge badge-green">BOŞTA</span>`, zimmetHtml = ""; if(d.currentHolder) { statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; } else if(userRole==='admin') { zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; } const todayStr = getCurrentDateStr(), dt = tasks.filter(t=>t.date===todayStr), at = dt.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name); if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`; let calibHtml = d.calib ? `<br><small style="color:${new Date(d.calib) < new Date() ? 'red' : '#666'}">Kalibrasyon: ${d.calib}</small>` : ""; return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small>${calibHtml}</div>${userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; }).join('');}
+
+    window.addUserToDB=async()=>{const n=document.getElementById('u-name').value,e=document.getElementById('u-email').value,r=document.getElementById('u-role').value; if(!n)return; await setDoc(doc(db,"users",e),{name:n,email:e,role:r,title:document.getElementById('u-title').value}); alert("Ok");}
+    window.editUser=(e)=>{const u=users.find(x=>x.email===e); if(!u)return; document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title||''; document.getElementById('u-email').value=u.email; document.getElementById('u-email').disabled=true; document.getElementById('u-role').value=u.role; editingUserEmail=e; document.getElementById('userFormTitle').innerText="Düzenle"; document.getElementById('btn-user-add').style.display='none'; document.getElementById('btn-user-update').style.display='block'; document.getElementById('btn-user-cancel').style.display='block';}
+    window.updateUserDB=async()=>{await updateDoc(doc(db,"users",editingUserEmail),{name:document.getElementById('u-name').value,title:document.getElementById('u-title').value,role:document.getElementById('u-role').value}); cancelUserEdit();}
+    window.cancelUserEdit=()=>{editingUserEmail=null; document.getElementById('u-name').value=""; document.getElementById('u-title').value=""; document.getElementById('u-email').value=""; document.getElementById('u-email').disabled=false; document.getElementById('userFormTitle').innerText="Yeni Kullanıcı"; document.getElementById('btn-user-add').style.display='block'; document.getElementById('btn-user-update').style.display='none'; document.getElementById('btn-user-cancel').style.display='none';}
+    window.deleteUser=async(e)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"users",e));}
+    function renderUserList(){document.getElementById('userListArea').innerHTML=users.map(u=>`<div class="user-card" style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small></div><div><span class="badge badge-gray">${u.role}</span>${userRole==='admin' ? `<button onclick="editUser('${u.email}')" style="border:none; bg:none; margin-right:5px;">✎</button><button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>` : ''}</div></div>`).join('');}
+    
+    window.submitProject=async()=>{const n=document.getElementById('p-name').value; if(!n)return; await addDoc(collection(db,"projects"),{name:n,manager:document.getElementById('p-manager').value,start:document.getElementById('p-start').value,end:document.getElementById('p-end').value,cost:document.getElementById('p-cost').value,offer:document.getElementById('p-offer').value}); document.getElementById('p-name').value="";}
+    window.updateProjectDB=async()=>{await updateDoc(doc(db,"projects",editingProjectId),{name:document.getElementById('p-name').value,manager:document.getElementById('p-manager').value,start:document.getElementById('p-start').value,end:document.getElementById('p-end').value,cost:document.getElementById('p-cost').value,offer:document.getElementById('p-offer').value}); cancelProjectEdit();}
+    window.editProject=(id)=>{const p=projects.find(x=>x.id===id); if(!p)return; document.getElementById('p-name').value=p.name; document.getElementById('p-manager').value=p.manager; document.getElementById('p-start').value=p.start||""; document.getElementById('p-end').value=p.end||""; document.getElementById('p-cost').value=p.cost; document.getElementById('p-offer').value=p.offer; editingProjectId=id; document.getElementById('projectFormTitle').innerText="Proje Düzenle"; document.getElementById('btn-p-save').style.display='none'; document.getElementById('btn-p-update').style.display='block'; document.getElementById('btn-p-cancel').style.display='block';}
+    window.cancelProjectEdit=()=>{editingProjectId=null; document.getElementById('p-name').value=""; document.getElementById('p-cost').value=""; document.getElementById('p-offer').value=""; document.getElementById('p-start').value=""; document.getElementById('p-end').value=""; document.getElementById('projectFormTitle').innerText="Yeni Proje"; document.getElementById('btn-p-save').style.display='block'; document.getElementById('btn-p-update').style.display='none'; document.getElementById('btn-p-cancel').style.display='none';}
+    window.deleteProject=async(id)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"projects",id));}
+    function renderProjects(){document.getElementById('projectListBody').innerHTML=projects.map(p=>{const pf=p.offer-p.cost; return `<div style="padding:15px; border-bottom:1px solid #eee;"><strong>${p.name}</strong> (${p.start||'-'} / ${p.end||'?'})<br><small>${p.manager||'-'} | Kar: ${pf}</small> ${userRole==='admin' ? `<div style="float:right;"><button onclick="editProject('${p.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteProject('${p.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div>`;}).join('');}
+    
+    function renderTeamStatus(){const todayStr=getCurrentDateStr(); const todayDate=parseDateStr(todayStr); document.getElementById('teamListArea').innerHTML=users.map(u=>{
+        const dt=tasks.filter(t=>t.date===todayStr); const at=dt.find(t=>Array.isArray(t.person)?t.person.includes(u.name):t.person===u.name); 
+        let statusHtml=at?`<div class="badge badge-green">SAHADA</div>`:`<div class="badge badge-gray">BOŞTA</div>`;
+        const upcoming = tasks.filter(t => parseDateStr(t.date) > todayDate && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name)).sort((a,b) => parseDateStr(a.date)-parseDateStr(b.date))[0];
+        let futureHtml = upcoming ? `<small style="color:#e67e22; display:block; margin-top:5px;">📅 Sonraki: ${upcoming.date} - ${upcoming.projectName}</small>` : '';
+        return `<div class="person-row"><div style="display:flex; align-items:center;"><div class="avatar" style="margin-right:10px;">${u.name.charAt(0)}</div><div><div style="font-weight:600;">${u.name}</div><small>${u.title||''}</small>${futureHtml}</div></div>${statusHtml}</div>`;
+    }).join('');}
+    function updateStats(dk){const dt=tasks.filter(t=>t.date===dk); let s=new Set(); dt.forEach(t=>{if(Array.isArray(t.person))t.person.forEach(p=>s.add(p));else s.add(t.person)}); document.getElementById('stat-total').innerText=users.length; document.getElementById('stat-active').innerText=s.size; document.getElementById('stat-idle').innerText=Math.max(0,users.length-s.size);}
+    function loadDropdowns(){
+        if(document.getElementById('p-manager')) document.getElementById('p-manager').innerHTML=users.map(u=>`<option>${u.name}</option>`).join('');
+        if(document.getElementById('t-project-select')) document.getElementById('t-project-select').innerHTML=`<option value="">Seç</option>`+projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+        if(document.getElementById('c-person')) document.getElementById('c-person').innerHTML=users.map(u=>`<option value="${u.name}">${u.name}</option>`).join('');
+        const fillMulti=(id,arr,k)=>{const el=document.getElementById(id);if(el)el.innerHTML=arr.map(i=>`<div class="ms-item"><input type="checkbox" value="${i[k]}">${i[k]}</div>`).join('')};
+        fillMulti('ms-person',users,'name'); fillMulti('ms-device',devices,'name'); fillMulti('ms-plate',vehicles,'plate');
+    }
+    function getMultiSelectValues(id){return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i=>i.value);}
+
 </script>
 </body>
 </html>
