@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V26.2 - Fix)</title>
+    <title>Ekip Takip ERP (V26.3 - Active)</title>
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
     <style>
@@ -15,43 +17,48 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
 
-        /* UI ELEMENTS */
-        .hidden { display: none !important; } .admin-only { display: none; }
-        .view-section { display: none; animation: fadeIn 0.3s; } .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        /* LOGIN */
+        /* GİRİŞ EKRANI */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary-grad); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         .login-box { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
         .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; background: #f9f9f9; font-size: 16px; }
         .login-box button { width: 100%; padding: 15px; background: #764ba2; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 10px; }
-
-        /* MAIN APP */
+        
+        /* HEADER & NAV */
         .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header-icons { display: flex; gap: 10px; }
         .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; }
         .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
         .bottom-nav::-webkit-scrollbar { display: none; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; }
         .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
         .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
-        
+
+        /* KARTLAR */
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
         .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .hero-card { background: var(--primary-grad); border-radius: 25px; padding: 25px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3); }
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
-
-        /* ITEMS */
-        .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .info-card.active { border-left-color: #27ae60; } .info-card.busy { border-left-color: #e74c3c; } .info-card.custody { border-left-color: #f39c12; }
-        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
-        .badge-green { background: #d1fae5; color: #065f46; } .badge-red { background: #fee2e2; color: #991b1b; } .badge-orange { background: #ffedd5; color: #9a3412; } .badge-gray { background: #f3f4f6; color: #374151; }
         
-        .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
-        .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right: 10px;}
+        /* LİSTE ELEMANLARI */
+        .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .info-card.active { border-left-color: #27ae60; } 
+        .info-card.busy { border-left-color: #e74c3c; } 
+        .info-card.custody { border-left-color: #f39c12; }
 
-        /* CALENDAR */
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+        .badge-green { background: #d1fae5; color: #065f46; } 
+        .badge-red { background: #fee2e2; color: #991b1b; } 
+        .badge-orange { background: #ffedd5; color: #9a3412; } 
+        .badge-gray { background: #f3f4f6; color: #374151; }
+        
+        /* EKİP KARTI */
+        .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
+        .person-info { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
+        
+        /* TAKVİM */
         .calendar-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
         .day-head { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
@@ -60,12 +67,16 @@
         .day-cell.today { border: 2px solid #764ba2; background: white; }
         .task-dot { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
-        /* FORMS */
+        /* FORM */
         input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; }
         .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 5px; }
         .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; margin-left: 5px; }
         .btn-outline-red { background: white; border: 1px solid #e74c3c; color: #e74c3c; } 
         .btn-outline-blue { background: white; border: 1px solid #3498db; color: #3498db; }
+        
+        /* RAPOR FİLTRE */
+        .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
+        .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
         
         /* MODAL & PICKER */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: end; }
@@ -75,21 +86,19 @@
         .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .month-btn { padding: 10px; background: #f9f9f9; text-align: center; cursor: pointer; border-radius: 5px; font-size: 0.8rem; }
 
-        /* MULTI SELECT */
+        .hidden { display: none !important; }
+        .admin-only { display: none; }
+        .view-section { display: none; animation: fadeIn 0.3s; } .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Multi Select */
         .multi-select-area { background: #f9f9f9; border: 1px solid #eee; border-radius: 10px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
         .ms-item { display: flex; align-items: center; margin-bottom: 8px; } .ms-item input { width: 20px; margin: 0 10px 0 0; }
         
-        /* REPORT TABLE */
-        .report-filters { display: flex; gap: 5px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px;}
-        .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; white-space: nowrap; }
-        .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
-        .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; table-layout: fixed; }
-        .log-table th { text-align: left; padding: 10px; background: #f4f6f8; color: #666; }
-        .log-table td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; word-wrap: break-word; }
-        .log-date { color: #999; font-size: 0.7rem; display: block; margin-bottom: 2px;}
-        .log-action { font-weight: bold; display: inline-block; margin-top: 2px;}
-        .action-take { color: #27ae60; background: #e8f8f5; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
-        .action-return { color: #e74c3c; background: #fdedec; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
+        /* TABLO */
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .log-table th { text-align: left; padding: 10px; background: #f4f6f8; }
+        .log-table td { padding: 10px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -284,7 +293,7 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- FIREBASE ---
+    // --- FIREBASE ANAHTARLARINI BURAYA GİR ---
     const firebaseConfig = {
       apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY",
       authDomain: "ekiptakipapp.firebaseapp.com",
@@ -426,7 +435,7 @@
             const d = new Date(l.date);
             const dateStr = `${d.getDate()}.${d.getMonth()+1} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
             const actionClass = l.action === 'take' ? 'action-take' : 'action-return';
-            const actionText = l.action === 'take' ? 'Teslim Aldı' : 'İade Etti';
+            const actionText = l.action === 'take' ? 'Aldı' : 'Verdi';
             const icon = l.type === 'vehicle' ? '🚗' : '🧰';
             return `<tr><td><span class="log-date">${dateStr}</span></td><td>${icon} <strong>${l.person}</strong><br>${l.item} <span class="log-action ${actionClass}">${actionText}</span></td></tr>`;
         }).join('');
@@ -507,17 +516,7 @@
     window.cancelDeviceEdit=resetDeviceForm;
     function resetDeviceForm(){editingDeviceId=null; document.getElementById('d-name').value=""; document.getElementById('d-serial').value=""; document.getElementById('d-calib').value=""; document.getElementById('deviceFormTitle').innerText="Yeni Cihaz Ekle"; document.getElementById('btn-d-save').style.display='block'; document.getElementById('btn-d-update').style.display='none'; document.getElementById('btn-d-cancel').style.display='none';}
     window.deleteDevice=async(id)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"devices",id));}
-    function renderDeviceList(){
-        document.getElementById('deviceListArea').innerHTML = devices.map(d => {
-            let statusBadge = `<span class="badge badge-green">BOŞTA</span>`, zimmetHtml = "";
-            if(d.currentHolder) { statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; }
-            else if(userRole==='admin') { zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; }
-            const todayStr = getCurrentDateStr(), dt = tasks.filter(t=>t.date===todayStr), at = dt.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name);
-            if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`;
-            let calibHtml = d.calib ? `<br><small style="color:${new Date(d.calib) < new Date() ? 'red' : '#666'}">Kalibrasyon: ${d.calib}</small>` : "";
-            return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small>${calibHtml}</div>${userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`;
-        }).join('');
-    }
+    function renderDeviceList(){document.getElementById('deviceListArea').innerHTML = devices.map(d => { let statusBadge = `<span class="badge badge-green">BOŞTA</span>`, zimmetHtml = ""; if(d.currentHolder) { statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; } else if(userRole==='admin') { zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; } const todayStr = getCurrentDateStr(), dt = tasks.filter(t=>t.date===todayStr), at = dt.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name); if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`; let calibHtml = d.calib ? `<br><small style="color:${new Date(d.calib) < new Date() ? 'red' : '#666'}">Kalibrasyon: ${d.calib}</small>` : ""; return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small>${calibHtml}</div>${userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; }).join('');}
 
     window.addUserToDB=async()=>{const n=document.getElementById('u-name').value,e=document.getElementById('u-email').value,r=document.getElementById('u-role').value; if(!n)return; await setDoc(doc(db,"users",e),{name:n,email:e,role:r,title:document.getElementById('u-title').value}); alert("Ok");}
     window.editUser=(e)=>{const u=users.find(x=>x.email===e); if(!u)return; document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title||''; document.getElementById('u-email').value=u.email; document.getElementById('u-email').disabled=true; document.getElementById('u-role').value=u.role; editingUserEmail=e; document.getElementById('userFormTitle').innerText="Düzenle"; document.getElementById('btn-user-add').style.display='none'; document.getElementById('btn-user-update').style.display='block'; document.getElementById('btn-user-cancel').style.display='block';}
