@@ -3,326 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V29 - Modern UI)</title>
+    <title>Ekip Takip Pro (V29 - Final Fix)</title>
+    
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#6a11cb">
+    <meta name="theme-color" content="#4facfe">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
     <style>
-        /* --- MODERN TEMA --- */
-        :root {
-            --primary-grad: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); /* Canlı Mor-Mavi */
-            --secondary-grad: linear-gradient(to right, #fa709a 0%, #fee140 100%); /* Vurgu için Pembe-Sarı */
-            --bg-body: #f4f7fe; /* Çok açık mavi-gri arka plan */
-            --bg-card: #ffffff;
-            --text-dark: #1b2559;
-            --text-gray: #a3aed0;
-            --shadow-sm: 0 2px 6px rgba(175, 184, 201, 0.2);
-            --shadow-md: 0 8px 20px rgba(175, 184, 201, 0.15);
-            --radius-xl: 24px;
-            --radius-lg: 16px;
-            --nav-height: 80px;
-        }
-
+        :root { --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f3f5f9; --text-main: #2d3436; --nav-height: 75px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg-body); margin: 0; padding-bottom: var(--nav-height); color: var(--text-dark); }
-        h1, h2, h3, h4, h5 { margin: 0; font-weight: 700; color: var(--text-dark); }
-        small { color: var(--text-gray); font-weight: 500; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
 
-        .hidden { display: none !important; } .admin-only { display: none; }
-        .view-section { display: none; animation: fadeIn 0.4s ease-in-out; } .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-
-        /* LOGIN (Modernize Edildi) */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary-grad); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
-        .login-box { background: var(--bg-card); padding: 40px 30px; border-radius: var(--radius-xl); width: 100%; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-        .login-box h2 { margin-bottom: 25px; background: var(--primary-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        input, select { width: 100%; padding: 16px; margin: 10px 0; border: 2px solid transparent; background: #eff4fb; border-radius: var(--radius-lg); font-size: 15px; font-family: inherit; transition: 0.3s; outline: none; font-weight: 500; color: var(--text-dark); }
-        input:focus, select:focus { border-color: #2575fc; background: #fff; box-shadow: 0 0 0 4px rgba(37, 117, 252, 0.1); }
-        .btn { width: 100%; padding: 16px; background: var(--primary-grad); color: white; border: none; border-radius: var(--radius-lg); font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px -10px rgba(37, 117, 252, 0.5); }
-        .btn:active { transform: scale(0.98); box-shadow: none; }
+        /* GİRİŞ EKRANI */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary-grad); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .login-box { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; background: #f9f9f9; font-size: 16px; }
+        .login-box button { width: 100%; padding: 15px; background: #764ba2; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 10px; }
         
-        /* APP HEADER (Yeni Tasarım) */
-        .app-header { padding: 25px 20px; display: flex; justify-content: space-between; align-items: center; background: transparent; }
-        .header-greet { font-size: 0.9rem; color: var(--text-gray); margin-bottom: 2px; font-weight: 500; }
-        .header-title { font-size: 1.75rem; }
-        .profile-icon { width: 50px; height: 50px; border-radius: 50%; background: var(--primary-grad); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: 700; box-shadow: var(--shadow-sm); cursor: pointer; }
-        .header-actions { display: flex; gap: 10px; }
-        .icon-btn { width: 45px; height: 45px; border-radius: var(--radius-lg); border: none; background: var(--bg-card); cursor: pointer; font-size: 1.3rem; color: var(--text-dark); box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .icon-btn:active { transform: scale(0.95); }
-
-        /* CARDS (Modern Kartlar) */
-        .card { background: var(--bg-card); border-radius: var(--radius-xl); padding: 25px; margin-bottom: 20px; box-shadow: var(--shadow-sm); transition: 0.3s; border: none; }
-        .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-
-        /* HERO CARD (Özet Alanı) */
-        .hero-card { background: var(--primary-grad); color: white; padding: 30px; position: relative; overflow: hidden; }
-        .hero-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none; }
-        .hero-card h2 { color: white; margin-bottom: 15px; font-size: 1.5rem; }
-        .hero-stats { display: flex; justify-content: space-between; text-align: center; margin-top: 20px; }
-        .stat-item { flex: 1; }
-        .stat-val { font-size: 2rem; font-weight: 700; display: block; margin-bottom: 5px; }
-        .stat-label { font-size: 0.85rem; opacity: 0.8; font-weight: 500; }
-
-        /* LİSTE KARTLARI (Projeler, Cihazlar vb.) */
-        .list-card { display: flex; align-items: center; padding: 20px; background: var(--bg-card); border-radius: var(--radius-lg); margin-bottom: 15px; box-shadow: var(--shadow-sm); transition: 0.3s; position: relative; overflow: hidden; }
-        .list-card:active { transform: scale(0.99); }
-        .list-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 6px; background: #e0e0e0; }
-        .list-card.active::before { background: #10b981; /* Yeşil */ }
-        .list-card.busy::before { background: #ef4444; /* Kırmızı */ }
-        .list-card.custody::before { background: #f59e0b; /* Turuncu */ }
+        /* GENEL STİLLER */
+        .hidden { display: none !important; } 
+        .admin-only { display: none; } /* Menü butonları ve formlar için */
         
-        .lc-icon { width: 50px; height: 50px; background: #eff4fb; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #2575fc; margin-right: 15px; flex-shrink: 0; }
-        .lc-avatar { width: 50px; height: 50px; background: var(--primary-grad); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white; font-weight: 700; margin-right: 15px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(106, 17, 203, 0.3); }
-        .lc-content { flex: 1; }
-        .lc-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 4px; display: block; }
-        .lc-sub { font-size: 0.85rem; color: var(--text-gray); display: block; }
-        .lc-action { margin-left: 15px; flex-shrink: 0; }
+        /* SEKMELER (Bu kısım düzeltildi) */
+        .view-section { display: none; animation: fadeIn 0.3s; } 
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* BADGES & BUTTONS */
-        .badge { padding: 6px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .bg-green { background: #d1fae5; color: #065f46; } .bg-red { background: #fee2e2; color: #991b1b; } 
-        .bg-orange { background: #ffedd5; color: #9a3412; } .bg-gray { background: #f3f4f6; color: #374151; }
-        .btn-sm { padding: 8px 14px; font-size: 0.8rem; border-radius: var(--radius-lg); border: none; cursor: pointer; font-weight: 600; transition: 0.3s; margin-left: 5px; }
-        .btn-outline-red { background: #fee2e2; color: #ef4444; } .btn-outline-blue { background: #dbeafe; color: #2575fc; }
-        .btn-sm:active { transform: scale(0.95); }
-
-        /* CALENDAR */
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #eff4fb; padding: 10px; border-radius: 30px; }
-        .cal-nav-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-card); border: none; font-size: 1.2rem; color: var(--text-dark); cursor: pointer; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; }
-        .cal-title-box { text-align: center; position: relative; }
-        #month-disp { font-size: 1.2rem; font-weight: 700; cursor: pointer; padding: 5px 15px; border-radius: 20px; transition: 0.3s; }
-        #month-disp:hover { background: rgba(37, 117, 252, 0.1); color: #2575fc; }
-
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
-        .day-head { text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--text-gray); margin-bottom: 10px; }
-        .day { background: var(--bg-card); min-height: 85px; border-radius: var(--radius-lg); padding: 6px; font-size: 0.85rem; cursor: pointer; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); border: 2px solid transparent; transition: 0.3s; }
-        .day:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-        .day b { align-self: center; margin-bottom: 6px; font-weight: 700; }
-        .day.today { border-color: #2575fc; background: #f0f7ff; }
-        .task-dot { font-size: 0.65rem; background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white; padding: 3px 6px; margin-top: 3px; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; box-shadow: 0 2px 5px rgba(37, 117, 252, 0.3); }
-
-        /* DATE PICKER */
-        #month-picker { display: none; position: absolute; top: 50px; left: 50%; transform: translateX(-50%); background: var(--bg-card); padding: 20px; border-radius: var(--radius-xl); box-shadow: var(--shadow-md); z-index: 200; width: 280px; }
-        .mp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .mp-header button { background: #eff4fb; border: none; padding: 5px 10px; border-radius: 10px; cursor: pointer; }
-        .mp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .mp-btn { padding: 12px; background: #eff4fb; text-align: center; cursor: pointer; border-radius: var(--radius-lg); font-size: 0.9rem; font-weight: 600; transition: 0.3s; }
-        .mp-btn:hover { background: #2575fc; color: white; }
-
-        /* BOTTOM NAV (Modern) */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-card); display: flex; justify-content: space-around; align-items: center; height: var(--nav-height); box-shadow: 0 -5px 20px rgba(175, 184, 201, 0.1); z-index: 1000; padding-bottom: 10px; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-gray); font-size: 0.75rem; cursor: pointer; transition: 0.3s; position: relative; width: 60px; }
-        .nav-icon-box { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 12px; margin-bottom: 4px; transition: 0.3s; font-size: 1.4rem; }
-        .nav-item.active .nav-icon-box { background: var(--primary-grad); color: white; box-shadow: 0 4px 10px rgba(106, 17, 203, 0.3); transform: translateY(-5px); }
-        .nav-item.active { color: var(--text-dark); font-weight: 700; }
+        /* HEADER & NAV */
+        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; }
         
-        /* MODAL */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(27, 37, 89, 0.6); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-card { background: var(--bg-card); width: 90%; max-width: 450px; padding: 30px; border-radius: var(--radius-xl); max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-md); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-close { font-size: 1.8rem; cursor: pointer; color: var(--text-gray); }
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
+        .bottom-nav::-webkit-scrollbar { display: none; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; }
+        .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
+        .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
 
-        /* EXTRAS */
-        .ms-area { border: 2px solid #eff4fb; padding: 15px; max-height: 150px; overflow-y: auto; border-radius: var(--radius-lg); margin-bottom: 15px; background: #eff4fb; }
-        .ms-opt { display: flex; align-items: center; margin-bottom: 8px; font-weight: 500; } .ms-opt input { width: 20px; margin: 0 10px 0 0; box-shadow: none; }
-        .log-table { width: 100%; font-size: 0.85rem; border-collapse: separate; border-spacing: 0 10px; }
-        .log-table td { padding: 15px; background: var(--bg-card); first-child { border-radius: var(--radius-lg) 0 0 var(--radius-lg); } last-child { border-radius: 0 var(--radius-lg) var(--radius-lg) 0; } box-shadow: var(--shadow-sm); }
-        hr { border: none; border-top: 2px solid #eff4fb; margin: 20px 0; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
+        .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .hero-card { background: var(--primary-grad); border-radius: 25px; padding: 25px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3); }
+        .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
+        .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
+
+        /* KARTLAR & LİSTELER */
+        .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .info-card.active { border-left-color: #27ae60; } 
+        .info-card.busy { border-left-color: #e74c3c; } 
+        .info-card.custody { border-left-color: #f39c12; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+        .badge-green { background: #d1fae5; color: #065f46; } 
+        .badge-red { background: #fee2e2; color: #991b1b; } 
+        .badge-orange { background: #ffedd5; color: #9a3412; } 
+        .badge-gray { background: #f3f4f6; color: #374151; }
+        .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
+        .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
+
+        /* TAKVİM */
+        .calendar-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .day-head { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        .day-cell { background: #f8f9fa; min-height: 80px; border-radius: 8px; padding: 4px; font-size: 0.8rem; position: relative; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; }
+        .day-cell b { align-self: center; margin-bottom: 4px; color: #333; }
+        .day-cell.today { border: 2px solid #764ba2; background: white; }
+        .task-dot { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+
+        /* FORM */
+        input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; }
+        .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 5px; }
+        .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; margin-left: 5px; }
+        .btn-outline-red { background: white; border: 1px solid #e74c3c; color: #e74c3c; } 
+        .btn-outline-blue { background: white; border: 1px solid #3498db; color: #3498db; }
+        .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
+        .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
+
+        /* MODAL & PICKER */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: end; }
+        .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; }
+        #month-picker-modal { display: none; position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 300px; background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 500; padding: 15px; }
+        .year-selector { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .month-btn { padding: 10px; background: #f9f9f9; text-align: center; cursor: pointer; border-radius: 5px; font-size: 0.8rem; }
+
+        /* Multi Select */
+        .multi-select-area { background: #f9f9f9; border: 1px solid #eee; border-radius: 10px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
+        .ms-item { display: flex; align-items: center; margin-bottom: 8px; } .ms-item input { width: 20px; margin: 0 10px 0 0; }
+        
+        /* TABLO */
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .log-table th { text-align: left; padding: 10px; background: #f4f6f8; }
+        .log-table td { padding: 10px; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2>Hoş Geldiniz</h2>
-        <input type="email" id="lemail" placeholder="E-Posta Adresiniz">
-        <input type="password" id="lpass" placeholder="Şifreniz">
-        <button class="btn" onclick="login()">Giriş Yap</button>
-        <p onclick="document.getElementById('reg-area').classList.toggle('hidden')" style="margin-top:20px; color: #2575fc; cursor:pointer; font-weight: 600;">Hesabınız yok mu? Kaydolun</p>
-        <div id="reg-area" class="hidden">
-            <input type="text" id="rname" placeholder="Ad Soyad">
-            <input type="text" id="rtitle" placeholder="Ünvan">
-            <input type="email" id="remail" placeholder="E-Posta">
-            <input type="password" id="rpass" placeholder="Şifre">
-            <button class="btn" onclick="register()" style="background: var(--secondary-grad);">Kayıt Ol</button>
+        <h2>Ekip Takip Pro</h2>
+        <input type="email" id="loginEmail" placeholder="E-Posta">
+        <input type="password" id="loginPass" placeholder="Şifre">
+        <button onclick="handleLogin()">Giriş Yap</button>
+        <p style="margin-top:20px; color:#764ba2; cursor:pointer; font-size:0.9rem;" onclick="document.getElementById('registerArea').classList.toggle('hidden')">Yeni Hesap</p>
+        <div id="registerArea" class="hidden" style="margin-top:15px;">
+            <input type="text" id="regName" placeholder="Ad Soyad">
+            <input type="text" id="regTitle" placeholder="Ünvan">
+            <input type="email" id="regEmail" placeholder="E-Posta">
+            <input type="password" id="regPass" placeholder="Şifre">
+            <button onclick="handleRegister()" style="background:#27ae60;">Kaydol</button>
         </div>
     </div>
 </div>
 
 <div id="app-screen" class="hidden">
     <div class="app-header">
-        <div>
-            <div class="header-greet" id="greet-msg">İyi Günler,</div>
-            <h1 class="header-title" id="user-disp">Kullanıcı</h1>
-        </div>
-        <div style="display:flex; align-items:center; gap:15px;">
-             <div class="header-actions">
-                <button class="icon-btn" onclick="reqNotif()">🔔</button>
-                <button class="icon-btn" onclick="logout()" style="color: #ef4444;">🚪</button>
-            </div>
-            <div class="profile-icon" id="profile-init">K</div>
-        </div>
+        <div><small style="color:#888;">Merhaba,</small><h2 style="margin:0;" id="welcomeUser">Kullanıcı</h2></div>
+        <div class="header-icons"><button class="icon-btn" onclick="requestNotificationPermission()">🔔</button><button class="icon-btn" onclick="handleLogout()">🚪</button></div>
     </div>
 
     <div class="container">
         
-        <div id="tab-cal" class="view-section active">
-            <div class="card hero-card">
-                <h2>Bugünün Özeti</h2>
-                <div class="hero-stats">
-                    <div class="stat-item"><span class="stat-val" id="s-total">0</span><span class="stat-label">Toplam Ekip</span></div>
-                    <div class="stat-item"><span class="stat-val" id="s-active">0</span><span class="stat-label">Sahada Aktif</span></div>
-                    <div class="stat-item"><span class="stat-val" id="s-idle">0</span><span class="stat-label">Ofiste/Boşta</span></div>
+        <div id="view-calendar" class="view-section active">
+            <div class="hero-card">
+                <div class="hero-stat-grid">
+                    <div class="hero-stat-item"><span id="stat-total">0</span><small>Ekip</small></div>
+                    <div class="hero-stat-item"><span id="stat-active">0</span><small>Sahada</small></div>
+                    <div class="hero-stat-item"><span id="stat-idle">0</span><small>Boşta</small></div>
                 </div>
             </div>
-            <div class="card">
-                <div class="cal-header">
-                    <button class="cal-nav-btn" onclick="moveMonth(-1)">◀</button>
-                    <div class="cal-title-box">
-                        <div id="month-disp" onclick="togglePicker()">Ay Yükleniyor...</div>
-                        <div id="month-picker">
-                            <div class="mp-header">
-                                <button onclick="pickerYear--;document.getElementById('p-year').innerText=pickerYear">◀</button>
-                                <span id="p-year" style="font-weight:700; font-size:1.1rem;">2025</span>
-                                <button onclick="pickerYear++;document.getElementById('p-year').innerText=pickerYear">▶</button>
-                            </div>
-                            <div class="mp-grid">
-                                <div class="mp-btn" onclick="setMonth(0)">Oca</div><div class="mp-btn" onclick="setMonth(1)">Şub</div><div class="mp-btn" onclick="setMonth(2)">Mar</div>
-                                <div class="mp-btn" onclick="setMonth(3)">Nis</div><div class="mp-btn" onclick="setMonth(4)">May</div><div class="mp-btn" onclick="setMonth(5)">Haz</div>
-                                <div class="mp-btn" onclick="setMonth(6)">Tem</div><div class="mp-btn" onclick="setMonth(7)">Ağu</div><div class="mp-btn" onclick="setMonth(8)">Eyl</div>
-                                <div class="mp-btn" onclick="setMonth(9)">Eki</div><div class="mp-btn" onclick="setMonth(10)">Kas</div><div class="mp-btn" onclick="setMonth(11)">Ara</div>
+            <div class="modern-card">
+                <div class="calendar-nav-row">
+                    <button class="icon-btn" style="width:35px; height:35px;" onclick="changeMonth(-1)">◀</button>
+                    <div style="position:relative; text-align:center;">
+                        <h3 style="margin:0; cursor:pointer; text-decoration:underline;" id="monthDisplay" onclick="toggleDatePicker()">Takvim</h3>
+                        <div id="month-picker-modal">
+                            <div class="year-selector"><button onclick="changePickYear(-1)">◀</button><span id="pick-year-val">2025</span><button onclick="changePickYear(1)">▶</button></div>
+                            <div class="month-grid">
+                                <div class="month-btn" onclick="goToMonth(0)">Oca</div><div class="month-btn" onclick="goToMonth(1)">Şub</div><div class="month-btn" onclick="goToMonth(2)">Mar</div>
+                                <div class="month-btn" onclick="goToMonth(3)">Nis</div><div class="month-btn" onclick="goToMonth(4)">May</div><div class="month-btn" onclick="goToMonth(5)">Haz</div>
+                                <div class="month-btn" onclick="goToMonth(6)">Tem</div><div class="month-btn" onclick="goToMonth(7)">Ağu</div><div class="month-btn" onclick="goToMonth(8)">Eyl</div>
+                                <div class="month-btn" onclick="goToMonth(9)">Eki</div><div class="month-btn" onclick="goToMonth(10)">Kas</div><div class="month-btn" onclick="goToMonth(11)">Ara</div>
                             </div>
                         </div>
                     </div>
-                    <button class="cal-nav-btn" onclick="moveMonth(1)">▶</button>
+                    <button class="icon-btn" style="width:35px; height:35px;" onclick="changeMonth(1)">▶</button>
                 </div>
-                <div class="cal-grid-header" style="display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:10px;">
-                    <div class="day-head">Pt</div><div class="day-head">Sa</div><div class="day-head">Ça</div><div class="day-head">Pe</div><div class="day-head">Cu</div><div class="day-head">Ct</div><div class="day-head">Pz</div>
-                </div>
-                <div class="cal-grid" id="cal-grid"></div>
+                <div class="calendar-grid" id="calendarGrid"></div>
             </div>
         </div>
 
-        <div id="tab-proj" class="view-section">
-            <div class="admin-only card">
-                <h3>Yeni Proje Oluştur</h3>
+        <div id="view-projects" class="view-section">
+            <div class="admin-only modern-card" id="projectFormContainer">
+                <h3 id="projectFormTitle">Yeni Proje</h3>
                 <input type="text" id="p-name" placeholder="Proje Adı">
-                <select id="p-man"><option>Yönetici Seçin</option></select>
-                <div style="display:flex; gap:10px;"><div style="flex:1"><label><small>Başlangıç</small></label><input type="date" id="p-start"></div><div style="flex:1"><label><small>Bitiş (Opsiyonel)</small></label><input type="date" id="p-end"></div></div>
-                <div style="display:flex; gap:10px;"><input type="number" id="p-cost" placeholder="Maliyet (TL)"><input type="number" id="p-offer" placeholder="Teklif (TL)"></div>
-                <button class="btn" onclick="addProj()">Projeyi Kaydet</button>
+                <select id="p-manager"></select>
+                <div style="display:flex; gap:5px;">
+                    <div style="flex:1"><label style="font-size:0.7rem;">Başlangıç</label><input type="date" id="p-start"></div>
+                    <div style="flex:1"><label style="font-size:0.7rem;">Bitiş</label><input type="date" id="p-end"></div>
+                </div>
+                <div style="display:flex; gap:5px;"><input type="number" id="p-cost" placeholder="Maliyet"><input type="number" id="p-offer" placeholder="Teklif"></div>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-p-save" onclick="submitProject()">Kaydet</button>
+                    <button class="btn-main" id="btn-p-update" onclick="updateProjectDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-p-cancel" onclick="cancelProjectEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
             </div>
-            <div id="proj-list"></div>
+            <div class="modern-card" id="projectListBody"></div>
         </div>
 
-        <div id="tab-team" class="view-section">
-            <div id="team-list"></div>
+        <div id="view-team" class="view-section">
+            <div class="modern-card" id="teamListArea"></div>
         </div>
 
-        <div id="tab-dev" class="view-section">
-            <div class="admin-only card">
-                <h3>Yeni Cihaz Ekle</h3>
-                <input type="text" id="d-name" placeholder="Cihaz Adı / Marka Model">
-                <input type="text" id="d-ser" placeholder="Seri Numarası">
-                <label style="font-weight:500; margin-top:10px; display:block;">Kalibrasyon Tarihi:</label><input type="date" id="d-cal">
-                <button class="btn" onclick="addDev()">Cihazı Ekle</button>
+        <div id="view-devices" class="view-section">
+            <div class="admin-only modern-card" id="deviceFormContainer">
+                <h3 id="deviceFormTitle">Yeni Cihaz</h3>
+                <input type="text" id="d-name" placeholder="Cihaz Adı">
+                <input type="text" id="d-serial" placeholder="Seri No">
+                <label>Kalibrasyon:</label><input type="date" id="d-calib">
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-d-save" onclick="addDevice()">Ekle</button>
+                    <button class="btn-main" id="btn-d-update" onclick="updateDeviceDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-d-cancel" onclick="cancelDeviceEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
             </div>
-            <div id="dev-list"></div>
+            <div class="modern-card"><div id="deviceListArea" class="card-list"></div></div>
         </div>
 
-        <div id="tab-veh" class="view-section">
-            <div class="admin-only card">
-                <h3>Yeni Araç Ekle</h3>
-                <input type="text" id="v-plate" placeholder="Plaka (örn: 34 ABC 123)">
-                <input type="text" id="v-info" placeholder="Marka Model">
-                <label style="font-weight:500; margin-top:10px; display:block;">Muayene Tarihi:</label><input type="date" id="v-insp">
-                <button class="btn" onclick="addVeh()">Aracı Ekle</button>
+        <div id="view-vehicles" class="view-section">
+            <div class="admin-only modern-card" id="vehicleFormContainer">
+                <h3 id="vehicleFormTitle">Yeni Araç</h3>
+                <input type="text" id="v-plate" placeholder="Plaka">
+                <input type="text" id="v-info" placeholder="Model">
+                <label>Muayene Tarihi:</label><input type="date" id="v-inspection">
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-v-save" onclick="addVehicle()">Kaydet</button>
+                    <button class="btn-main" id="btn-v-update" onclick="updateVehicleDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-v-cancel" onclick="cancelVehicleEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
             </div>
-            <div id="veh-list"></div>
+            <div class="modern-card"><div id="vehicleListArea" class="card-list"></div></div>
         </div>
 
-        <div id="tab-user" class="view-section admin-only">
-            <div class="card">
-                <h3>Kullanıcı Yönetimi</h3>
+        <div id="view-users" class="view-section">
+            <div class="admin-only modern-card">
+                <h3 id="userFormTitle">Kullanıcı Yönetimi</h3>
                 <input type="text" id="u-name" placeholder="Ad Soyad">
                 <input type="text" id="u-title" placeholder="Ünvan">
-                <input type="email" id="u-email" placeholder="E-Posta Adresi">
-                <select id="u-role"><option value="staff">Personel</option><option value="admin">Yönetici (Admin)</option></select>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button class="btn" id="btn-u-add" onclick="addUser()">Kullanıcı Ekle</button>
-                    <button class="btn" id="btn-u-upd" onclick="updUser()" style="display:none; background:var(--secondary-grad);">Güncelle</button>
-                    <button class="btn" id="btn-u-can" onclick="canUser()" style="display:none; background:#a3aed0;">İptal</button>
+                <input type="email" id="u-email" placeholder="E-Posta">
+                <select id="u-role"><option value="staff">Personel</option><option value="admin">Yönetici</option></select>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-user-add" onclick="addUserToDB()">Ekle</button>
+                    <button class="btn-main" id="btn-user-update" onclick="updateUserDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-user-cancel" onclick="cancelUserEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
                 </div>
             </div>
-            <div id="user-list"></div>
+            <div class="modern-card" id="userListArea"></div>
         </div>
 
-        <div id="tab-rep" class="view-section admin-only">
-            <div class="card">
-                <label style="font-weight:700;">Rapor Dönemi Seçin:</label>
-                <input type="month" id="r-date" onchange="renderRep()" style="margin-top:5px;">
+        <div id="view-reports" class="view-section">
+            <div class="modern-card">
+                <label>Dönem:</label>
+                <input type="month" id="reportDateSelector" onchange="filterReports()" style="width:100%;">
             </div>
-            <div class="card">
-                <h3>Zimmet Hareketleri</h3>
-                <div style="display:flex; gap:10px; margin:15px 0;">
-                    <button class="btn-sm" style="background:var(--primary-grad); color:white;" onclick="repFilt='all';renderRep()">Tümü</button>
-                    <button class="btn-sm" onclick="repFilt='vehicle';renderRep()">Sadece Araç</button>
-                    <button class="btn-sm" onclick="repFilt='device';renderRep()">Sadece Cihaz</button>
+            <div class="modern-card">
+                <h3>Zimmet Geçmişi</h3>
+                <div class="report-filters" style="display:flex; gap:5px; margin-bottom:10px;">
+                    <button class="filter-btn active" onclick="setReportFilter('all', this)">Tümü</button>
+                    <button class="filter-btn" onclick="setReportFilter('vehicle', this)">Araç</button>
+                    <button class="filter-btn" onclick="setReportFilter('device', this)">Cihaz</button>
                 </div>
-                <div id="log-list" style="max-height:350px; overflow-y:auto;"></div>
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table class="log-table" id="logTable" style="width:100%; font-size:0.8rem;"></table>
+                </div>
             </div>
-            <div class="card">
-                <h3>Personel Çalışma Eforu (Gün/Ay)</h3>
-                <table class="log-table" id="eff-table"></table>
+             <div class="modern-card">
+                <h3>Personel Aylık Çalışma Gün Sayısı</h3>
+                <table class="log-table" id="personnelReportTable" style="width:100%;"><tbody id="personnelReportBody"></tbody></table>
             </div>
         </div>
-
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="goTab('cal')"><div class="nav-icon-box"><span>📅</span></div>Takvim</div>
-        <div class="nav-item" onclick="goTab('proj')"><div class="nav-icon-box"><span>📂</span></div>Proje</div>
-        <div class="nav-item" onclick="switchTab('team')"><div class="nav-icon-box"><span>👥</span></div>Ekip</div>
-        <div class="nav-item" onclick="goTab('veh')"><div class="nav-icon-box"><span>🚗</span></div>Araç</div>
-        <div class="nav-item" onclick="goTab('dev')"><div class="nav-icon-box"><span>🧰</span></div>Cihaz</div>
-        <div class="nav-item admin-only" onclick="goTab('user')"><div class="nav-icon-box"><span>⚙️</span></div>Yetki</div>
-        <div class="nav-item admin-only" onclick="goTab('rep')"><div class="nav-icon-box"><span>📊</span></div>Rapor</div>
+        <div class="nav-item active" onclick="switchTab('calendar')"><span class="icon">📅</span>Takvim</div>
+        <div class="nav-item" onclick="switchTab('projects')"><span class="icon">📂</span>Proje</div>
+        <div class="nav-item" onclick="switchTab('team')"><span class="icon">👥</span>Ekip</div>
+        <div class="nav-item" onclick="switchTab('vehicles')"><span class="icon">🚗</span>Araç</div>
+        <div class="nav-item" onclick="switchTab('devices')"><span class="icon">🧰</span>Cihaz</div>
+        <div class="nav-item admin-only" onclick="switchTab('users')"><span class="icon">⚙️</span>Yetki</div>
+        <div class="nav-item admin-only" onclick="switchTab('reports')"><span class="icon">📊</span>Rapor</div>
     </div>
 </div>
 
-<div class="modal" id="taskModal">
+<div class="modal-overlay" id="custodyModal" onclick="if(event.target===this) closeCustodyModal()">
     <div class="modal-card">
-        <div class="modal-header"><h3>Günlük Görevler</h3><span class="modal-close" onclick="closeModal()">✕</span></div>
-        <p id="tm-date" style="font-weight:600; color:var(--primary-grad); margin-bottom:15px;"></p>
-        <div id="tm-list" style="margin-bottom:20px;"></div>
+        <h3>Zimmetle</h3>
+        <p id="custodyItemName" style="color:#666;"></p>
+        <label>Personel Seç:</label><select id="c-person"></select>
+        <button class="btn-main" onclick="saveCustody()">Kaydet</button>
+        <button class="btn-main" onclick="closeCustodyModal()" style="background:#95a5a6; margin-top:10px;">İptal</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="taskModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;"><h2>Görevler</h2><span onclick="closeModal()" style="font-size:1.5rem; cursor:pointer;">✕</span></div>
+        <p id="modalDateText"></p>
+        <div id="dayTaskList" style="margin-bottom:20px;"></div>
         <div class="admin-only">
-            <hr>
-            <h3>Yeni Görev Ata</h3>
-            <label style="font-weight:600; margin-top:10px; display:block;">Personel Seç:</label><div class="ms-area" id="ms-per"></div>
-            <label style="font-weight:600; margin-top:10px; display:block;">Proje Seç:</label><select id="t-proj"><option value="">Proje Seçin</option></select>
-            <input type="text" id="t-loc" placeholder="Konum / Açıklama (Opsiyonel)">
-            <label style="font-weight:600; margin-top:10px; display:block;">Araç (Opsiyonel):</label><div class="ms-area" id="ms-veh"></div>
-            <label style="font-weight:600; margin-top:10px; display:block;">Cihaz (Opsiyonel):</label><div class="ms-area" id="ms-dev"></div>
-            <div id="conflict" style="color:#ef4444; font-weight:500; font-size:0.85rem; margin:10px 0;"></div>
-            <button class="btn" onclick="saveTask()">Görevi Kaydet</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal" id="custodyModal">
-    <div class="modal-card">
-        <div class="modal-header"><h3>Zimmetle</h3><span class="modal-close" onclick="document.getElementById('custodyModal').style.display='none'">✕</span></div>
-        <p id="cm-name" style="font-weight:700; font-size:1.1rem; margin-bottom:20px;"></p>
-        <label style="font-weight:600;">Personel Seç:</label>
-        <select id="c-per" style="margin-top:5px;"><option>Personel Seçin</option></select>
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn" onclick="doCustody()">Kaydet</button>
-            <button class="btn" style="background:#a3aed0;" onclick="document.getElementById('custodyModal').style.display='none'">İptal</button>
+            <h3>Yeni Atama</h3>
+            <label>Personel</label><div class="multi-select-area" id="ms-person"></div>
+            <label>Proje</label><select id="t-project-select"></select>
+            <input type="text" id="t-loc" placeholder="Konum">
+            <label>Araçlar</label><div class="multi-select-area" id="ms-plate"></div>
+            <label>Cihazlar</label><div class="multi-select-area" id="ms-device"></div>
+            <div id="conflictWarning" style="color:red; font-size:0.8rem; margin:10px 0;"></div>
+            <button class="btn-main" onclick="saveTask()">Kaydet</button>
         </div>
     </div>
 </div>
@@ -332,38 +290,49 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- GİZLİ ŞİFRELER (DOKUNMA) ---
-    const k1 = "AIzaSyD4XZR8JAMe-"; const k2 = "Qr2Oj2UGnp9mFc8En38gxY";
-    const firebaseConfig = { apiKey: k1 + k2, authDomain: "ekiptakipapp.firebaseapp.com", projectId: "ekiptakipapp", storageBucket: "ekiptakipapp.firebasestorage.app", messagingSenderId: "55716082808", appId: "1:55716082808:web:b144b953684fc9f80c698d", measurementId: "G-S6Q0H5RHR7" };
-    const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
+    // --- FIREBASE ANAHTARLARI (GİRİLMİŞ) ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY",
+      authDomain: "ekiptakipapp.firebaseapp.com",
+      projectId: "ekiptakipapp",
+      storageBucket: "ekiptakipapp.firebasestorage.app",
+      messagingSenderId: "55716082808",
+      appId: "1:55716082808:web:b144b953684fc9f80c698d",
+      measurementId: "G-S6Q0H5RHR7"
+    };
 
-    const os_key_1 = "08d90e98-c6b4"; const os_key_2 = "-429c-aab5-f11164ddc881";
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ONESIGNAL
     window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) { OneSignal.init({ appId: os_key_1 + os_key_2 }); });
+    OneSignalDeferred.push(function(OneSignal) {
+        OneSignal.init({ appId: "08d90e98-c6b4-429c-aab5-f11164ddc881" });
+    });
 
-    // VARS
-    let users=[], projects=[], tasks=[], vehicles=[], devices=[], logs=[];
-    let curUser, role='staff', curDate=new Date(), selDate, pickerYear=new Date().getFullYear();
-    let custodyId, custodyType, editId, repFilt='all';
+    let projects=[], tasks=[], users=[], vehicles=[], devices=[], logs=[];
+    let currentUser=null, userRole='staff';
+    let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), isFirstLoad=true;
+    let pickerYear = new Date().getFullYear(), editingUserEmail=null, editingVehicleId=null, editingDeviceId=null, editingProjectId=null;
+    let custodyTargetId = null, custodyType = null;
+    let currentReportFilter = 'all', currentReportDate = new Date().toISOString().slice(0, 7);
 
-    // AUTH & INIT
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            const u = await getDoc(doc(db, "users", user.email));
-            if (u.exists()) {
-                curUser=u.data(); role=curUser.role;
-                document.getElementById('user-disp').innerText = curUser.name;
-                document.getElementById('profile-init').innerText = curUser.name.charAt(0).toUpperCase();
-                setGreet();
-                document.querySelectorAll('.admin-only').forEach(e=>e.style.display=(role==='admin'?'block':'none'));
-                document.querySelectorAll('.nav-item.admin-only').forEach(e=>e.style.display=(role==='admin'?'flex':'none'));
+            const userDoc = await getDoc(doc(db, "users", user.email));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                currentUser = userData; userRole = userData.role;
+                document.getElementById('welcomeUser').innerText = userData.name.split(' ')[0];
+                applyPermissions();
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
-                document.getElementById('r-date').value = new Date().toISOString().slice(0,7);
                 OneSignalDeferred.push(function(OneSignal) { OneSignal.login(user.email); });
-                startData();
+                document.getElementById('reportDateSelector').value = currentReportDate;
+                startListeners();
             } else {
-                await setDoc(doc(db,"users",user.email), {name:"Ad Soyad Girilmedi", email:user.email, role:"staff"});
+                await setDoc(doc(db, "users", user.email), { name: "Yönetici", email: user.email, role: 'admin' });
                 window.location.reload();
             }
         } else {
@@ -372,253 +341,255 @@
         }
     });
 
-    function setGreet() {
-        const h = new Date().getHours();
-        let msg = h < 12 ? "Günaydın," : h < 18 ? "Tünaydın," : "İyi Akşamlar,";
-        document.getElementById('greet-msg').innerText = msg;
-    }
-
-    window.login = () => signInWithEmailAndPassword(auth, document.getElementById('lemail').value, document.getElementById('lpass').value).catch(e=>alert("Hata: " + e.message));
-    window.logout = () => signOut(auth).then(()=>window.location.reload());
-    window.register = async () => {
+    window.handleLogin = () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        signInWithEmailAndPassword(auth, email, pass).catch(err => document.getElementById('loginError').innerText = err.message);
+    };
+    window.handleLogout = () => { signOut(auth); window.location.reload(); };
+    window.toggleRegister = () => { document.getElementById('registerArea').classList.toggle('hidden'); }
+    window.handleRegister = async () => {
+        const name = document.getElementById('regName').value;
+        const title = document.getElementById('regTitle').value;
+        const email = document.getElementById('regEmail').value;
+        const pass = document.getElementById('regPass').value;
         try {
-            const em=document.getElementById('remail').value;
-            await createUserWithEmailAndPassword(auth, em, document.getElementById('rpass').value);
-            await setDoc(doc(db,"users",em), {name:document.getElementById('rname').value, title:document.getElementById('rtitle').value, email:em, role:'staff'});
-            alert("Hesap oluşturuldu. Giriş yapabilirsiniz."); document.getElementById('reg-area').classList.add('hidden');
-        } catch(e){alert("Hata: " + e.message)}
-    }
-    window.reqNotif = () => OneSignalDeferred.push(async function(OneSignal) { await OneSignal.Notifications.requestPermission(); alert("Bildirim izni istendi."); });
+            await createUserWithEmailAndPassword(auth, email, pass);
+            await setDoc(doc(db, "users", email), { name, title, email, role: 'admin' });
+        } catch (err) { alert(err.message); }
+    };
 
-    // DATA LOOP
-    function startData() {
-        const sub = (c, arr, r) => onSnapshot(collection(db, c), s => { arr.length=0; s.forEach(d=>arr.push({id:d.id,...d.data()})); r(); loadDrops(); });
-        sub("users", users, renderUsers);
-        sub("projects", projects, renderProj);
-        sub("vehicles", vehicles, renderVeh);
-        sub("devices", devices, renderDev);
-        
-        onSnapshot(collection(db, "tasks"), s => { 
-            tasks=[]; s.forEach(d=>tasks.push({id:d.id,...d.data()})); 
-            renderCal(); renderTeam(); updateStats(); renderRep();
+    function applyPermissions() {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = (userRole === 'admin') ? 'block' : 'none');
+        document.querySelectorAll('.nav-item.admin-only').forEach(el => el.style.display = (userRole === 'admin') ? 'flex' : 'none');
+    }
+
+    window.requestNotificationPermission = () => {
+        if (!("Notification" in window)) return alert("Desteklenmiyor");
+        Notification.requestPermission().then(perm => { if (perm === "granted") alert("Bildirimler Açık! 🔔"); });
+    };
+
+    function startListeners() {
+        const load = (col, arr, cb) => onSnapshot(collection(db, col), (s) => { 
+            arr.length=0; s.docs.forEach(d=>arr.push({id:d.id, ...d.data()})); 
+            if(cb) cb(); loadDropdowns();
         });
-        onSnapshot(query(collection(db, "logs"), orderBy("date", "desc"), limit(100)), s => { logs=[]; s.forEach(d=>logs.push(d.data())); renderRep(); });
-    }
-
-    // TABS
-    window.goTab = (t) => {
-        document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
-        document.getElementById('tab-'+t).classList.add('active');
-        document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-    }
-    window.switchTab = window.goTab; 
-
-    // CALENDAR
-    window.moveMonth = (m) => { curDate.setMonth(curDate.getMonth()+m); renderCal(); }
-    window.togglePicker = () => { document.getElementById('month-picker').style.display = document.getElementById('month-picker').style.display==='block'?'none':'block'; }
-    window.setMonth = (m) => { curDate.setMonth(m); curDate.setFullYear(pickerYear); renderCal(); document.getElementById('month-picker').style.display='none'; }
-    
-    function renderCal() {
-        const m=curDate.getMonth(), y=curDate.getFullYear();
-        const monthNames = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-        document.getElementById('month-disp').innerText = `${monthNames[m]} ${y}`;
-        const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
-        let h=""; for(let i=0; i<(first===0?6:first-1); i++) h+=`<div></div>`;
-        const today = new Date().toISOString().split('T')[0];
-        for(let d=1; d<=days; d++) {
-            const dk = `${d}-${m}-${y}`;
-            const dt = tasks.filter(t=>t.date===dk);
-            let dots=""; dt.forEach(t=>{ if(Array.isArray(t.person)) t.person.forEach(p=>dots+=`<span class="task-dot">${p.split(' ')[0]}</span>`); else dots+=`<span class="task-dot">${t.person.split(' ')[0]}</span>`; });
-            h+=`<div class="day ${dk===today?'today':''}" onclick="openDay('${dk}')"><b>${d}</b>${dots}</div>`;
-        }
-        document.getElementById('cal-grid').innerHTML = h;
-    }
-    window.openDay = (dk) => {
-        selDate=dk; document.getElementById('tm-date').innerText = `📅 Tarih: ${dk}`;
-        const dt=tasks.filter(t=>t.date===dk);
-        document.getElementById('tm-list').innerHTML = dt.map(t=>`
-            <div class="list-card" style="padding:15px; background:#f0f7ff; border-left:4px solid #2575fc;">
-                <div class="lc-content">
-                    <span class="lc-title" style="font-size:1rem;">${Array.isArray(t.person)?t.person.join(', '):t.person}</span>
-                    <span class="lc-sub">📍 ${t.projectName} ${t.location?'('+t.location+')':''}</span>
-                    ${t.plate && t.plate.length > 0 ? `<span class="lc-sub">🚗 ${t.plate.join(', ')}</span>` : ''}
-                    ${t.device && t.device.length > 0 ? `<span class="lc-sub">🧰 ${t.device.join(', ')}</span>` : ''}
-                </div>
-                ${role==='admin'?`<div class="lc-action"><button onclick="delTask('${t.id}')" class="icon-btn" style="color:#ef4444; background:white;">🗑</button></div>`:''}
-            </div>`).join('') || '<p style="text-align:center; color:#a3aed0;">Bu tarihte kayıtlı görev yok.</p>';
-        document.getElementById('taskModal').style.display='flex';
-    }
-    window.closeModal = () => document.getElementById('taskModal').style.display='none';
-
-    // TASKS & NOTIFICATION
-    window.saveTask = async () => {
-        const per = getMulti('ms-per'), dev = getMulti('ms-dev'), veh = getMulti('ms-veh');
-        const pid = document.getElementById('t-proj').value;
-        if(!pid || per.length===0) return alert("Lütfen proje ve en az bir personel seçin.");
+        load("projects", projects, renderProjects);
+        load("vehicles", vehicles, renderVehicleList);
+        load("devices", devices, renderDeviceList);
+        onSnapshot(collection(db, "users"), (s) => { users=[]; s.docs.forEach(d=>users.push(d.data())); renderTeamStatus(); renderUserList(); loadDropdowns(); });
         
-        // Conflict
-        let warn=""; dev.forEach(n=>{ const d=devices.find(x=>x.name===n); if(d&&d.currentHolder&&!per.includes(d.currentHolder)) warn+=`⚠️ ${n} cihazı şu an ${d.currentHolder} zimmetinde!\n`; });
-        if(warn && !confirm(warn+"\nYine de bu göreve atansın mı?")) return;
+        const logsQuery = query(collection(db, "logs"), orderBy("date", "desc"), limit(500));
+        onSnapshot(logsQuery, (s) => { logs = []; s.docs.forEach(d => logs.push(d.data())); filterReports(); });
 
-        const pname = projects.find(p=>p.id===pid).name;
-        await addDoc(collection(db,"tasks"), { date:selDate, person:per, projectName:pname, projectId:pid, location:document.getElementById('t-loc').value, device:dev, plate:veh });
+        onSnapshot(collection(db, "tasks"), (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added" && !isFirstLoad) {
+                    const data = change.doc.data();
+                    const isForMe = Array.isArray(data.person) ? data.person.includes(currentUser.name) : data.person === currentUser.name;
+                    if (isForMe && Notification.permission === "granted") sendOneSignalNotification([currentUser.email], `Yeni görev: ${data.projectName}`);
+                }
+            });
+            tasks=[]; snapshot.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
+            renderCalendar();
+            if(document.querySelector('.modal-overlay').style.display === 'flex') openModalLogic(selectedDateStr);
+            updateStats(getCurrentDateStr()); renderTeamStatus(); renderDeviceList(); filterReports();
+            isFirstLoad = false;
+        });
+    }
+
+    // YENİ REST API KEY GİRİLDİ
+    async function sendOneSignalNotification(userEmails, message) {
+        const ONESIGNAL_APP_ID = "08d90e98-c6b4-429c-aab5-f11164ddc881";
+        const k1 = "os_v2_app_bdmq5gggwrbjzkvv6eiwjxoiqh5q6foeed5uwdnuxioe7pi";
+        const k2 = "yndd5zus3d632jsuuwtik6x4npdfvrl2k3lmolhffex6ndislurwmnma";
+        const REST_API_KEY = k1 + k2;
         
-        // Notify
-        const emails = users.filter(u => per.includes(u.name)).map(u => u.email);
-        if(emails.length>0) sendPush(emails, `📅 Yeni Görev: ${selDate}\n📍 Proje: ${pname}`);
-        
-        closeModal();
-        document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false); document.getElementById('t-loc').value="";
-    }
-    window.delTask = (id) => { if(confirm("Görevi silmek istediğinize emin misiniz?")) deleteDoc(doc(db,"tasks",id)).then(()=>closeModal()); }
-
-    async function sendPush(emails, msg) {
-        const k1 = "os_v2_app_bdmq5gggwrbjzkvv6eiwjxoiqh5q6foeed5uwdnuxioe7pi"; const k2 = "yndd5zus3d632jsuuwtik6x4npdfvrl2k3lmolhffex6ndislurwmnma";
-        try { await fetch('https://onesignal.com/api/v1/notifications', {
-            method:'POST', headers:{'Authorization':'Basic ' + k1 + k2, 'content-type':'application/json'},
-            body: JSON.stringify({app_id: os_key_1 + os_key_2, include_aliases:{"external_id":emails}, target_channel:"push", contents:{"en":msg}, headings:{"en":"Ekip Takip Bildirimi 🚀"}})
-        }); } catch(e){ console.error("Push Hatası:", e); }
+        const options = {
+            method: 'POST',
+            headers: { accept: 'application/json', 'Authorization': 'Basic ' + REST_API_KEY, 'content-type': 'application/json' },
+            body: JSON.stringify({
+                app_id: ONESIGNAL_APP_ID,
+                include_aliases: { "external_id": userEmails },
+                target_channel: "push",
+                contents: { "en": message, "tr": message },
+                headings: { "en": "Yeni Görev", "tr": "Görev Atandı 🚀" }
+            })
+        };
+        try { await fetch('https://onesignal.com/api/v1/notifications', options); } catch (e) { console.log(e); }
     }
 
-    // CRUD
-    window.addProj = () => addDoc(collection(db,"projects"),{name:document.getElementById('p-name').value, manager:document.getElementById('p-man').value, start:document.getElementById('p-start').value, end:document.getElementById('p-end').value, cost:document.getElementById('p-cost').value, offer:document.getElementById('p-offer').value}).then(()=>{alert("Proje eklendi."); document.getElementById('p-name').value="";});
-    window.delItem = (c,id) => { if(confirm("Bu kaydı silmek istediğinize emin misiniz?")) deleteDoc(doc(db,c,id)); }
+    async function addLog(type, item, action, person) {
+        await addDoc(collection(db, "logs"), { date: new Date().toISOString(), type: type, item: item, action: action, person: person, admin: currentUser.name });
+    }
+    window.setReportFilter = (filter, btn) => { currentReportFilter = filter; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); filterReports(); }
+    window.filterReports = () => { currentReportDate = document.getElementById('reportDateSelector').value; renderLogs(); renderPersonnelReport(); }
     
-    window.addVeh = () => addDoc(collection(db,"vehicles"),{plate:document.getElementById('v-plate').value, info:document.getElementById('v-info').value, inspectionDate:document.getElementById('v-insp').value, currentHolder:null}).then(()=>{alert("Araç eklendi."); document.getElementById('v-plate').value="";});
-    window.addDev = () => addDoc(collection(db,"devices"),{name:document.getElementById('d-name').value, serial:document.getElementById('d-ser').value, calib:document.getElementById('d-cal').value, currentHolder:null}).then(()=>{alert("Cihaz eklendi."); document.getElementById('d-name').value="";});
-    
-    window.addUser = () => setDoc(doc(db,"users",document.getElementById('u-email').value),{name:document.getElementById('u-name').value, title:document.getElementById('u-title').value, email:document.getElementById('u-email').value, role:document.getElementById('u-role').value}).then(()=>{alert("Kullanıcı eklendi."); canUser();});
-    window.editUser = (e) => {
-        const u = users.find(x=>x.email===e);
-        document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title; document.getElementById('u-email').value=u.email; document.getElementById('u-role').value=u.role;
-        editId=e; document.getElementById('btn-u-add').style.display='none'; document.getElementById('btn-u-upd').style.display='inline'; document.getElementById('btn-u-can').style.display='inline';
-    }
-    window.updUser = async () => { await updateDoc(doc(db,"users",editId),{name:document.getElementById('u-name').value, title:document.getElementById('u-title').value, role:document.getElementById('u-role').value}); alert("Kullanıcı güncellendi."); canUser(); }
-    window.canUser = () => { editId=null; document.getElementById('u-name').value=""; document.getElementById('u-title').value=""; document.getElementById('u-email').value=""; document.getElementById('btn-u-add').style.display='inline'; document.getElementById('btn-u-upd').style.display='none'; document.getElementById('btn-u-can').style.display='none'; }
-
-    // ZIMMET
-    window.openCustody = (type, id, name) => { custodyType=type; custodyId=id; document.getElementById('cm-name').innerText=name; document.getElementById('custodyModal').style.display='flex'; }
-    window.doCustody = async () => {
-        const p = document.getElementById('c-per').value;
-        if(!p || p==='Personel Seçin') return alert("Lütfen personel seçin.");
-        const col = custodyType==='vehicle'?'vehicles':'devices';
-        await updateDoc(doc(db, col, custodyId), { currentHolder: p });
-        await addLog(custodyType, document.getElementById('cm-name').innerText, 'take', p);
-        document.getElementById('custodyModal').style.display='none';
-    }
-    window.dropItem = async (col, id, name) => {
-        if(confirm(`${name} iade alınsın mı?`)) {
-            await updateDoc(doc(db, col, id), { currentHolder: null });
-            await addLog(col==='vehicles'?'vehicle':'device', name, 'return', curUser.name);
-        }
-    }
-
-    // RENDERS (Modern Kartlar)
-    function renderProj() { document.getElementById('proj-list').innerHTML=projects.map(p=>{
-        return `<div class="list-card">
-            <div class="lc-icon">📂</div>
-            <div class="lc-content">
-                <span class="lc-title">${p.name}</span>
-                <span class="lc-sub">Yönetici: ${p.manager || '-'} | Başlangıç: ${p.start ? p.start.split('-').reverse().join('.') : '-'}</span>
-            </div>
-            ${role==='admin'?`<div class="lc-action"><button onclick="delItem('projects','${p.id}')" class="icon-btn" style="color:#ef4444; background:#fee2e2;">🗑</button></div>`:''}
-        </div>`;
-    }).join(''); }
-
-    function renderVeh() { document.getElementById('veh-list').innerHTML=vehicles.map(v=>{
-        const statusClass = v.currentHolder ? 'custody' : 'active';
-        const statusBadge = v.currentHolder ? `<span class="badge bg-orange">👤 ${v.currentHolder}</span>` : `<span class="badge bg-green">BOŞTA</span>`;
-        return `<div class="list-card ${statusClass}">
-            <div class="lc-icon" style="color:#f59e0b;">🚗</div>
-            <div class="lc-content">
-                <span class="lc-title">${v.plate}</span>
-                <span class="lc-sub">${v.info} | Muayene: ${v.inspectionDate ? v.inspectionDate.split('-').reverse().join('.') : '-'}</span>
-                <div style="margin-top:5px;">${statusBadge}</div>
-            </div>
-            <div class="lc-action" style="display:flex; flex-direction:column; gap:5px;">
-                ${role==='admin' ? (v.currentHolder ? `<button class="btn-sm btn-outline-red" onclick="dropItem('vehicles','${v.id}','${v.plate}')">İade Al</button>` : `<button class="btn-sm btn-outline-blue" onclick="openCustody('vehicle','${v.id}','${v.plate}')">Zimmetle</button>`) : ''}
-                ${role==='admin'?`<button onclick="delItem('vehicles','${v.id}')" class="icon-btn" style="color:#ef4444; background:#fee2e2; width:35px; height:35px; align-self:flex-end;">🗑</button>`:''}
-            </div>
-        </div>`;
-    }).join(''); }
-
-    function renderDev() { document.getElementById('dev-list').innerHTML=devices.map(d=>{
-        const statusClass = d.currentHolder ? 'custody' : 'active';
-        const statusBadge = d.currentHolder ? `<span class="badge bg-orange">👤 ${d.currentHolder}</span>` : `<span class="badge bg-green">BOŞTA</span>`;
-        return `<div class="list-card ${statusClass}">
-            <div class="lc-icon" style="color:#8b5cf6;">🧰</div>
-            <div class="lc-content">
-                <span class="lc-title">${d.name}</span>
-                <span class="lc-sub">S.N: ${d.serial} | Kalib.: ${d.calib ? d.calib.split('-').reverse().join('.') : '-'}</span>
-                <div style="margin-top:5px;">${statusBadge}</div>
-            </div>
-            <div class="lc-action" style="display:flex; flex-direction:column; gap:5px;">
-                ${role==='admin' ? (d.currentHolder ? `<button class="btn-sm btn-outline-red" onclick="dropItem('devices','${d.id}','${d.name}')">İade Al</button>` : `<button class="btn-sm btn-outline-blue" onclick="openCustody('device','${d.id}','${d.name}')">Zimmetle</button>`) : ''}
-                ${role==='admin'?`<button onclick="delItem('devices','${d.id}')" class="icon-btn" style="color:#ef4444; background:#fee2e2; width:35px; height:35px; align-self:flex-end;">🗑</button>`:''}
-            </div>
-        </div>`;
-    }).join(''); }
-
-    function renderUsers() { document.getElementById('user-list').innerHTML=users.map(u=>{
-        return `<div class="list-card">
-            <div class="lc-avatar">${u.name.charAt(0)}</div>
-            <div class="lc-content">
-                <span class="lc-title">${u.name}</span>
-                <span class="lc-sub">${u.title || '-'} | ${u.email}</span>
-                <span class="badge bg-gray" style="margin-top:5px; display:inline-block;">${u.role==='admin'?'Yönetici':'Personel'}</span>
-            </div>
-            ${role==='admin'?`<div class="lc-action" style="display:flex; gap:5px;"><button onclick="editUser('${u.email}')" class="icon-btn">✎</button><button onclick="delItem('users','${u.email}')" class="icon-btn" style="color:#ef4444; background:#fee2e2;">🗑</button></div>`:''}
-        </div>`;
-    }).join(''); }
-    
-    function renderTeam() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('team-list').innerHTML=users.map(u=>{
-            const at = tasks.find(t=>t.date===today && (Array.isArray(t.person)?t.person.includes(u.name):t.person===u.name));
-            const statusBadge = at ? `<span class="badge bg-red">SAHADA: ${at.projectName}</span>` : `<span class="badge bg-green">OFİSTE / BOŞTA</span>`;
-            const statusClass = at ? 'busy' : 'active';
-            return `<div class="list-card ${statusClass}">
-                <div class="lc-avatar">${u.name.charAt(0)}</div>
-                <div class="lc-content">
-                    <span class="lc-title">${u.name}</span>
-                    <span class="lc-sub">${u.title||'-'}</span>
-                    <div style="margin-top:5px;">${statusBadge}</div>
-                </div>
-            </div>`;
+    function renderLogs() {
+        const table = document.getElementById('logTable');
+        const filteredLogs = logs.filter(l => {
+            const logMonth = l.date.substring(0, 7); const typeMatch = currentReportFilter === 'all' || l.type === currentReportFilter;
+            return logMonth === currentReportDate && typeMatch;
+        });
+        if (filteredLogs.length === 0) { table.innerHTML = '<tr><td>Kayıt yok.</td></tr>'; return; }
+        table.innerHTML = filteredLogs.map(l => {
+            const d = new Date(l.date);
+            const dateStr = `${d.getDate()}.${d.getMonth()+1} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+            const actionClass = l.action === 'take' ? 'action-take' : 'action-return';
+            const actionText = l.action === 'take' ? 'Aldı' : 'Verdi';
+            const icon = l.type === 'vehicle' ? '🚗' : '🧰';
+            return `<tr><td><span class="log-date">${dateStr}</span></td><td>${icon} <strong>${l.person}</strong><br>${l.item} <span class="log-action ${actionClass}">${actionText}</span></td></tr>`;
         }).join('');
     }
-
-    function updateStats() {
-        const today = new Date().toISOString().split('T')[0];
-        const dt = tasks.filter(t=>t.date===today);
-        let act=new Set(); dt.forEach(t=>{ if(Array.isArray(t.person)) t.person.forEach(p=>act.add(p)); else act.add(t.person); });
-        document.getElementById('s-total').innerText=users.length; document.getElementById('s-active').innerText=act.size; document.getElementById('s-idle').innerText=Math.max(0, users.length-act.size);
+    function renderPersonnelReport() {
+        const [year, month] = currentReportDate.split('-').map(Number);
+        const reportData = {}; users.forEach(u => reportData[u.name] = 0);
+        tasks.forEach(t => {
+            const tDate = parseDateStr(t.date);
+            if (tDate.getFullYear() === year && tDate.getMonth() === (month - 1)) {
+                if (Array.isArray(t.person)) t.person.forEach(p => { if(reportData[p] !== undefined) reportData[p]++; });
+                else if(reportData[t.person] !== undefined) reportData[t.person]++;
+            }
+        });
+        document.getElementById('personnelReportBody').innerHTML = Object.keys(reportData).map(key => `<tr><td>${key}</td><td style="font-weight:bold;">${reportData[key]} Gün</td></tr>`).join('');
     }
 
-    async function addLog(type, item, act, per) { await addDoc(collection(db,"logs"), {date:new Date().toISOString(), type, item, action:act, person:per, admin:curUser.name}); }
-    window.renderRep = () => {
-        const ym = document.getElementById('r-date').value; if(!ym) return;
-        const fl = logs.filter(l=>l.date.startsWith(ym) && (repFilt==='all' || l.type===repFilt));
-        document.getElementById('log-list').innerHTML = fl.map(l=>{
-            const d = new Date(l.date); const dStr = `${d.getDate()}.${d.getMonth()+1} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`;
-            const icon = l.type==='vehicle'?'🚗':'🧰'; const actText = l.action==='take'?'<span style="color:#f59e0b; font-weight:600;">Teslim Aldı</span>':'<span style="color:#10b981; font-weight:600;">İade Etti</span>';
-            return `<div class="list-card" style="padding:10px;"><div class="lc-icon" style="font-size:1.2rem; width:40px; height:40px;">${icon}</div><div class="lc-content"><span class="lc-title" style="font-size:0.9rem;">${l.person}</span><span class="lc-sub">${l.item} - ${actText}</span><span class="lc-sub" style="font-size:0.75rem;">${dStr} (İşlem: ${l.admin})</span></div></div>`;
-        }).join('') || '<p style="text-align:center; color:#a3aed0;">Kayıt bulunamadı.</p>';
+    window.openCustodyModal = (type, id, name, extra) => {
+        custodyType = type; custodyTargetId = id;
+        document.getElementById('custodyItemName').innerText = `${name} (${extra||''})`;
+        document.getElementById('c-person').innerHTML = users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+        document.getElementById('custodyModal').style.display = 'flex';
+    }
+    window.closeCustodyModal = () => document.getElementById('custodyModal').style.display = 'none';
+    window.saveCustody = async () => {
+        const person = document.getElementById('c-person').value;
+        const collectionName = custodyType === 'vehicle' ? 'vehicles' : 'devices';
+        await updateDoc(doc(db, collectionName, custodyTargetId), { currentHolder: person });
+        const itemName = document.getElementById('custodyItemName').innerText;
+        await addLog(custodyType, itemName, 'take', person);
+        closeCustodyModal();
+    }
+    window.returnItem = async (type, id) => {
+        if(confirm("İade?")) {
+            const collectionName = type === 'vehicle' ? 'vehicles' : 'devices';
+            let prevHolder = "Bilinmiyor";
+            const itemDoc = type === 'vehicle' ? vehicles.find(v=>v.id===id) : devices.find(d=>d.id===id);
+            if(itemDoc) prevHolder = itemDoc.currentHolder;
+            await updateDoc(doc(db, collectionName, id), { currentHolder: null });
+            let itemDetail = itemDoc ? (type==='vehicle' ? `${itemDoc.plate}` : `${itemDoc.name}`) : '';
+            await addLog(type, itemDetail, 'return', prevHolder);
+        }
+    }
+
+    window.saveTask = async () => {
+        const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
+        const projVal = document.getElementById('t-project-select').value;
+        if(!projVal || per.length===0) return alert("Eksik seçim");
+
+        let conflictMsg = "";
+        dev.forEach(dName => {
+            const deviceObj = devices.find(d => d.name === dName);
+            if (deviceObj && deviceObj.currentHolder && !per.includes(deviceObj.currentHolder)) {
+                conflictMsg += `⚠️ ${dName} cihazı şu an ${deviceObj.currentHolder} zimmetinde!\n`;
+            }
+        });
+        if (conflictMsg && !confirm(`DİKKAT:\n${conflictMsg}\nYine de atamak istiyor musunuz?`)) return;
+
+        const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
+        await addDoc(collection(db, "tasks"), { date: selectedDateStr, person: per, projectName: projName, projectId: projVal, location: document.getElementById('t-loc').value, device: dev, plate: plate });
+        document.getElementById('t-loc').value=""; document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false);
+        const targetEmails = users.filter(u => per.includes(u.name)).map(u => u.email);
+        if(targetEmails.length > 0) sendOneSignalNotification(targetEmails, `${selectedDateStr}: ${projName} projesindesin.`);
+    }
+    window.delTask = async (id) => { if(confirm("Sil?")) await deleteDoc(doc(db, "tasks", id)); }
+
+    window.addVehicle=async()=>{const p=document.getElementById('v-plate').value,i=document.getElementById('v-info').value,ins=document.getElementById('v-inspection').value; if(!p)return; await addDoc(collection(db,"vehicles"),{plate:p,info:i,inspectionDate:ins,currentHolder:null}); resetVehicleForm();}
+    window.updateVehicleDB=async()=>{await updateDoc(doc(db,"vehicles",editingVehicleId),{plate:document.getElementById('v-plate').value,info:document.getElementById('v-info').value,inspectionDate:document.getElementById('v-inspection').value}); resetVehicleForm();}
+    window.editVehicle=(id)=>{const v=vehicles.find(x=>x.id===id); if(!v)return; document.getElementById('v-plate').value=v.plate; document.getElementById('v-info').value=v.info; document.getElementById('v-inspection').value=v.inspectionDate||""; editingVehicleId=id; document.getElementById('vehicleFormTitle').innerText="Düzenle"; document.getElementById('btn-v-save').style.display='none'; document.getElementById('btn-v-update').style.display='block'; document.getElementById('btn-v-cancel').style.display='block';}
+    window.cancelVehicleEdit=resetVehicleForm;
+    function resetVehicleForm(){editingVehicleId=null; document.getElementById('v-plate').value=""; document.getElementById('v-info').value=""; document.getElementById('v-inspection').value=""; document.getElementById('vehicleFormTitle').innerText="Yeni Araç Ekle"; document.getElementById('btn-v-save').style.display='block'; document.getElementById('btn-v-update').style.display='none'; document.getElementById('btn-v-cancel').style.display='none';}
+    window.deleteVehicle=async(id)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"vehicles",id));}
+    function renderVehicleList(){document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => { let inspHtml = v.inspectionDate ? (new Date(v.inspectionDate) < new Date() ? `<small style="color:red; display:block;">⚠️ Muayene: ${v.inspectionDate}</small>` : `<small style="color:#666;">📅 Muayene: ${v.inspectionDate}</small>`) : ""; let zimmetHtml = v.currentHolder ? `<div style="margin-top:5px;"><span class="badge badge-orange">👤 ${v.currentHolder}</span> ${userRole==='admin'?`<button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade Al</button>`:''}</div>` : (userRole==='admin' ? `<div style="margin-top:5px;"><button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}','${v.info}')">Zimmetle</button></div>` : ''); return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small>${inspHtml}</div>${userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div>${zimmetHtml}</div>`; }).join('');}
+
+    window.addDevice=async()=>{const n=document.getElementById('d-name').value; if(!n)return; await addDoc(collection(db,"devices"),{name:n,serial:document.getElementById('d-serial').value,calib:document.getElementById('d-calib').value,currentHolder:null}); document.getElementById('d-name').value="";document.getElementById('d-serial').value="";document.getElementById('d-calib').value="";}
+    window.updateDeviceDB=async()=>{await updateDoc(doc(db,"devices",editingDeviceId),{name:document.getElementById('d-name').value,serial:document.getElementById('d-serial').value,calib:document.getElementById('d-calib').value}); resetDeviceForm();}
+    window.editDevice=(id)=>{const d=devices.find(x=>x.id===id); if(!d)return; document.getElementById('d-name').value=d.name; document.getElementById('d-serial').value=d.serial; document.getElementById('d-calib').value=d.calib||""; editingDeviceId=id; document.getElementById('deviceFormTitle').innerText="Düzenle"; document.getElementById('btn-d-save').style.display='none'; document.getElementById('btn-d-update').style.display='block'; document.getElementById('btn-d-cancel').style.display='block';}
+    window.cancelDeviceEdit=resetDeviceForm;
+    function resetDeviceForm(){editingDeviceId=null; document.getElementById('d-name').value=""; document.getElementById('d-serial').value=""; document.getElementById('d-calib').value=""; document.getElementById('deviceFormTitle').innerText="Yeni Cihaz Ekle"; document.getElementById('btn-d-save').style.display='block'; document.getElementById('btn-d-update').style.display='none'; document.getElementById('btn-d-cancel').style.display='none';}
+    window.deleteDevice=async(id)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"devices",id));}
+    function renderDeviceList(){document.getElementById('deviceListArea').innerHTML = devices.map(d => { let statusBadge = `<span class="badge badge-green">BOŞTA</span>`, zimmetHtml = ""; if(d.currentHolder) { statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; } else if(userRole==='admin') { zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; } const todayStr = getCurrentDateStr(), dt = tasks.filter(t=>t.date===todayStr), at = dt.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name); if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`; let calibHtml = d.calib ? `<br><small style="color:${new Date(d.calib) < new Date() ? 'red' : '#666'}">Kalibrasyon: ${d.calib}</small>` : ""; return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small>${calibHtml}</div>${userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; }).join('');}
+
+    window.addUserToDB=async()=>{const n=document.getElementById('u-name').value,e=document.getElementById('u-email').value,r=document.getElementById('u-role').value; if(!n)return; await setDoc(doc(db,"users",e),{name:n,email:e,role:r,title:document.getElementById('u-title').value}); alert("Ok");}
+    window.editUser=(e)=>{const u=users.find(x=>x.email===e); if(!u)return; document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title||''; document.getElementById('u-email').value=u.email; document.getElementById('u-email').disabled=true; document.getElementById('u-role').value=u.role; editingUserEmail=e; document.getElementById('userFormTitle').innerText="Düzenle"; document.getElementById('btn-user-add').style.display='none'; document.getElementById('btn-user-update').style.display='block'; document.getElementById('btn-user-cancel').style.display='block';}
+    window.updateUserDB=async()=>{await updateDoc(doc(db,"users",editingUserEmail),{name:document.getElementById('u-name').value,title:document.getElementById('u-title').value,role:document.getElementById('u-role').value}); cancelUserEdit();}
+    window.cancelUserEdit=()=>{editingUserEmail=null; document.getElementById('u-name').value=""; document.getElementById('u-title').value=""; document.getElementById('u-email').value=""; document.getElementById('u-email').disabled=false; document.getElementById('userFormTitle').innerText="Yeni Kullanıcı"; document.getElementById('btn-user-add').style.display='block'; document.getElementById('btn-user-update').style.display='none'; document.getElementById('btn-user-cancel').style.display='none';}
+    window.deleteUser=async(e)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"users",e));}
+    function renderUserList(){document.getElementById('userListArea').innerHTML=users.map(u=>`<div class="user-card" style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small></div><div><span class="badge badge-gray">${u.role}</span>${userRole==='admin' ? `<button onclick="editUser('${u.email}')" style="border:none; bg:none; margin-right:5px;">✎</button><button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>` : ''}</div></div>`).join('');}
+    
+    window.submitProject=async()=>{const n=document.getElementById('p-name').value; if(!n)return; await addDoc(collection(db,"projects"),{name:n,manager:document.getElementById('p-manager').value,start:document.getElementById('p-start').value,end:document.getElementById('p-end').value,cost:document.getElementById('p-cost').value,offer:document.getElementById('p-offer').value}); document.getElementById('p-name').value="";}
+    window.updateProjectDB=async()=>{await updateDoc(doc(db,"projects",editingProjectId),{name:document.getElementById('p-name').value,manager:document.getElementById('p-manager').value,start:document.getElementById('p-start').value,end:document.getElementById('p-end').value,cost:document.getElementById('p-cost').value,offer:document.getElementById('p-offer').value}); cancelProjectEdit();}
+    window.editProject=(id)=>{const p=projects.find(x=>x.id===id); if(!p)return; document.getElementById('p-name').value=p.name; document.getElementById('p-manager').value=p.manager; document.getElementById('p-start').value=p.start||""; document.getElementById('p-end').value=p.end||""; document.getElementById('p-cost').value=p.cost; document.getElementById('p-offer').value=p.offer; editingProjectId=id; document.getElementById('projectFormTitle').innerText="Proje Düzenle"; document.getElementById('btn-p-save').style.display='none'; document.getElementById('btn-p-update').style.display='block'; document.getElementById('btn-p-cancel').style.display='block';}
+    window.cancelProjectEdit=()=>{editingProjectId=null; document.getElementById('p-name').value=""; document.getElementById('p-cost').value=""; document.getElementById('p-offer').value=""; document.getElementById('p-start').value=""; document.getElementById('p-end').value=""; document.getElementById('projectFormTitle').innerText="Yeni Proje"; document.getElementById('btn-p-save').style.display='block'; document.getElementById('btn-p-update').style.display='none'; document.getElementById('btn-p-cancel').style.display='none';}
+    window.deleteProject=async(id)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"projects",id));}
+    function renderProjects(){document.getElementById('projectListBody').innerHTML=projects.map(p=>{const pf=p.offer-p.cost; return `<div style="padding:15px; border-bottom:1px solid #eee;"><strong>${p.name}</strong> (${p.start||'-'} / ${p.end||'?'})<br><small>${p.manager||'-'} | Kar: ${pf}</small> ${userRole==='admin' ? `<div style="float:right;"><button onclick="editProject('${p.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteProject('${p.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div>`;}).join('');}
+    
+    function renderTeamStatus(){const todayStr=getCurrentDateStr(); const todayDate=parseDateStr(todayStr); document.getElementById('teamListArea').innerHTML=users.map(u=>{
+        const dt=tasks.filter(t=>t.date===todayStr); const at=dt.find(t=>Array.isArray(t.person)?t.person.includes(u.name):t.person===u.name); 
+        let statusHtml=at?`<div class="badge badge-green">SAHADA</div>`:`<div class="badge badge-gray">BOŞTA</div>`;
+        const upcoming = tasks.filter(t => parseDateStr(t.date) > todayDate && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name)).sort((a,b) => parseDateStr(a.date)-parseDateStr(b.date))[0];
+        let futureHtml = upcoming ? `<small style="color:#e67e22; display:block; margin-top:5px;">📅 Sonraki: ${upcoming.date} - ${upcoming.projectName}</small>` : '';
+        return `<div class="person-row"><div style="display:flex; align-items:center;"><div class="avatar" style="margin-right:10px;">${u.name.charAt(0)}</div><div><div style="font-weight:600;">${u.name}</div><small>${u.title||''}</small>${futureHtml}</div></div>${statusHtml}</div>`;
+    }).join('');}
+    function updateStats(dk){const dt=tasks.filter(t=>t.date===dk); let s=new Set(); dt.forEach(t=>{if(Array.isArray(t.person))t.person.forEach(p=>s.add(p));else s.add(t.person)}); document.getElementById('stat-total').innerText=users.length; document.getElementById('stat-active').innerText=s.size; document.getElementById('stat-idle').innerText=Math.max(0,users.length-s.size);}
+    
+    window.switchTab = (tab) => {
+        document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+        document.getElementById('view-' + tab).classList.add('active');
+        event.currentTarget.classList.add('active');
         
-        const cnt={}; users.forEach(u=>cnt[u.name]=0);
-        tasks.forEach(t=>{ if(t.date.startsWith(ym.split('-')[1])) { if(Array.isArray(t.person)) t.person.forEach(p=>{if(cnt[p]!==undefined)cnt[p]++}); else if(cnt[t.person]!==undefined)cnt[t.person]++; } });
-        document.getElementById('eff-table').innerHTML = Object.keys(cnt).map(k=>`<tr><td style="font-weight:600;">${k}</td><td style="text-align:right; color:#2575fc; font-weight:700;">${cnt[k]} Gün</td></tr>`).join('');
+        if(tab === 'reports') filterReports();
+    }
+    window.changeMonth = (d) => { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
+    window.toggleDatePicker = () => { document.getElementById('month-picker-modal').style.display = document.getElementById('month-picker-modal').style.display === 'block' ? 'none' : 'block'; pickerYear = currentDate.getFullYear(); document.getElementById('pick-year-val').innerText = pickerYear; }
+    window.changePickYear = (d) => { pickerYear += d; document.getElementById('pick-year-val').innerText = pickerYear; }
+    window.goToMonth = (m) => { currentDate.setFullYear(pickerYear); currentDate.setMonth(m); renderCalendar(); document.getElementById('month-picker-modal').style.display = 'none'; }
+    function getCurrentDateStr() { const d=new Date(); return `${d.getDate()}-${d.getMonth()}-${d.getFullYear()}`; }
+    function parseDateStr(str) { const [d, m, y] = str.split('-').map(Number); return new Date(y, m, d); }
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid'); grid.innerHTML = `<div class="day-head">Pt</div><div class="day-head">Sa</div><div class="day-head">Ça</div><div class="day-head">Pe</div><div class="day-head">Cu</div><div class="day-head">Ct</div><div class="day-head">Pz</div>`;
+        const y = currentDate.getFullYear(), m = currentDate.getMonth();
+        document.getElementById('monthDisplay').innerText = `${m+1}/${y}`;
+        const first = new Date(y, m, 1).getDay(), start = first===0?6:first-1, days = new Date(y, m+1, 0).getDate();
+        for(let i=0; i<start; i++) grid.innerHTML+='<div></div>';
+        const todayStr = getCurrentDateStr();
+        for(let d=1; d<=days; d++) {
+            let dk = `${d}-${m}-${y}`, dt = tasks.filter(t=>t.date===dk), dots = "";
+            dt.forEach(t => { if(Array.isArray(t.person)) t.person.forEach(p => dots += `<span class="task-dot">${p}</span>`); else dots += `<span class="task-dot">${t.person}</span>`; });
+            let cls = (dk===todayStr)?"day-cell today":"day-cell";
+            grid.innerHTML += `<div class="${cls}" onclick="openModal('${dk}')"><b>${d}</b>${dots}</div>`;
+        }
+    }
+    window.openModal = (dk) => { selectedDateStr = dk; document.getElementById('modalDateText').innerText = dk; openModalLogic(dk); document.querySelector('#taskModal').style.display = 'flex'; }
+    window.closeModal = () => document.querySelector('#taskModal').style.display = 'none';
+    function openModalLogic(dk) {
+        const dt = tasks.filter(t=>t.date===dk);
+        document.getElementById('dayTaskList').innerHTML = dt.length ? dt.map(t => {
+            const pStr = Array.isArray(t.person) ? t.person.join(", ") : t.person;
+            return `<div style="padding:10px; background:#f9f9f9; border-radius:8px; margin-bottom:5px; border-left:4px solid #764ba2;"><strong>${pStr}</strong><br>📍 ${t.projectName} ${userRole==='admin' ? `<button onclick="delTask('${t.id}')" style="float:right; color:red; border:none;">🗑</button>` : ''}</div>`;
+        }).join('') : 'Görev yok';
     }
 
-    function loadDrops() {
-        const sel = (id,arr) => { if(document.getElementById(id)) document.getElementById(id).innerHTML='<option value="">Seçiniz</option>'+arr.map(x=>`<option>${x.name}</option>`).join(''); }
-        const ms = (id,arr,k) => { if(document.getElementById(id)) document.getElementById(id).innerHTML=arr.map(x=>`<div class="ms-opt"><input type="checkbox" value="${x[k]}"> ${x[k]}</div>`).join(''); }
-        sel('p-man', users); sel('c-per', users);
-        ms('ms-per', users, 'name'); ms('ms-veh', vehicles, 'plate'); ms('ms-dev', devices, 'name');
-        if(document.getElementById('t-proj')) document.getElementById('t-proj').innerHTML=`<option value="">Proje Seçin</option>`+projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+    function loadDropdowns() {
+        if(document.getElementById('p-manager')) document.getElementById('p-manager').innerHTML=users.map(u=>`<option>${u.name}</option>`).join('');
+        if(document.getElementById('t-project-select')) document.getElementById('t-project-select').innerHTML=`<option value="">Seç</option>`+projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+        if(document.getElementById('c-person')) document.getElementById('c-person').innerHTML=users.map(u=>`<option value="${u.name}">${u.name}</option>`).join('');
+        const fillMulti=(id,arr,k)=>{const el=document.getElementById(id);if(el)el.innerHTML=arr.map(i=>`<div class="ms-item"><input type="checkbox" value="${i[k]}">${i[k]}</div>`).join('')};
+        fillMulti('ms-person',users,'name'); fillMulti('ms-device',devices,'name'); fillMulti('ms-plate',vehicles,'plate');
     }
-    function getMulti(id){return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i=>i.value);}
+    function getMultiSelectValues(id){return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i=>i.value);}
+
 </script>
 </body>
 </html>
