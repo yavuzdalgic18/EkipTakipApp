@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V19 - Zimmet)</title>
+    <title>Ekip Takip ERP (V20 - Raporlama)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -41,20 +41,30 @@
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
         
-        .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 15px; overflow: hidden;}
         .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .card-title { font-weight: 600; font-size: 1.1rem; margin: 0; }
 
         /* TAKVİM */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; width: 100%; }
         .day-head { text-align: center; color: #999; font-size: 0.7rem; font-weight: 600; }
-        .day-cell { background: #f8f9fa; border-radius: 8px; height: 85px; padding: 4px; cursor: pointer; position: relative; border: 1px solid transparent; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; }
+        .day-cell { 
+            background: #f8f9fa; border-radius: 8px; height: 85px; padding: 4px; cursor: pointer; position: relative; border: 1px solid transparent;
+            display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start;
+            overflow-y: auto; overflow-x: hidden; 
+        }
         .day-cell b { font-size: 0.8rem; margin-bottom: 2px; align-self: center; color: #333;}
         .day-cell.today { border-color: #764ba2; background: #fff; box-shadow: 0 4px 10px rgba(118, 75, 162, 0.1); }
         .task-dot { font-size: 0.55rem; background: #e0e7ff; color: #4338ca; padding: 3px 4px; margin-top: 2px; border-radius: 4px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; border-left: 2px solid #4338ca; display: block;}
 
         /* BOTTOM NAV */
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
+        .bottom-nav { 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
+            width: 95%; max-width: 500px; background: white; height: var(--nav-height); 
+            border-radius: 25px; display: flex; align-items: center; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; 
+            overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; 
+        }
         .bottom-nav::-webkit-scrollbar { display: none; }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; color: #b2bec3; cursor: pointer; min-width: 65px; transition: 0.3s; }
         .nav-item .icon { font-size: 1.4rem; margin-bottom: 2px; }
@@ -67,9 +77,9 @@
         @media (min-width: 600px) { .card-list { grid-template-columns: 1fr 1fr; } }
         .info-card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; border-left: 5px solid #ccc; }
         .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 5px; }
-        .info-card.active { border-left-color: #27ae60; } /* Boşta - Yeşil */
-        .info-card.custody { border-left-color: #e67e22; } /* Zimmetli - Turuncu */
-        .info-card.busy { border-left-color: #e74c3c; } /* Görevde - Kırmızı */
+        .info-card.active { border-left-color: #27ae60; } 
+        .info-card.custody { border-left-color: #e67e22; } 
+        .info-card.busy { border-left-color: #e74c3c; } 
 
         .badge { padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
         .badge-green { background: #d1e7dd; color: #0f5132; }
@@ -77,6 +87,9 @@
         .badge-orange { background: #fff3cd; color: #d35400; }
         .badge-gray { background: #e2e3e5; color: #41464b; }
         
+        .future-list { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #eee; }
+        .future-item { font-size: 0.75rem; color: #666; display: flex; justify-content: space-between; margin-bottom: 2px;}
+
         /* FORMLAR */
         input, select { width: 100%; padding: 15px; border: 1px solid #eee; background: #f9f9f9; border-radius: 12px; font-family: 'Poppins', sans-serif; margin-bottom: 10px; outline: none; }
         .btn-main { width: 100%; padding: 15px; background: var(--primary-grad); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
@@ -89,6 +102,15 @@
         .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 25px 25px 0 0; padding: 30px; animation: slideUp 0.3s; max-height: 85vh; overflow-y: auto; }
         @media (min-width: 600px) { .modal-overlay { align-items: center; } .modal-card { border-radius: 25px; width: 90%; } }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* RAPOR TABLOSU */
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .log-table th { text-align: left; padding: 10px; background: #f4f6f8; color: #666; }
+        .log-table td { padding: 10px; border-bottom: 1px solid #eee; }
+        .log-date { font-size: 0.75rem; color: #999; }
+        .log-action { font-weight: bold; }
+        .action-take { color: #27ae60; } /* Yeşil */
+        .action-return { color: #e74c3c; } /* Kırmızı */
 
         /* MULTI SELECT */
         .multi-select-area { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
@@ -200,7 +222,7 @@
         </div>
 
         <div id="view-team" class="view-section">
-            <h2 style="margin-left:10px;">Ekip Durumu</h2>
+            <h2 style="margin-left:10px;">Ekip Durumu (Bugün)</h2>
             <div class="modern-card" id="teamListArea"></div>
         </div>
 
@@ -220,13 +242,14 @@
         </div>
 
         <div id="view-vehicles" class="view-section">
-            <h2 style="margin-left:10px;">Araçlar</h2>
-            <div class="admin-only modern-card">
+            <h2 style="margin-left:10px;">Filo Yönetimi</h2>
+            <div class="admin-only modern-card" id="vehicleFormContainer">
                 <h3 class="card-title" id="vehicleFormTitle">Yeni Araç Ekle</h3>
                 <input type="text" id="v-plate" placeholder="Plaka (34 AB 123)">
                 <input type="text" id="v-info" placeholder="Model (Ford Ranger)">
                 <label>Muayene Tarihi:</label>
                 <input type="date" id="v-inspection">
+                
                 <div style="display:flex; gap:5px;">
                     <button class="btn-main" id="btn-v-save" onclick="addVehicle()">Kaydet</button>
                     <button class="btn-main" id="btn-v-update" onclick="updateVehicleDB()" style="background:#f39c12; display:none;">Güncelle</button>
@@ -255,6 +278,26 @@
             <div class="modern-card" id="userListArea"></div>
         </div>
 
+        <div id="view-reports" class="view-section admin-only">
+            <h2 style="margin-left:10px;">Raporlar</h2>
+            
+            <div class="modern-card">
+                <h3 class="card-title">Zimmet Geçmişi</h3>
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table class="log-table" id="logTable">
+                        </table>
+                </div>
+            </div>
+
+            <div class="modern-card">
+                <h3 class="card-title">Bu Ay Personel Çalışma Raporu</h3>
+                <table class="log-table" id="personnelReportTable">
+                    <thead><tr><th>Personel</th><th>Görev Sayısı</th></tr></thead>
+                    <tbody id="personnelReportBody"></tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <div class="bottom-nav">
@@ -264,6 +307,7 @@
         <div class="nav-item" onclick="switchTab('vehicles')"><span class="icon">🚗</span>Araç</div>
         <div class="nav-item" onclick="switchTab('devices')"><span class="icon">🧰</span>Cihaz</div>
         <div class="nav-item admin-only" onclick="switchTab('users')"><span class="icon">⚙️</span>Yetki</div>
+        <div class="nav-item admin-only" onclick="switchTab('reports')"><span class="icon">📊</span>Rapor</div>
     </div>
 </div>
 
@@ -302,7 +346,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY",
@@ -318,11 +362,11 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let projects=[], tasks=[], users=[], vehicles=[], devices=[];
+    let projects=[], tasks=[], users=[], vehicles=[], devices=[], logs=[];
     let currentUser=null, userRole='staff';
     let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), isFirstLoad=true;
     let pickerYear = new Date().getFullYear(), editingUserEmail=null, editingVehicleId=null;
-    let custodyTargetId = null, custodyType = null; // Zimmet için
+    let custodyTargetId = null, custodyType = null;
 
     // AUTH
     onAuthStateChanged(auth, async (user) => {
@@ -384,6 +428,13 @@
         load("devices", devices, renderDeviceList);
         onSnapshot(collection(db, "users"), (s) => { users=[]; s.docs.forEach(d=>users.push(d.data())); renderTeamStatus(); renderUserList(); loadDropdowns(); });
         
+        // Logs Listener (Sorted by date desc)
+        const logsQuery = query(collection(db, "logs"), orderBy("date", "desc"), limit(50));
+        onSnapshot(logsQuery, (s) => {
+            logs = []; s.docs.forEach(d => logs.push(d.data()));
+            renderLogs();
+        });
+
         onSnapshot(collection(db, "tasks"), (snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added" && !isFirstLoad) {
@@ -395,9 +446,62 @@
             tasks=[]; snapshot.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
             renderCalendar();
             if(document.querySelector('.modal-overlay').style.display === 'flex') openModalLogic(selectedDateStr);
-            updateStats(getCurrentDateStr()); renderTeamStatus(); renderDeviceList();
+            updateStats(getCurrentDateStr()); renderTeamStatus(); renderDeviceList(); renderPersonnelReport();
             isFirstLoad = false;
         });
+    }
+
+    // LOGGING FUNCTION
+    async function addLog(type, item, action, person) {
+        await addDoc(collection(db, "logs"), {
+            date: new Date().toISOString(),
+            type: type,
+            item: item,
+            action: action,
+            person: person,
+            admin: currentUser.name
+        });
+    }
+
+    function renderLogs() {
+        const table = document.getElementById('logTable');
+        table.innerHTML = logs.map(l => {
+            const d = new Date(l.date);
+            const dateStr = `${d.getDate()}.${d.getMonth()+1} ${d.getHours()}:${d.getMinutes()}`;
+            const actionClass = l.action === 'take' ? 'action-take' : 'action-return';
+            const actionText = l.action === 'take' ? 'Teslim Aldı' : 'İade Etti';
+            return `<tr>
+                <td class="log-date">${dateStr}</td>
+                <td>
+                    <strong>${l.person}</strong>, ${l.item} <span class="log-action ${actionClass}">${actionText}</span>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderPersonnelReport() {
+        const currentMonth = new Date().getMonth();
+        const reportData = {};
+
+        users.forEach(u => reportData[u.name] = 0);
+
+        tasks.forEach(t => {
+            const tDate = parseDateStr(t.date);
+            if (tDate.getMonth() === currentMonth) {
+                if (Array.isArray(t.person)) {
+                    t.person.forEach(p => { if(reportData[p] !== undefined) reportData[p]++; });
+                } else {
+                    if(reportData[t.person] !== undefined) reportData[t.person]++;
+                }
+            }
+        });
+
+        document.getElementById('personnelReportBody').innerHTML = Object.keys(reportData).map(key => `
+            <tr>
+                <td>${key}</td>
+                <td style="font-weight:bold;">${reportData[key]} Gün</td>
+            </tr>
+        `).join('');
     }
 
     // UI & DATE
@@ -439,9 +543,9 @@
         selectedDateStr = dk;
         document.getElementById('modalDateText').innerText = dk.replace(/-/g, '.');
         openModalLogic(dk);
-        document.querySelector('#taskModal').style.display = 'flex';
+        document.querySelector('.modal-overlay').style.display = 'flex';
     }
-    window.closeModal = () => document.querySelector('#taskModal').style.display = 'none';
+    window.closeModal = () => document.querySelector('.modal-overlay').style.display = 'none';
 
     function openModalLogic(dk) {
         const dt = tasks.filter(t=>t.date===dk);
@@ -456,7 +560,7 @@
         }).join('') : '<div style="text-align:center;color:#999">Görev yok</div>';
     }
 
-    // ZİMMET MODALI
+    // ZİMMET
     window.openCustodyModal = (type, id, name) => {
         custodyType = type; custodyTargetId = id;
         document.getElementById('custodyItemName').innerText = `Seçilen: ${name}`;
@@ -464,34 +568,42 @@
         document.getElementById('custodyModal').style.display = 'flex';
     }
     window.closeCustodyModal = () => document.getElementById('custodyModal').style.display = 'none';
+    
     window.saveCustody = async () => {
         const person = document.getElementById('c-person').value;
         const collectionName = custodyType === 'vehicle' ? 'vehicles' : 'devices';
+        // Update item status
         await updateDoc(doc(db, collectionName, custodyTargetId), { currentHolder: person });
+        // Add Log
+        const itemName = document.getElementById('custodyItemName').innerText.split(': ')[1];
+        await addLog(custodyType, itemName, 'take', person);
         closeCustodyModal();
     }
-    window.returnItem = async (type, id) => {
+    
+    window.returnItem = async (type, id, itemName) => {
         if(confirm("Zimmet düşülsün mü?")) {
             const collectionName = type === 'vehicle' ? 'vehicles' : 'devices';
+            // Get previous holder name for log
+            let prevHolder = "Bilinmiyor";
+            const itemDoc = type === 'vehicle' ? vehicles.find(v=>v.id===id) : devices.find(d=>d.id===id);
+            if(itemDoc) prevHolder = itemDoc.currentHolder;
+
             await updateDoc(doc(db, collectionName, id), { currentHolder: null });
+            await addLog(type, itemDoc ? (itemDoc.plate || itemDoc.name) : 'Bilinmiyor', 'return', prevHolder);
         }
     }
 
-    // CRUD - TASKS
+    // CRUD
     window.saveTask = async () => {
         const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
         const projVal = document.getElementById('t-project-select').value;
         if(!projVal || per.length===0) return alert("Eksik seçim");
         const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
-        await addDoc(collection(db, "tasks"), {
-            date: selectedDateStr, person: per, projectName: projName, projectId: projVal,
-            location: document.getElementById('t-loc').value, device: dev, plate: plate
-        });
+        await addDoc(collection(db, "tasks"), { date: selectedDateStr, person: per, projectName: projName, projectId: projVal, location: document.getElementById('t-loc').value, device: dev, plate: plate });
         document.getElementById('t-loc').value=""; document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false);
     }
     window.delTask = async (id) => { if(confirm("Sil?")) await deleteDoc(doc(db, "tasks", id)); }
 
-    // CRUD - VEHICLES
     window.addVehicle = async () => {
         const plate=document.getElementById('v-plate').value, info=document.getElementById('v-info').value, insp=document.getElementById('v-inspection').value;
         if(!plate) return alert("Plaka girin");
@@ -517,7 +629,6 @@
     }
     window.deleteVehicle = async (id) => { if(confirm("Sil?")) await deleteDoc(doc(db, "vehicles", id)); }
 
-    // CRUD - DEVICES
     window.addDevice = async () => {
         const name=document.getElementById('d-name').value;
         if(!name) return alert("Ad girin");
@@ -526,7 +637,32 @@
     }
     window.deleteDevice = async (id) => { if(confirm("Sil?")) await deleteDoc(doc(db, "devices", id)); }
 
-    // RENDER LISTS
+    window.addUserToDB = async () => {
+        const name=document.getElementById('u-name').value, title=document.getElementById('u-title').value, email=document.getElementById('u-email').value, role=document.getElementById('u-role').value;
+        if(!name || !email) return alert("Eksik");
+        await setDoc(doc(db, "users", email), { name, title, email, role });
+        alert("Eklendi"); document.getElementById('u-name').value=""; document.getElementById('u-email').value="";
+    };
+    window.editUser = (email) => {
+        const u = users.find(x => x.email === email); if(!u) return;
+        document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title||''; document.getElementById('u-email').value=u.email; document.getElementById('u-email').disabled=true; document.getElementById('u-role').value=u.role;
+        editingUserEmail=email;
+        document.getElementById('userFormTitle').innerText="Kullanıcı Düzenle";
+        document.getElementById('btn-user-add').style.display='none'; document.getElementById('btn-user-update').style.display='block'; document.getElementById('btn-user-cancel').style.display='block';
+    };
+    window.updateUserDB = async () => { await updateDoc(doc(db, "users", editingUserEmail), { name: document.getElementById('u-name').value, title: document.getElementById('u-title').value, role: document.getElementById('u-role').value }); cancelUserEdit(); };
+    window.cancelUserEdit = () => {
+        editingUserEmail=null; document.getElementById('u-name').value=""; document.getElementById('u-title').value=""; document.getElementById('u-email').value=""; document.getElementById('u-email').disabled=false;
+        document.getElementById('userFormTitle').innerText="Yeni Kullanıcı Tanımla";
+        document.getElementById('btn-user-add').style.display='block'; document.getElementById('btn-user-update').style.display='none'; document.getElementById('btn-user-cancel').style.display='none';
+    }
+    window.deleteUser = async (e) => { if(confirm("Sil?")) await deleteDoc(doc(db, "users", e)); }
+    window.submitProject = async () => {
+        const name=document.getElementById('p-name').value; if(!name) return alert("Ad girin");
+        await addDoc(collection(db, "projects"), { name, manager: document.getElementById('p-manager').value, cost: document.getElementById('p-cost').value, offer: document.getElementById('p-offer').value });
+        document.getElementById('p-name').value="";
+    }
+
     function renderVehicleList() {
         document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => {
             let inspHtml = "";
@@ -541,14 +677,7 @@
             } else if(userRole==='admin') {
                 zimmetHtml = `<div style="margin-top:5px;"><button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}')">Zimmetle</button></div>`;
             }
-            
-            return `<div class="info-card ${v.currentHolder?'custody':'active'}">
-                <div class="info-card-header">
-                    <div><strong>${v.plate}</strong><br><small>${v.info}</small>${inspHtml}</div>
-                    ${userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}
-                </div>
-                ${zimmetHtml}
-            </div>`;
+            return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small>${inspHtml}</div>${userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div>${zimmetHtml}</div>`;
         }).join('');
     }
 
@@ -556,93 +685,31 @@
         document.getElementById('deviceListArea').innerHTML = devices.map(d => {
             let statusBadge = `<span class="badge badge-green">BOŞTA</span>`;
             let zimmetHtml = "";
-            
             if(d.currentHolder) {
                 statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`;
                 if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`;
             } else if(userRole==='admin') {
                 zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}')">Zimmetle</button>`;
             }
+            const todayStr = getCurrentDateStr(), dt = tasks.filter(t=>t.date===todayStr);
+            const at = dt.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name);
+            if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`;
 
-            return `<div class="info-card ${d.currentHolder?'custody':'active'}">
-                <div class="info-card-header">
-                    <div><strong>${d.name}</strong> <small>(${d.serial})</small></div>
-                    ${userRole==='admin' ? `<button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none;">🗑</button>`:''}
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
-                    ${statusBadge}
-                    ${zimmetHtml}
-                </div>
-            </div>`;
+            return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small></div>${userRole==='admin' ? `<button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none;">🗑</button>`:''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`;
         }).join('');
     }
 
-    // ... (Diğer Fonksiyonlar: renderProjects, renderTeamStatus, renderUserList, vb. önceki versiyonla aynı)
-    // Sadece yer kazanmak için tekrar yazmıyorum, yukarıdaki bütün fonksiyonlar (addUser, editUser, loadDropdowns vs.) V18.1'deki gibi çalışmaya devam ediyor.
-    // Ancak V19 logic'i için gerekenler yukarıda tanımlandı.
-    
-    // Diğer gerekli fonksiyonları (V18'den) buraya ekliyorum ki kod tam çalışsın:
-    window.submitProject = async () => {
-        const name=document.getElementById('p-name').value;
-        if(!name) return alert("Ad girin");
-        await addDoc(collection(db, "projects"), { name, manager: document.getElementById('p-manager').value, cost: document.getElementById('p-cost').value, offer: document.getElementById('p-offer').value });
-        document.getElementById('p-name').value="";
-    }
-    window.addUserToDB = async () => {
-        const name=document.getElementById('u-name').value, title=document.getElementById('u-title').value, email=document.getElementById('u-email').value, role=document.getElementById('u-role').value;
-        if(!name || !email) return alert("Eksik");
-        await setDoc(doc(db, "users", email), { name, title, email, role });
-        alert("Eklendi");
-    };
-    window.editUser = (email) => {
-        const u = users.find(x => x.email === email); if(!u) return;
-        document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title||''; document.getElementById('u-email').value=u.email; document.getElementById('u-email').disabled=true; document.getElementById('u-role').value=u.role;
-        editingUserEmail=email;
-        document.getElementById('userFormTitle').innerText="Kullanıcı Düzenle";
-        document.getElementById('btn-user-add').style.display='none'; document.getElementById('btn-user-update').style.display='block'; document.getElementById('btn-user-cancel').style.display='block';
-    };
-    window.updateUserDB = async () => {
-        await updateDoc(doc(db, "users", editingUserEmail), { name: document.getElementById('u-name').value, title: document.getElementById('u-title').value, role: document.getElementById('u-role').value });
-        cancelUserEdit();
-    };
-    window.cancelUserEdit = () => {
-        editingUserEmail=null; document.getElementById('u-name').value=""; document.getElementById('u-title').value=""; document.getElementById('u-email').value=""; document.getElementById('u-email').disabled=false;
-        document.getElementById('userFormTitle').innerText="Yeni Kullanıcı Tanımla";
-        document.getElementById('btn-user-add').style.display='block'; document.getElementById('btn-user-update').style.display='none'; document.getElementById('btn-user-cancel').style.display='none';
-    }
-    window.deleteUser = async (e) => { if(confirm("Sil?")) await deleteDoc(doc(db, "users", e)); }
-    
-    function renderUserList() {
-        document.getElementById('userListArea').innerHTML = users.map(u => `<div class="user-card"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small></div><div><span class="badge badge-gray">${u.role}</span>${userRole==='admin' ? `<button onclick="editUser('${u.email}')" style="border:none; bg:none; margin-right:5px;">✎</button><button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>` : ''}</div></div>`).join('');
-    }
-    function renderProjects() {
-        document.getElementById('projectListBody').innerHTML = projects.map(p => `<div style="padding:15px; border-bottom:1px solid #eee;"><strong>${p.name}</strong><br><small>${p.manager||'-'}</small></div>`).join('');
-    }
-    function updateStats(dk) {
-        const dt = tasks.filter(t=>t.date===dk);
-        let activeSet = new Set();
-        dt.forEach(t => { if(Array.isArray(t.person)) t.person.forEach(p=>activeSet.add(p)); else activeSet.add(t.person); });
-        document.getElementById('stat-total').innerText = users.length;
-        document.getElementById('stat-active').innerText = activeSet.size;
-        document.getElementById('stat-idle').innerText = Math.max(0, users.length - activeSet.size);
-    }
-    function renderTeamStatus() {
-        const todayStr = getCurrentDateStr();
-        document.getElementById('teamListArea').innerHTML = users.map(u => {
-            const dt = tasks.filter(t=>t.date===todayStr);
-            const at = dt.find(t => Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name);
-            let statusHtml = at ? `<div class="badge badge-green">SAHADA</div>` : `<div class="badge badge-gray">BOŞTA</div>`;
-            return `<div class="person-row"><div style="display:flex; align-items:center;"><div class="avatar-circle" style="width:40px;height:40px;background:#eee;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-right:10px;">${u.name.charAt(0)}</div><div><div style="font-weight:600;">${u.name}</div></div></div>${statusHtml}</div>`;
-        }).join('');
-    }
+    // Other Renders
+    function renderUserList() { document.getElementById('userListArea').innerHTML = users.map(u => `<div class="user-card"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small></div><div><span class="badge badge-gray">${u.role}</span>${userRole==='admin' ? `<button onclick="editUser('${u.email}')" style="border:none; bg:none; margin-right:5px;">✎</button><button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>` : ''}</div></div>`).join(''); }
+    function renderProjects() { document.getElementById('projectListBody').innerHTML = projects.map(p => `<div style="padding:15px; border-bottom:1px solid #eee;"><strong>${p.name}</strong><br><small>${p.manager||'-'}</small></div>`).join(''); }
+    function updateStats(dk) { const dt = tasks.filter(t=>t.date===dk); let activeSet = new Set(); dt.forEach(t => { if(Array.isArray(t.person)) t.person.forEach(p=>activeSet.add(p)); else activeSet.add(t.person); }); document.getElementById('stat-total').innerText = users.length; document.getElementById('stat-active').innerText = activeSet.size; document.getElementById('stat-idle').innerText = Math.max(0, users.length - activeSet.size); }
+    function renderTeamStatus() { const todayStr = getCurrentDateStr(); document.getElementById('teamListArea').innerHTML = users.map(u => { const dt = tasks.filter(t=>t.date===todayStr); const at = dt.find(t => Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name); let statusHtml = at ? `<div class="badge badge-green">SAHADA</div>` : `<div class="badge badge-gray">BOŞTA</div>`; return `<div class="person-row"><div style="display:flex; align-items:center;"><div class="avatar-circle" style="width:40px;height:40px;background:#eee;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-right:10px;">${u.name.charAt(0)}</div><div><div style="font-weight:600;">${u.name}</div></div></div>${statusHtml}</div>`; }).join(''); }
     function loadDropdowns() {
         if(document.getElementById('p-manager')) document.getElementById('p-manager').innerHTML = users.map(u => `<option>${u.name}</option>`).join('');
         if(document.getElementById('t-project-select')) document.getElementById('t-project-select').innerHTML = `<option value="">Seç</option>`+projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        if(document.getElementById('c-person')) document.getElementById('c-person').innerHTML = users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
         const fillMulti = (id, arr, key) => { const el = document.getElementById(id); if(el) el.innerHTML = arr.map(i => `<div class="ms-item"><input type="checkbox" value="${i[key]}">${i[key]}</div>`).join(''); }
         fillMulti('ms-person', users, 'name'); fillMulti('ms-device', devices, 'name'); fillMulti('ms-plate', vehicles, 'plate');
-        
-        // Zimmet modal dropdown
-        if(document.getElementById('c-person')) document.getElementById('c-person').innerHTML = users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
     }
     function getMultiSelectValues(id) { return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i=>i.value); }
 
