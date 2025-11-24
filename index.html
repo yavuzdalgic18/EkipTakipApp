@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V23 - Final)</title>
+    <title>Ekip Takip Pro (V24.1 - Fix)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -18,109 +18,116 @@
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
 
         /* GİRİŞ EKRANI */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary-grad); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 30px; }
-        .login-box { background: rgba(255,255,255,0.98); padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); color: #333; }
-        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; background: #f9f9f9; }
-        .login-box button { width: 100%; padding: 15px; background: #764ba2; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 10px;}
-        .login-link { color: #764ba2; cursor: pointer; margin-top: 15px; font-size: 0.9rem; display: inline-block; font-weight: 600;}
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary-grad); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .login-box { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; background: #f9f9f9; font-size: 16px; }
+        .login-box button { width: 100%; padding: 15px; background: #764ba2; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .hidden { display: none !important; } .admin-only { display: none; }
 
-        /* HEADER */
-        .app-header { padding: 20px 20px 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        /* HEADER & NAV */
+        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         .header-icons { display: flex; gap: 10px; }
-        .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; font-size: 1.2rem; border: none; }
+        .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem;}
+        
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 15px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; }
+        .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
+        .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        /* CONTAINER & VIEW */
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
+        .view-section { display: none; animation: fadeIn 0.3s; } .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* KARTLAR */
-        .hero-card { background: var(--primary-grad); border-radius: 25px; padding: 25px; color: white; box-shadow: 0 15px 30px rgba(118, 75, 162, 0.3); margin-bottom: 25px; }
+        .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .hero-card { background: var(--primary-grad); border-radius: 25px; padding: 25px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3); }
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
         
-        .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 15px; overflow: hidden; }
-        .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        /* LİSTE ELEMANLARI */
+        .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .info-card.active { border-left-color: #27ae60; }
+        .info-card.busy { border-left-color: #e74c3c; }
+        .info-card.custody { border-left-color: #f39c12; }
+
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+        .badge-green { background: #d1fae5; color: #065f46; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+        .badge-orange { background: #ffedd5; color: #9a3412; }
+        
+        /* EKİP KARTI */
+        .person-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
+        .avatar { width: 40px; height: 40px; background: #eee; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
         /* TAKVİM */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; width: 100%; }
-        .day-head { text-align: center; color: #999; font-size: 0.7rem; font-weight: 600; }
-        .day-cell { background: #f8f9fa; border-radius: 8px; height: 85px; padding: 4px; cursor: pointer; position: relative; border: 1px solid transparent; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; }
-        .day-cell.today { border-color: #764ba2; background: #fff; box-shadow: 0 4px 10px rgba(118, 75, 162, 0.1); }
-        .task-dot { font-size: 0.55rem; background: #e0e7ff; color: #4338ca; padding: 3px 4px; margin-top: 2px; border-radius: 4px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; border-left: 2px solid #4338ca; display: block;}
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .day-head { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
+        .day-cell { 
+            background: #f8f9fa; min-height: 80px; border-radius: 8px; padding: 4px; font-size: 0.8rem; position: relative; cursor: pointer; 
+            display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden;
+        }
+        .day-cell b { align-self: center; margin-bottom: 4px; color: #333; }
+        .day-cell.today { border: 2px solid #764ba2; background: white; }
+        .task-dot { 
+            font-size: 0.65rem; background: #e0e7ff; color: #4338ca; 
+            padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
+        }
 
-        /* LISTELER */
-        .person-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f0f0f0; }
-        .info-card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; border-left: 5px solid #ccc; margin-bottom: 10px;}
-        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 5px; }
-        .info-card.active { border-left-color: #27ae60; } 
-        .info-card.custody { border-left-color: #e67e22; } 
-        .info-card.busy { border-left-color: #e74c3c; }
-        .badge { padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
-        .badge-green { background: #d1e7dd; color: #0f5132; } .badge-red { background: #f8d7da; color: #842029; } .badge-orange { background: #fff3cd; color: #d35400; } .badge-gray { background: #e2e3e5; color: #41464b; }
-        
-        /* RAPORLAR */
-        .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; table-layout: fixed; }
-        .log-table th { text-align: left; padding: 10px; background: #f4f6f8; color: #666; }
-        .log-table td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; word-wrap: break-word; }
-        .report-filters { display: flex; gap: 5px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px;}
-        .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; white-space: nowrap; }
-        .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
-
-        /* FORMLAR & BUTONLAR */
-        input, select { width: 100%; padding: 15px; border: 1px solid #eee; background: #f9f9f9; border-radius: 12px; font-family: 'Poppins', sans-serif; margin-bottom: 10px; outline: none; }
-        .btn-main { width: 100%; padding: 15px; background: var(--primary-grad); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
-        .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; width: auto; border: none; cursor: pointer; font-weight: 600;}
-        .btn-outline-red { background: #fff0f0; color: #c0392b; border: 1px solid #c0392b; }
-        .btn-outline-blue { background: #f0f4ff; color: #2980b9; border: 1px solid #2980b9; }
+        /* FORM ELEMANLARI */
+        input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; outline: none; font-size: 16px; }
+        .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; margin-left: 5px;}
+        .btn-outline-red { background: white; border: 1px solid #e74c3c; color: #e74c3c; }
+        .btn-outline-blue { background: white; border: 1px solid #3498db; color: #3498db; }
 
         /* MODAL */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); z-index: 2000; display: none; justify-content: center; align-items: end; }
-        .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 25px 25px 0 0; padding: 30px; animation: slideUp 0.3s; max-height: 85vh; overflow-y: auto; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: end; }
+        .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; }
+        @media (min-width: 600px) { .modal-overlay { align-items: center; } .modal-card { border-radius: 20px; width: 90%; } }
 
         /* MULTI SELECT */
-        .multi-select-area { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
-        .ms-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #f5f5f5; }
+        .multi-select-area { border: 1px solid #eee; border-radius: 10px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 10px; background: #f9f9f9; }
+        .ms-item { display: flex; align-items: center; margin-bottom: 8px; }
         .ms-item input { width: 20px; margin: 0 10px 0 0; }
-        /* Date Picker */
+        
+        /* TABLO */
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .log-table th { text-align: left; padding: 10px; background: #f4f6f8; }
+        .log-table td { padding: 10px; border-bottom: 1px solid #eee; }
+        
+        /* DATE PICKER */
         #month-picker-modal { display: none; position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 300px; background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 500; padding: 15px; }
         .year-selector { display: flex; justify-content: space-between; margin-bottom: 15px; }
         .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .month-btn { padding: 10px; background: #f9f9f9; text-align: center; cursor: pointer; border-radius: 5px; font-size: 0.8rem; }
-
-        /* ALT MENÜ */
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
-        .bottom-nav::-webkit-scrollbar { display: none; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; color: #b2bec3; cursor: pointer; min-width: 65px; transition: 0.3s; }
-        .nav-item.active { color: #764ba2; transform: translateY(-5px); font-weight: 600;}
-        
-        .hidden { display: none !important; }
-        .admin-only { display: none; }
-        .view-section { display: none; animation: fadeIn 0.3s; }
-        .view-section.active { display: block; }
     </style>
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-box">
-        <h3>Hoşgeldiniz 👋</h3>
+        <h2 style="color:#333; margin-bottom:20px;">Ekip Takip Pro</h2>
         <input type="email" id="loginEmail" placeholder="E-Posta">
         <input type="password" id="loginPass" placeholder="Şifre">
         <button onclick="handleLogin()">Giriş Yap</button>
-        <div id="loginError" style="color:red; margin-top:10px; font-size:0.8rem;"></div>
-        <p class="login-link" onclick="toggleRegister()">Hesap Oluştur</p>
-        <div id="registerArea" class="hidden" style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+        <div id="loginError" style="color:red; margin-top:10px; font-size:0.9rem;"></div>
+        <p style="margin-top:20px; color:#764ba2; cursor:pointer; font-size:0.9rem;" onclick="document.getElementById('registerArea').classList.toggle('hidden')">Yeni Hesap Oluştur</p>
+        <div id="registerArea" class="hidden" style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;">
             <input type="text" id="regName" placeholder="Ad Soyad">
             <input type="text" id="regTitle" placeholder="Ünvan">
             <input type="email" id="regEmail" placeholder="E-Posta">
-            <input type="password" id="regPass" placeholder="Şifre (6+)">
-            <button onclick="handleRegister()" style="background:#27ae60; margin-top:10px;">Kaydol</button>
+            <input type="password" id="regPass" placeholder="Şifre">
+            <button onclick="handleRegister()" style="background:#27ae60;">Kaydol</button>
         </div>
     </div>
 </div>
 
 <div id="app-screen" class="hidden">
     <div class="app-header">
-        <div><small style="color:#999;">Merhaba,</small><h1 id="welcomeUser">Kullanıcı</h1></div>
+        <div><small style="color:#888;">Merhaba,</small><h2 style="margin:0;" id="welcomeUser">Kullanıcı</h2></div>
         <div class="header-icons">
             <button class="icon-btn" onclick="requestNotificationPermission()">🔔</button>
             <button class="icon-btn" onclick="handleLogout()">🚪</button>
@@ -131,10 +138,11 @@
         
         <div id="view-calendar" class="view-section active">
             <div class="hero-card">
+                <h3 style="margin:0; opacity:0.9;">Günlük Özet</h3>
                 <div class="hero-stat-grid">
-                    <div class="hero-stat-item"><span id="stat-total">0</span> <small>Ekip</small></div>
-                    <div class="hero-stat-item"><span id="stat-active">0</span> <small>Sahada</small></div>
-                    <div class="hero-stat-item"><span id="stat-idle">0</span> <small>Boşta</small></div>
+                    <div class="hero-stat-item"><span id="stat-total">0</span><small>Ekip</small></div>
+                    <div class="hero-stat-item"><span id="stat-active">0</span><small>Sahada</small></div>
+                    <div class="hero-stat-item"><span id="stat-idle">0</span><small>Boşta</small></div>
                 </div>
             </div>
             <div class="modern-card">
@@ -151,7 +159,10 @@
                             <div class="month-btn" onclick="goToMonth(10)">Kas</div><div class="month-btn" onclick="goToMonth(11)">Ara</div>
                         </div>
                     </div>
-                    <div><button onclick="changeMonth(-1)" style="border:none; bg:none;">◀</button><button onclick="changeMonth(1)" style="border:none; bg:none;">▶</button></div>
+                    <div>
+                        <button class="icon-btn" style="width:30px; height:30px;" onclick="changeMonth(-1)">◀</button>
+                        <button class="icon-btn" style="width:30px; height:30px;" onclick="changeMonth(1)">▶</button>
+                    </div>
                 </div>
                 <div class="calendar-grid" id="calendarGrid"></div>
             </div>
@@ -162,13 +173,17 @@
                 <h3>Yeni Proje</h3>
                 <input type="text" id="p-name" placeholder="Proje Adı">
                 <select id="p-manager"></select>
+                <div style="display:flex; gap:5px;">
+                    <input type="number" id="p-cost" placeholder="Maliyet">
+                    <input type="number" id="p-offer" placeholder="Teklif">
+                </div>
                 <button class="btn-main" onclick="submitProject()">Kaydet</button>
             </div>
             <div class="modern-card" id="projectListBody"></div>
         </div>
 
         <div id="view-team" class="view-section">
-            <h2 style="margin-left:10px;">Ekip Durumu</h2>
+            <h3 style="margin-left:10px;">Ekip Durumu</h3>
             <div class="modern-card" id="teamListArea"></div>
         </div>
 
@@ -177,9 +192,10 @@
                 <h3>Yeni Cihaz</h3>
                 <input type="text" id="d-name" placeholder="Cihaz Adı">
                 <input type="text" id="d-serial" placeholder="Seri No">
+                <label>Kalibrasyon:</label><input type="date" id="d-calib">
                 <button class="btn-main" onclick="addDevice()">Ekle</button>
             </div>
-            <div class="modern-card"><div id="deviceListArea" class="card-list"></div></div>
+            <div id="deviceListArea"></div>
         </div>
 
         <div id="view-vehicles" class="view-section">
@@ -187,14 +203,14 @@
                 <h3 id="vehicleFormTitle">Yeni Araç</h3>
                 <input type="text" id="v-plate" placeholder="Plaka">
                 <input type="text" id="v-info" placeholder="Model">
-                <label>Muayene:</label><input type="date" id="v-inspection">
+                <label>Muayene Tarihi:</label><input type="date" id="v-inspection">
                 <div style="display:flex; gap:5px;">
                     <button class="btn-main" id="btn-v-save" onclick="addVehicle()">Kaydet</button>
                     <button class="btn-main" id="btn-v-update" onclick="updateVehicleDB()" style="background:#f39c12; display:none;">Güncelle</button>
                     <button class="btn-main" id="btn-v-cancel" onclick="cancelVehicleEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
                 </div>
             </div>
-            <div class="modern-card"><div id="vehicleListArea" class="card-list"></div></div>
+            <div id="vehicleListArea"></div>
         </div>
 
         <div id="view-users" class="view-section">
@@ -214,16 +230,16 @@
         </div>
 
         <div id="view-reports" class="view-section">
-            <div style="background:#fff; padding:10px; border-radius:12px; margin-bottom:10px;">
-                <label style="font-size:0.7rem;">Dönem:</label>
-                <input type="month" id="reportDateSelector" onchange="filterReports()" style="width:100%;">
+            <div class="modern-card">
+                <label>Dönem:</label>
+                <input type="month" id="reportDateSelector" onchange="filterReports()">
             </div>
             <div class="modern-card">
                 <h3>Zimmet Geçmişi</h3>
                 <div class="report-filters">
-                    <button class="filter-btn active" onclick="setReportFilter('all', this)">Tümü</button>
-                    <button class="filter-btn" onclick="setReportFilter('vehicle', this)">Araç</button>
-                    <button class="filter-btn" onclick="setReportFilter('device', this)">Cihaz</button>
+                    <button class="btn-sm" onclick="currentReportFilter='all'; filterReports();">Tümü</button>
+                    <button class="btn-sm" onclick="currentReportFilter='vehicle'; filterReports();">Araç</button>
+                    <button class="btn-sm" onclick="currentReportFilter='device'; filterReports();">Cihaz</button>
                 </div>
                 <div style="max-height:300px; overflow-y:auto; margin-top:10px;">
                     <table class="log-table" id="logTable"></table>
@@ -234,6 +250,7 @@
                 <table class="log-table" id="personnelReportTable"><tbody id="personnelReportBody"></tbody></table>
             </div>
         </div>
+
     </div>
 
     <div class="bottom-nav">
@@ -249,16 +266,18 @@
 
 <div class="modal-overlay" id="custodyModal" onclick="if(event.target===this) closeCustodyModal()">
     <div class="modal-card">
-        <h3>Zimmet</h3>
+        <h3>Zimmetle</h3>
         <p id="custodyItemName" style="color:#666;"></p>
+        <label>Personel Seç:</label>
         <select id="c-person"></select>
         <button class="btn-main" onclick="saveCustody()">Kaydet</button>
+        <button class="btn-main" onclick="closeCustodyModal()" style="background:#95a5a6; margin-top:10px;">İptal</button>
     </div>
 </div>
 
 <div class="modal-overlay" id="taskModal" onclick="if(event.target===this) closeModal()">
     <div class="modal-card">
-        <div style="display:flex; justify-content:space-between; margin-bottom:20px;"><h2>Görevler</h2><span onclick="closeModal()" style="font-size:1.5rem;">✕</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;"><h2>Görevler</h2><span onclick="closeModal()" style="font-size:1.5rem; cursor:pointer;">✕</span></div>
         <p id="modalDateText"></p>
         <div id="dayTaskList" style="margin-bottom:20px;"></div>
         <div class="admin-only">
@@ -278,7 +297,7 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- FIREBASE CONFIG ---
+    // --- FIREBASE ANAHTARLARI (KENDİLERİNİ GİR) ---
     const firebaseConfig = {
       apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY",
       authDomain: "ekiptakipapp.firebaseapp.com",
@@ -293,7 +312,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // --- ONESIGNAL INIT ---
+    // ONESIGNAL INIT
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
         OneSignal.init({
@@ -306,7 +325,8 @@
     let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), isFirstLoad=true;
     let pickerYear = new Date().getFullYear(), editingUserEmail=null, editingVehicleId=null;
     let custodyTargetId = null, custodyType = null;
-    let currentReportFilter = 'all', currentReportDate = new Date().toISOString().slice(0, 7);
+    let currentReportFilter = 'all';
+    let currentReportDate = new Date().toISOString().slice(0, 7);
 
     // AUTH
     onAuthStateChanged(auth, async (user) => {
@@ -319,6 +339,7 @@
                 applyPermissions();
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
+                
                 OneSignalDeferred.push(function(OneSignal) { OneSignal.login(user.email); });
                 document.getElementById('reportDateSelector').value = currentReportDate;
                 startListeners();
@@ -357,7 +378,7 @@
 
     window.requestNotificationPermission = () => {
         if (!("Notification" in window)) return alert("Desteklenmiyor");
-        Notification.requestPermission().then(perm => { if (perm === "granted") alert("Açık"); });
+        Notification.requestPermission().then(perm => { if (perm === "granted") alert("Bildirimler Açık! 🔔"); });
     };
 
     function startListeners() {
@@ -377,12 +398,17 @@
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added" && !isFirstLoad) {
                     const data = change.doc.data();
-                    // OneSignal Notification via Backend (Here simulates client-side check)
+                    const isForMe = Array.isArray(data.person) ? data.person.includes(currentUser.name) : data.person === currentUser.name;
+                    if (isForMe && Notification.permission === "granted") new Notification("🔔 Yeni Görev!", { body: `${data.date}: ${data.projectName}` });
                 }
             });
             tasks=[]; snapshot.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
             renderCalendar();
-            if(document.querySelector('.modal-overlay').style.display === 'flex') openModalLogic(selectedDateStr);
+            
+            // FIX: Burası taskModal'ı yanlışlıkla açıyordu, düzelttim.
+            // Sadece modal zaten açıksa güncelle
+            if(document.getElementById('taskModal').style.display === 'flex') openModalLogic(selectedDateStr);
+            
             updateStats(getCurrentDateStr()); renderTeamStatus(); renderDeviceList(); filterReports();
             isFirstLoad = false;
         });
@@ -391,7 +417,7 @@
     // --- BİLDİRİM GÖNDERME FONKSİYONU ---
     async function sendOneSignalNotification(userEmails, message) {
         const ONESIGNAL_APP_ID = "08d90e98-c6b4-429c-aab5-f11164ddc881";
-        const REST_API_KEY = "os_v2_app_bdmq5gggwrbjzkvv6eiwjxoiqfdusl6xjs3ej45uxfpqouat22pacfo2jydfmyjfy4yti7xbfsrpk24f6gbptzzfmayrp27sr72ulnq"; // DİKKAT: Production'da backend'de olmalı.
+        const REST_API_KEY = "os_v2_app_bdmq5gggwrbjzkvv6eiwjxoiqfdusl6xjs3ej45uxfpqouat22pacfo2jydfmyjfy4yti7xbfsrpk24f6gbptzzfmayrp27sr72ulnq";
 
         const options = {
             method: 'POST',
@@ -407,7 +433,7 @@
         try { await fetch('https://onesignal.com/api/v1/notifications', options); } catch (e) { console.log(e); }
     }
 
-    // SAVE TASK (NOTIFICATION EKLENDİ)
+    // SAVE TASK
     window.saveTask = async () => {
         const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
         const projVal = document.getElementById('t-project-select').value;
@@ -417,7 +443,6 @@
         await addDoc(collection(db, "tasks"), { date: selectedDateStr, person: per, projectName: projName, projectId: projVal, location: document.getElementById('t-loc').value, device: dev, plate: plate });
         document.getElementById('t-loc').value=""; document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false);
         
-        // Notification Trigger
         const targetEmails = users.filter(u => per.includes(u.name)).map(u => u.email);
         if(targetEmails.length > 0) sendOneSignalNotification(targetEmails, `${selectedDateStr}: ${projName} projesindesin.`);
     }
@@ -510,8 +535,9 @@
             grid.innerHTML += `<div class="${cls}" onclick="openModal('${dk}')"><b>${d}</b>${dots}</div>`;
         }
     }
-    window.openModal = (dk) => { selectedDateStr = dk; document.getElementById('modalDateText').innerText = dk; openModalLogic(dk); document.querySelector('.modal-overlay').style.display = 'flex'; }
-    window.closeModal = () => document.querySelector('.modal-overlay').style.display = 'none';
+    window.openModal = (dk) => { selectedDateStr = dk; document.getElementById('modalDateText').innerText = dk; openModalLogic(dk); document.getElementById('taskModal').style.display = 'flex'; }
+    window.closeModal = () => document.getElementById('taskModal').style.display = 'none';
+    
     function openModalLogic(dk) {
         const dt = tasks.filter(t=>t.date===dk);
         document.getElementById('dayTaskList').innerHTML = dt.length ? dt.map(t => {
@@ -521,14 +547,13 @@
     }
 
     // Standart CRUD fonksiyonları (Araç, Cihaz, Kullanıcı, Proje) aynı şekilde devam ediyor...
-    // Yer kazanmak için kısaltarak ekliyorum, işlevler V20.1 ile aynı.
     window.addVehicle=async()=>{const p=document.getElementById('v-plate').value,i=document.getElementById('v-info').value,ins=document.getElementById('v-inspection').value; if(!p)return; await addDoc(collection(db,"vehicles"),{plate:p,info:i,inspectionDate:ins,currentHolder:null}); resetVehicleForm();}
     window.updateVehicleDB=async()=>{await updateDoc(doc(db,"vehicles",editingVehicleId),{plate:document.getElementById('v-plate').value,info:document.getElementById('v-info').value,inspectionDate:document.getElementById('v-inspection').value}); resetVehicleForm();}
     window.editVehicle=(id)=>{const v=vehicles.find(x=>x.id===id); if(!v)return; document.getElementById('v-plate').value=v.plate; document.getElementById('v-info').value=v.info; document.getElementById('v-inspection').value=v.inspectionDate||""; editingVehicleId=id; document.getElementById('vehicleFormTitle').innerText="Düzenle"; document.getElementById('btn-v-save').style.display='none'; document.getElementById('btn-v-update').style.display='block'; document.getElementById('btn-v-cancel').style.display='block';}
     window.cancelVehicleEdit=resetVehicleForm;
-    function resetVehicleForm(){editingVehicleId=null; document.getElementById('v-plate').value=""; document.getElementById('v-info').value=""; document.getElementById('v-inspection').value=""; document.getElementById('vehicleFormTitle').innerText="Yeni Araç"; document.getElementById('btn-v-save').style.display='block'; document.getElementById('btn-v-update').style.display='none'; document.getElementById('btn-v-cancel').style.display='none';}
+    function resetVehicleForm(){editingVehicleId=null; document.getElementById('v-plate').value=""; document.getElementById('v-info').value=""; document.getElementById('v-inspection').value=""; document.getElementById('vehicleFormTitle').innerText="Yeni Araç Ekle"; document.getElementById('btn-v-save').style.display='block'; document.getElementById('btn-v-update').style.display='none'; document.getElementById('btn-v-cancel').style.display='none';}
     window.deleteVehicle=async(id)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"vehicles",id));}
-    function renderVehicleList(){document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => { let zimmet = v.currentHolder ? `<span class="badge badge-orange">👤 ${v.currentHolder}</span>` : (userRole==='admin'?`<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}','${v.info}')">Zimmetle</button>`:''); if(v.currentHolder && userRole==='admin') zimmet+=` <button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade</button>`; return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small></div>${userRole==='admin'?`<div><button onclick="editVehicle('${v.id}')">✎</button><button onclick="deleteVehicle('${v.id}')">🗑</button></div>`:''}</div>${zimmet}</div>`; }).join('');}
+    function renderVehicleList(){document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => { let zimmet = v.currentHolder ? `<span class="badge badge-orange">👤 ${v.currentHolder}</span>` : (userRole==='admin'?`<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}','${v.info}')">Zimmetle</button>`:''); if(v.currentHolder && userRole==='admin') zimmet+=` <button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade</button>`; return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small></div>${userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div>${zimmet}</div>`; }).join('');}
     
     window.addDevice=async()=>{const n=document.getElementById('d-name').value; if(!n)return; await addDoc(collection(db,"devices"),{name:n,serial:document.getElementById('d-serial').value,calib:document.getElementById('d-calib').value,currentHolder:null}); document.getElementById('d-name').value="";}
     window.deleteDevice=async(id)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"devices",id));}
