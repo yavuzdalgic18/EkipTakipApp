@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V27.1 - Final)</title>
+    <title>Ekip Takip Pro (V28 - Final)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -23,41 +23,31 @@
         .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; background: #f9f9f9; font-size: 16px; }
         .login-box button { width: 100%; padding: 15px; background: #764ba2; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 10px; }
         
-        /* HEADER & NAV */
-        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .header-icons { display: flex; gap: 10px; }
-        .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; }
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
-        .bottom-nav::-webkit-scrollbar { display: none; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; }
-        .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
-        .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
+        /* GENEL UI */
+        .hidden { display: none !important; } .admin-only { display: none; }
+        .view-section { display: none; animation: fadeIn 0.3s; } .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* KARTLAR */
+        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; }
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
+        
         .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .hero-card { background: var(--primary-grad); border-radius: 25px; padding: 25px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3); }
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
-        
-        /* LİSTE ELEMANLARI */
-        .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .info-card.active { border-left-color: #27ae60; } 
-        .info-card.busy { border-left-color: #e74c3c; } 
-        .info-card.custody { border-left-color: #f39c12; }
 
+        /* LISTELER */
+        .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative;}
+        .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .info-card.active { border-left-color: #27ae60; } .info-card.busy { border-left-color: #e74c3c; } .info-card.custody { border-left-color: #f39c12; }
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
-        .badge-green { background: #d1fae5; color: #065f46; } 
-        .badge-red { background: #fee2e2; color: #991b1b; } 
-        .badge-orange { background: #ffedd5; color: #9a3412; } 
-        .badge-gray { background: #f3f4f6; color: #374151; }
+        .badge-green { background: #d1fae5; color: #065f46; } .badge-red { background: #fee2e2; color: #991b1b; } .badge-orange { background: #ffedd5; color: #9a3412; } .badge-gray { background: #f3f4f6; color: #374151; }
         
         /* EKİP KARTI */
         .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
-        .person-info { display: flex; align-items: center; gap: 10px; }
         .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
-        
+
         /* TAKVİM */
         .calendar-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
@@ -74,10 +64,6 @@
         .btn-outline-red { background: white; border: 1px solid #e74c3c; color: #e74c3c; } 
         .btn-outline-blue { background: white; border: 1px solid #3498db; color: #3498db; }
         
-        /* RAPOR FİLTRE */
-        .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
-        .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
-        
         /* MODAL & PICKER */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: end; }
         .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; }
@@ -85,20 +71,21 @@
         .year-selector { display: flex; justify-content: space-between; margin-bottom: 15px; }
         .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .month-btn { padding: 10px; background: #f9f9f9; text-align: center; cursor: pointer; border-radius: 5px; font-size: 0.8rem; }
-
-        .hidden { display: none !important; }
-        .admin-only { display: none; }
-        .view-section { display: none; animation: fadeIn 0.3s; } .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        /* Multi Select */
+        /* MULTI SELECT */
         .multi-select-area { background: #f9f9f9; border: 1px solid #eee; border-radius: 10px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
         .ms-item { display: flex; align-items: center; margin-bottom: 8px; } .ms-item input { width: 20px; margin: 0 10px 0 0; }
         
-        /* TABLO */
-        .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        .log-table th { text-align: left; padding: 10px; background: #f4f6f8; }
-        .log-table td { padding: 10px; border-bottom: 1px solid #eee; }
+        /* NAV */
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
+        .bottom-nav::-webkit-scrollbar { display: none; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; }
+        .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
+        .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
+        
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; table-layout: fixed; }
+        .log-table th { text-align: left; padding: 10px; background: #f4f6f8; color: #666; }
+        .log-table td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; word-wrap: break-word; }
     </style>
 </head>
 <body>
@@ -128,7 +115,6 @@
     </div>
 
     <div class="container">
-        
         <div id="view-calendar" class="view-section active">
             <div class="hero-card">
                 <div class="hero-stat-grid">
@@ -165,7 +151,7 @@
                 <select id="p-manager"></select>
                 <div style="display:flex; gap:5px;">
                     <div style="flex:1"><label style="font-size:0.7rem;">Başlangıç</label><input type="date" id="p-start"></div>
-                    <div style="flex:1"><label style="font-size:0.7rem;">Bitiş (Opsiyonel)</label><input type="date" id="p-end"></div>
+                    <div style="flex:1"><label style="font-size:0.7rem;">Bitiş</label><input type="date" id="p-end"></div>
                 </div>
                 <div style="display:flex; gap:5px;"><input type="number" id="p-cost" placeholder="Maliyet"><input type="number" id="p-offer" placeholder="Teklif"></div>
                 <div style="display:flex; gap:5px;">
@@ -294,7 +280,7 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- FIREBASE ANAHTARLARI (GİRİLMİŞ) ---
+    // FIREBASE CONFIG (SENİN ŞİFRELERİN GİRİLDİ)
     const firebaseConfig = {
       apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY",
       authDomain: "ekiptakipapp.firebaseapp.com",
@@ -309,7 +295,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ONESIGNAL
+    // ONESIGNAL INIT (SENİN YENİ ID GİRİLDİ)
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
         OneSignal.init({ appId: "08d90e98-c6b4-429c-aab5-f11164ddc881" });
@@ -402,11 +388,10 @@
         });
     }
 
-    // YENİ REST API KEY GİRİLDİ
+    // YENİ KEY İLE BİLDİRİM
     async function sendOneSignalNotification(userEmails, message) {
         const ONESIGNAL_APP_ID = "08d90e98-c6b4-429c-aab5-f11164ddc881";
-        const REST_API_KEY = "os_v2_app_bdmq5gggwrbjzkvv6eiwjxoiqfdusl6xjs3ej45uxfpqouat22pacfo2jydfmyjfy4yti7xbfsrpk24f6gbptzzfmayrp27sr72ulnq";
-
+        const REST_API_KEY = "os_v2_app_bdmq5gggwrbjzkvv6eiwjxoiqh5q6foeed5uwdnuxioe7piyndd5zus3d632jsuuwtik6x4npdfvrl2k3lmolhffex6ndislurwmnma";
         const options = {
             method: 'POST',
             headers: { accept: 'application/json', 'Authorization': 'Basic ' + REST_API_KEY, 'content-type': 'application/json' },
