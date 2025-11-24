@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip ERP (V20 - Raporlama)</title>
+    <title>Ekip Takip ERP (V21 - Arşiv)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -18,7 +18,7 @@
             --nav-height: 75px;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: calc(var(--nav-height) + 20px); color: var(--text-main); }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
 
         /* GİRİŞ EKRANI */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary-grad); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 30px; }
@@ -41,30 +41,20 @@
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
         
-        .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 15px; overflow: hidden;}
+        .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 15px; overflow: hidden; }
         .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .card-title { font-weight: 600; font-size: 1.1rem; margin: 0; }
 
         /* TAKVİM */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; width: 100%; }
         .day-head { text-align: center; color: #999; font-size: 0.7rem; font-weight: 600; }
-        .day-cell { 
-            background: #f8f9fa; border-radius: 8px; height: 85px; padding: 4px; cursor: pointer; position: relative; border: 1px solid transparent;
-            display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start;
-            overflow-y: auto; overflow-x: hidden; 
-        }
+        .day-cell { background: #f8f9fa; border-radius: 8px; height: 85px; padding: 4px; cursor: pointer; position: relative; border: 1px solid transparent; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start; overflow-y: auto; overflow-x: hidden; }
         .day-cell b { font-size: 0.8rem; margin-bottom: 2px; align-self: center; color: #333;}
         .day-cell.today { border-color: #764ba2; background: #fff; box-shadow: 0 4px 10px rgba(118, 75, 162, 0.1); }
         .task-dot { font-size: 0.55rem; background: #e0e7ff; color: #4338ca; padding: 3px 4px; margin-top: 2px; border-radius: 4px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; border-left: 2px solid #4338ca; display: block;}
 
         /* BOTTOM NAV */
-        .bottom-nav { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); 
-            width: 95%; max-width: 500px; background: white; height: var(--nav-height); 
-            border-radius: 25px; display: flex; align-items: center; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; 
-            overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; 
-        }
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
         .bottom-nav::-webkit-scrollbar { display: none; }
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; color: #b2bec3; cursor: pointer; min-width: 65px; transition: 0.3s; }
         .nav-item .icon { font-size: 1.4rem; margin-bottom: 2px; }
@@ -72,21 +62,18 @@
 
         /* LISTELER & KARTLAR */
         .person-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f0f0f0; }
-        
         .card-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        @media (min-width: 600px) { .card-list { grid-template-columns: 1fr 1fr; } }
         .info-card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; border-left: 5px solid #ccc; }
         .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; margin-bottom: 5px; }
-        .info-card.active { border-left-color: #27ae60; } 
-        .info-card.custody { border-left-color: #e67e22; } 
-        .info-card.busy { border-left-color: #e74c3c; } 
+        .info-card.active { border-left-color: #27ae60; }
+        .info-card.custody { border-left-color: #e67e22; }
+        .info-card.busy { border-left-color: #e74c3c; }
 
         .badge { padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
         .badge-green { background: #d1e7dd; color: #0f5132; }
         .badge-red { background: #f8d7da; color: #842029; }
         .badge-orange { background: #fff3cd; color: #d35400; }
         .badge-gray { background: #e2e3e5; color: #41464b; }
-        
         .future-list { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #eee; }
         .future-item { font-size: 0.75rem; color: #666; display: flex; justify-content: space-between; margin-bottom: 2px;}
 
@@ -100,17 +87,19 @@
         /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); z-index: 2000; display: none; justify-content: center; align-items: end; }
         .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 25px 25px 0 0; padding: 30px; animation: slideUp 0.3s; max-height: 85vh; overflow-y: auto; }
-        @media (min-width: 600px) { .modal-overlay { align-items: center; } .modal-card { border-radius: 25px; width: 90%; } }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* RAPOR TABLOSU */
-        .log-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        /* RAPOR ALANI (YENİ) */
+        .report-header { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .report-filters { display: flex; gap: 5px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px;}
+        .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; white-space: nowrap; }
+        .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
+        
+        .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; table-layout: fixed; }
         .log-table th { text-align: left; padding: 10px; background: #f4f6f8; color: #666; }
-        .log-table td { padding: 10px; border-bottom: 1px solid #eee; }
-        .log-date { font-size: 0.75rem; color: #999; }
-        .log-action { font-weight: bold; }
-        .action-take { color: #27ae60; } /* Yeşil */
-        .action-return { color: #e74c3c; } /* Kırmızı */
+        .log-table td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; word-wrap: break-word; }
+        .log-date { color: #999; font-size: 0.7rem; display: block; margin-bottom: 2px;}
+        .log-icon { margin-right: 5px; }
 
         /* MULTI SELECT */
         .multi-select-area { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
@@ -140,7 +129,6 @@
         <button onclick="handleLogin()">Giriş Yap</button>
         <div id="loginError" style="color:red; margin-top:10px; font-size:0.8rem;"></div>
         <p class="login-link" onclick="toggleRegister()">Hesap Oluştur</p>
-        
         <div id="registerArea" class="hidden" style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
             <input type="text" id="regName" placeholder="Ad Soyad">
             <input type="text" id="regTitle" placeholder="Ünvan">
@@ -175,7 +163,6 @@
                     <div class="hero-stat-item"><span id="stat-idle">0</span> <small>Boşta</small></div>
                 </div>
             </div>
-
             <div class="modern-card">
                 <div class="card-header-row">
                     <h3 class="card-title" id="monthDisplay">Takvim</h3>
@@ -207,7 +194,6 @@
         </div>
 
         <div id="view-projects" class="view-section">
-            <h2 style="margin-left:10px;">Projeler</h2>
             <div class="admin-only modern-card">
                 <h3 class="card-title">Yeni Proje</h3>
                 <input type="text" id="p-name" placeholder="Proje Adı">
@@ -222,12 +208,11 @@
         </div>
 
         <div id="view-team" class="view-section">
-            <h2 style="margin-left:10px;">Ekip Durumu (Bugün)</h2>
+            <h2 style="margin-left:10px;">Ekip Durumu</h2>
             <div class="modern-card" id="teamListArea"></div>
         </div>
 
         <div id="view-devices" class="view-section">
-            <h2 style="margin-left:10px;">Cihazlar</h2>
             <div class="admin-only modern-card">
                 <h3 class="card-title">Yeni Cihaz</h3>
                 <input type="text" id="d-name" placeholder="Cihaz Adı">
@@ -242,14 +227,12 @@
         </div>
 
         <div id="view-vehicles" class="view-section">
-            <h2 style="margin-left:10px;">Filo Yönetimi</h2>
             <div class="admin-only modern-card" id="vehicleFormContainer">
                 <h3 class="card-title" id="vehicleFormTitle">Yeni Araç Ekle</h3>
                 <input type="text" id="v-plate" placeholder="Plaka (34 AB 123)">
                 <input type="text" id="v-info" placeholder="Model (Ford Ranger)">
                 <label>Muayene Tarihi:</label>
                 <input type="date" id="v-inspection">
-                
                 <div style="display:flex; gap:5px;">
                     <button class="btn-main" id="btn-v-save" onclick="addVehicle()">Kaydet</button>
                     <button class="btn-main" id="btn-v-update" onclick="updateVehicleDB()" style="background:#f39c12; display:none;">Güncelle</button>
@@ -262,7 +245,6 @@
         </div>
 
         <div id="view-users" class="view-section">
-            <h2 style="margin-left:10px;">Kullanıcılar</h2>
             <div class="admin-only modern-card">
                 <h3 class="card-title" id="userFormTitle">Kullanıcı Yönetimi</h3>
                 <input type="text" id="u-name" placeholder="Ad Soyad">
@@ -278,19 +260,30 @@
             <div class="modern-card" id="userListArea"></div>
         </div>
 
-        <div id="view-reports" class="view-section admin-only">
-            <h2 style="margin-left:10px;">Raporlar</h2>
+        <div id="view-reports" class="view-section">
+            <h2 style="margin-left:10px;">Raporlar & Arşiv</h2>
+            
+            <div class="report-header">
+                <div style="flex:1">
+                    <label style="font-size:0.7rem; color:#999;">Dönem Seçiniz:</label>
+                    <input type="month" id="reportDateSelector" onchange="filterReports()" style="width:100%; padding:10px; margin:0;">
+                </div>
+            </div>
             
             <div class="modern-card">
                 <h3 class="card-title">Zimmet Geçmişi</h3>
-                <div style="max-height:300px; overflow-y:auto;">
-                    <table class="log-table" id="logTable">
-                        </table>
+                <div class="report-filters">
+                    <button class="filter-btn active" onclick="setReportFilter('all', this)">Tümü</button>
+                    <button class="filter-btn" onclick="setReportFilter('vehicle', this)">🚗 Araçlar</button>
+                    <button class="filter-btn" onclick="setReportFilter('device', this)">🧰 Cihazlar</button>
+                </div>
+                <div style="max-height:300px; overflow-y:auto; margin-top:10px;">
+                    <table class="log-table" id="logTable"></table>
                 </div>
             </div>
 
             <div class="modern-card">
-                <h3 class="card-title">Bu Ay Personel Çalışma Raporu</h3>
+                <h3 class="card-title">Personel Eforu (Seçili Ay)</h3>
                 <table class="log-table" id="personnelReportTable">
                     <thead><tr><th>Personel</th><th>Görev Sayısı</th></tr></thead>
                     <tbody id="personnelReportBody"></tbody>
@@ -307,7 +300,7 @@
         <div class="nav-item" onclick="switchTab('vehicles')"><span class="icon">🚗</span>Araç</div>
         <div class="nav-item" onclick="switchTab('devices')"><span class="icon">🧰</span>Cihaz</div>
         <div class="nav-item admin-only" onclick="switchTab('users')"><span class="icon">⚙️</span>Yetki</div>
-        <div class="nav-item admin-only" onclick="switchTab('reports')"><span class="icon">📊</span>Rapor</div>
+        <div class="nav-item" onclick="switchTab('reports')"><span class="icon">📊</span>Rapor</div>
     </div>
 </div>
 
@@ -367,6 +360,10 @@
     let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), isFirstLoad=true;
     let pickerYear = new Date().getFullYear(), editingUserEmail=null, editingVehicleId=null;
     let custodyTargetId = null, custodyType = null;
+    
+    // RAPOR FİLTRELERİ
+    let currentReportFilter = 'all';
+    let currentReportDate = new Date().toISOString().slice(0, 7); // YYYY-MM
 
     // AUTH
     onAuthStateChanged(auth, async (user) => {
@@ -379,6 +376,10 @@
                 applyPermissions();
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('app-screen').classList.remove('hidden');
+                
+                // Rapor tarihini bugüne ayarla
+                document.getElementById('reportDateSelector').value = currentReportDate;
+                
                 startListeners();
             } else {
                 await setDoc(doc(db, "users", user.email), { name: "Yönetici", email: user.email, role: 'admin' });
@@ -428,11 +429,11 @@
         load("devices", devices, renderDeviceList);
         onSnapshot(collection(db, "users"), (s) => { users=[]; s.docs.forEach(d=>users.push(d.data())); renderTeamStatus(); renderUserList(); loadDropdowns(); });
         
-        // Logs Listener (Sorted by date desc)
-        const logsQuery = query(collection(db, "logs"), orderBy("date", "desc"), limit(50));
+        // LOGLARI ÇEK (Limit artırıldı)
+        const logsQuery = query(collection(db, "logs"), orderBy("date", "desc"), limit(500));
         onSnapshot(logsQuery, (s) => {
             logs = []; s.docs.forEach(d => logs.push(d.data()));
-            renderLogs();
+            filterReports(); // Veri gelince filtrele
         });
 
         onSnapshot(collection(db, "tasks"), (snapshot) => {
@@ -446,70 +447,81 @@
             tasks=[]; snapshot.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
             renderCalendar();
             if(document.querySelector('.modal-overlay').style.display === 'flex') openModalLogic(selectedDateStr);
-            updateStats(getCurrentDateStr()); renderTeamStatus(); renderDeviceList(); renderPersonnelReport();
+            updateStats(getCurrentDateStr()); renderTeamStatus(); renderDeviceList(); filterReports();
             isFirstLoad = false;
         });
     }
 
-    // LOGGING FUNCTION
+    // LOGGING
     async function addLog(type, item, action, person) {
         await addDoc(collection(db, "logs"), {
             date: new Date().toISOString(),
-            type: type,
-            item: item,
-            action: action,
-            person: person,
-            admin: currentUser.name
+            type: type, item: item, action: action, person: person, admin: currentUser.name
         });
+    }
+
+    // RAPORLAMA MANTIĞI (YENİ)
+    window.setReportFilter = (filter, btn) => {
+        currentReportFilter = filter;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filterReports();
+    }
+
+    window.filterReports = () => {
+        currentReportDate = document.getElementById('reportDateSelector').value; // YYYY-MM
+        renderLogs();
+        renderPersonnelReport();
     }
 
     function renderLogs() {
         const table = document.getElementById('logTable');
-        table.innerHTML = logs.map(l => {
+        const filteredLogs = logs.filter(l => {
+            const logMonth = l.date.substring(0, 7); // YYYY-MM
+            const typeMatch = currentReportFilter === 'all' || l.type === currentReportFilter;
+            return logMonth === currentReportDate && typeMatch;
+        });
+
+        if (filteredLogs.length === 0) {
+            table.innerHTML = '<tr><td colspan="2" style="text-align:center; color:#999;">Bu dönemde kayıt bulunamadı.</td></tr>';
+            return;
+        }
+
+        table.innerHTML = filteredLogs.map(l => {
             const d = new Date(l.date);
-            const dateStr = `${d.getDate()}.${d.getMonth()+1} ${d.getHours()}:${d.getMinutes()}`;
+            const dateStr = `${d.getDate()}.${d.getMonth()+1} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
             const actionClass = l.action === 'take' ? 'action-take' : 'action-return';
             const actionText = l.action === 'take' ? 'Teslim Aldı' : 'İade Etti';
-            return `<tr>
-                <td class="log-date">${dateStr}</td>
-                <td>
-                    <strong>${l.person}</strong>, ${l.item} <span class="log-action ${actionClass}">${actionText}</span>
-                </td>
-            </tr>`;
+            const icon = l.type === 'vehicle' ? '🚗' : '🧰';
+            return `<tr><td><span class="log-date">${dateStr}</span></td><td><span class="log-icon">${icon}</span> <strong>${l.person}</strong><br>${l.item} <span class="log-action ${actionClass}">${actionText}</span></td></tr>`;
         }).join('');
     }
 
     function renderPersonnelReport() {
-        const currentMonth = new Date().getMonth();
+        const [year, month] = currentReportDate.split('-').map(Number);
         const reportData = {};
-
         users.forEach(u => reportData[u.name] = 0);
 
         tasks.forEach(t => {
             const tDate = parseDateStr(t.date);
-            if (tDate.getMonth() === currentMonth) {
-                if (Array.isArray(t.person)) {
-                    t.person.forEach(p => { if(reportData[p] !== undefined) reportData[p]++; });
-                } else {
-                    if(reportData[t.person] !== undefined) reportData[t.person]++;
-                }
+            // JS'de getMonth 0-11 arasıdır, input value ise 1-12. Eşitlemek için month-1
+            if (tDate.getFullYear() === year && tDate.getMonth() === (month - 1)) {
+                if (Array.isArray(t.person)) t.person.forEach(p => { if(reportData[p] !== undefined) reportData[p]++; });
+                else if(reportData[t.person] !== undefined) reportData[t.person]++;
             }
         });
 
-        document.getElementById('personnelReportBody').innerHTML = Object.keys(reportData).map(key => `
-            <tr>
-                <td>${key}</td>
-                <td style="font-weight:bold;">${reportData[key]} Gün</td>
-            </tr>
-        `).join('');
+        document.getElementById('personnelReportBody').innerHTML = Object.keys(reportData).map(key => `<tr><td>${key}</td><td style="font-weight:bold;">${reportData[key]} Gün</td></tr>`).join('');
     }
 
-    // UI & DATE
+    // UI
     window.switchTab = (tab) => {
         document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
         document.getElementById('view-' + tab).classList.add('active');
         event.currentTarget.classList.add('active');
+        
+        if(tab === 'reports') filterReports(); // Rapor sekmesine geçince yenile
     }
     window.changeMonth = (d) => { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
     window.toggleDatePicker = () => { document.getElementById('month-picker-modal').style.display = document.getElementById('month-picker-modal').style.display === 'block' ? 'none' : 'block'; pickerYear = currentDate.getFullYear(); document.getElementById('pick-year-val').innerText = pickerYear; }
@@ -561,9 +573,9 @@
     }
 
     // ZİMMET
-    window.openCustodyModal = (type, id, name) => {
+    window.openCustodyModal = (type, id, name, extra) => {
         custodyType = type; custodyTargetId = id;
-        document.getElementById('custodyItemName').innerText = `Seçilen: ${name}`;
+        document.getElementById('custodyItemName').innerText = `Seçilen: ${name} (${extra})`;
         document.getElementById('c-person').innerHTML = users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
         document.getElementById('custodyModal').style.display = 'flex';
     }
@@ -572,24 +584,22 @@
     window.saveCustody = async () => {
         const person = document.getElementById('c-person').value;
         const collectionName = custodyType === 'vehicle' ? 'vehicles' : 'devices';
-        // Update item status
         await updateDoc(doc(db, collectionName, custodyTargetId), { currentHolder: person });
-        // Add Log
-        const itemName = document.getElementById('custodyItemName').innerText.split(': ')[1];
+        const itemName = document.getElementById('custodyItemName').innerText.replace('Seçilen: ', '');
         await addLog(custodyType, itemName, 'take', person);
         closeCustodyModal();
     }
     
-    window.returnItem = async (type, id, itemName) => {
+    window.returnItem = async (type, id) => {
         if(confirm("Zimmet düşülsün mü?")) {
             const collectionName = type === 'vehicle' ? 'vehicles' : 'devices';
-            // Get previous holder name for log
             let prevHolder = "Bilinmiyor";
             const itemDoc = type === 'vehicle' ? vehicles.find(v=>v.id===id) : devices.find(d=>d.id===id);
             if(itemDoc) prevHolder = itemDoc.currentHolder;
-
+            
             await updateDoc(doc(db, collectionName, id), { currentHolder: null });
-            await addLog(type, itemDoc ? (itemDoc.plate || itemDoc.name) : 'Bilinmiyor', 'return', prevHolder);
+            let itemDetail = itemDoc ? (type==='vehicle' ? `${itemDoc.plate} (${itemDoc.info})` : `${itemDoc.name} (${itemDoc.serial})`) : 'Bilinmiyor';
+            await addLog(type, itemDetail, 'return', prevHolder);
         }
     }
 
@@ -665,41 +675,23 @@
 
     function renderVehicleList() {
         document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => {
-            let inspHtml = "";
-            if(v.inspectionDate) {
-                const inspDate = new Date(v.inspectionDate), today = new Date();
-                if(inspDate < today) inspHtml = `<small style="color:red; display:block;">⚠️ Muayene Geçti: ${v.inspectionDate}</small>`;
-                else inspHtml = `<small style="color:#666; display:block;">📅 Muayene: ${v.inspectionDate}</small>`;
-            }
-            let zimmetHtml = "";
-            if(v.currentHolder) {
-                zimmetHtml = `<div style="margin-top:5px;"><span class="badge badge-orange">👤 ${v.currentHolder}</span> ${userRole==='admin'?`<button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade Al</button>`:''}</div>`;
-            } else if(userRole==='admin') {
-                zimmetHtml = `<div style="margin-top:5px;"><button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}')">Zimmetle</button></div>`;
-            }
+            let inspHtml = v.inspectionDate ? (new Date(v.inspectionDate) < new Date() ? `<small style="color:red; display:block;">⚠️ Muayene: ${v.inspectionDate}</small>` : `<small style="color:#666;">📅 Muayene: ${v.inspectionDate}</small>`) : "";
+            let zimmetHtml = v.currentHolder ? `<div style="margin-top:5px;"><span class="badge badge-orange">👤 ${v.currentHolder}</span> ${userRole==='admin'?`<button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade Al</button>`:''}</div>` : (userRole==='admin' ? `<div style="margin-top:5px;"><button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}', '${v.info}')">Zimmetle</button></div>` : '');
             return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small>${inspHtml}</div>${userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div>${zimmetHtml}</div>`;
         }).join('');
     }
 
     function renderDeviceList() {
         document.getElementById('deviceListArea').innerHTML = devices.map(d => {
-            let statusBadge = `<span class="badge badge-green">BOŞTA</span>`;
-            let zimmetHtml = "";
-            if(d.currentHolder) {
-                statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`;
-                if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`;
-            } else if(userRole==='admin') {
-                zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}')">Zimmetle</button>`;
-            }
-            const todayStr = getCurrentDateStr(), dt = tasks.filter(t=>t.date===todayStr);
-            const at = dt.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name);
+            let statusBadge = `<span class="badge badge-green">BOŞTA</span>`, zimmetHtml = "";
+            if(d.currentHolder) { statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; }
+            else if(userRole==='admin') { zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; }
+            const todayStr = getCurrentDateStr(), dt = tasks.filter(t=>t.date===todayStr), at = dt.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name);
             if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`;
-
             return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small></div>${userRole==='admin' ? `<button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none;">🗑</button>`:''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`;
         }).join('');
     }
 
-    // Other Renders
     function renderUserList() { document.getElementById('userListArea').innerHTML = users.map(u => `<div class="user-card"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small></div><div><span class="badge badge-gray">${u.role}</span>${userRole==='admin' ? `<button onclick="editUser('${u.email}')" style="border:none; bg:none; margin-right:5px;">✎</button><button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>` : ''}</div></div>`).join(''); }
     function renderProjects() { document.getElementById('projectListBody').innerHTML = projects.map(p => `<div style="padding:15px; border-bottom:1px solid #eee;"><strong>${p.name}</strong><br><small>${p.manager||'-'}</small></div>`).join(''); }
     function updateStats(dk) { const dt = tasks.filter(t=>t.date===dk); let activeSet = new Set(); dt.forEach(t => { if(Array.isArray(t.person)) t.person.forEach(p=>activeSet.add(p)); else activeSet.add(t.person); }); document.getElementById('stat-total').innerText = users.length; document.getElementById('stat-active').innerText = activeSet.size; document.getElementById('stat-idle').innerText = Math.max(0, users.length - activeSet.size); }
