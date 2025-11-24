@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V30 - Final)</title>
+    <title>Ekip Takip Pro (V29.1 - No Excel)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
     <style>
-        /* TEMEL TASARIM AYARLARI */
         :root { --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f3f5f9; --text-main: #2d3436; --nav-height: 75px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
@@ -23,49 +23,62 @@
         .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; background: #f9f9f9; font-size: 16px; }
         .login-box button { width: 100%; padding: 15px; background: #764ba2; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 10px; }
         
-        /* ÜST MENÜ */
+        /* GENEL STİLLER */
+        .hidden { display: none !important; } 
+        .admin-only { display: none; } 
+        
+        /* SEKMELER */
+        .view-section { display: none; animation: fadeIn 0.3s; } 
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* HEADER & NAV */
         .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; }
         
-        /* ALT MENÜ */
         .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
         .bottom-nav::-webkit-scrollbar { display: none; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; }
         .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
         .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
 
-        /* İÇERİK ALANI */
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
         .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .hero-card { background: var(--primary-grad); border-radius: 25px; padding: 25px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3); }
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
-        
-        /* LİSTE KARTLARI */
+
+        /* KARTLAR & LİSTELER */
         .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .info-card.active { border-left-color: #27ae60; } .info-card.busy { border-left-color: #e74c3c; } .info-card.custody { border-left-color: #f39c12; }
         .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .info-card.active { border-left-color: #27ae60; } 
+        .info-card.busy { border-left-color: #e74c3c; } 
+        .info-card.custody { border-left-color: #f39c12; }
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
-        .badge-green { background: #d1fae5; color: #065f46; } .badge-red { background: #fee2e2; color: #991b1b; } .badge-orange { background: #ffedd5; color: #9a3412; } .badge-gray { background: #f3f4f6; color: #374151; }
-        
-        /* EKİP KARTI */
+        .badge-green { background: #d1fae5; color: #065f46; } 
+        .badge-red { background: #fee2e2; color: #991b1b; } 
+        .badge-orange { background: #ffedd5; color: #9a3412; } 
+        .badge-gray { background: #f3f4f6; color: #374151; }
         .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
         .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
-        
+
         /* TAKVİM */
         .calendar-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
         .day-head { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         .day-cell { background: #f8f9fa; min-height: 80px; border-radius: 8px; padding: 4px; font-size: 0.8rem; position: relative; cursor: pointer; display: flex; flex-direction: column; overflow: hidden; }
+        .day-cell b { align-self: center; margin-bottom: 4px; color: #333; }
         .day-cell.today { border: 2px solid #764ba2; background: white; }
         .task-dot { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
-        /* FORMLAR */
+        /* FORM */
         input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; }
         .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 5px; }
         .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; margin-left: 5px; }
         .btn-outline-red { background: white; border: 1px solid #e74c3c; color: #e74c3c; } 
         .btn-outline-blue { background: white; border: 1px solid #3498db; color: #3498db; }
+        
+        /* RAPOR FİLTRE */
         .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
         .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
         
@@ -77,13 +90,11 @@
         .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .month-btn { padding: 10px; background: #f9f9f9; text-align: center; cursor: pointer; border-radius: 5px; font-size: 0.8rem; }
 
-        /* YARDIMCILAR */
-        .hidden { display: none !important; }
-        .admin-only { display: none; }
-        .view-section { display: none; animation: fadeIn 0.3s; } .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Multi Select */
         .multi-select-area { background: #f9f9f9; border: 1px solid #eee; border-radius: 10px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
         .ms-item { display: flex; align-items: center; margin-bottom: 8px; } .ms-item input { width: 20px; margin: 0 10px 0 0; }
+        
+        /* TABLO */
         .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         .log-table th { text-align: left; padding: 10px; background: #f4f6f8; }
         .log-table td { padding: 10px; border-bottom: 1px solid #eee; }
@@ -281,12 +292,9 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- GİZLEME TAKTİĞİ (SENİN ŞİFREN) ---
-    const k1 = "AIzaSyD4XZR8JAMe-";
-    const k2 = "Qr2Oj2UGnp9mFc8En38gxY";
-
+    // --- FIREBASE ANAHTARLARI ---
     const firebaseConfig = {
-      apiKey: k1 + k2,
+      apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY",
       authDomain: "ekiptakipapp.firebaseapp.com",
       projectId: "ekiptakipapp",
       storageBucket: "ekiptakipapp.firebasestorage.app",
@@ -299,7 +307,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ONESIGNAL
+    // ONESIGNAL INIT (SENİN YENİ ID)
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
         OneSignal.init({ appId: "08d90e98-c6b4-429c-aab5-f11164ddc881" });
@@ -392,12 +400,12 @@
         });
     }
 
-    // --- BİLDİRİM (GİZLİ ŞİFRE) ---
+    // YENİ ANAHTAR BURADA (GİZLENMİŞ HALDE)
     async function sendOneSignalNotification(userEmails, message) {
         const ONESIGNAL_APP_ID = "08d90e98-c6b4-429c-aab5-f11164ddc881";
-        const rk1 = "os_v2_app_bdmq5gggwrbjzkvv6eiwjxoiqgvzmfhh2wyufjvz3pywmkgjmcptb5tesb3tg4spad";
-        const rk2 = "aujej6pi5souyoiwclux67n6im7cpwv2ujtiy";
-        const REST_API_KEY = rk1 + rk2;
+        const k1 = "os_v2_app_bdmq5gggwrbjzkvv6eiwjxoiqgvzmfhh2wyufjvz3pywmkgjmcptb5tesb3tg4spad"; 
+        const k2 = "aujej6pi5souyoiwclux67n6im7cpwv2ujtiy";
+        const REST_API_KEY = k1 + k2;
 
         const options = {
             method: 'POST',
@@ -543,6 +551,47 @@
         fillMulti('ms-person',users,'name'); fillMulti('ms-device',devices,'name'); fillMulti('ms-plate',vehicles,'plate');
     }
     function getMultiSelectValues(id){return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i=>i.value);}
+
+    // TABS
+    window.switchTab = (tab) => {
+        document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+        document.getElementById('view-' + tab).classList.add('active');
+        event.currentTarget.classList.add('active');
+        
+        if(tab === 'reports') filterReports();
+    }
+    window.changeMonth = (d) => { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
+    window.toggleDatePicker = () => { document.getElementById('month-picker-modal').style.display = document.getElementById('month-picker-modal').style.display === 'block' ? 'none' : 'block'; pickerYear = currentDate.getFullYear(); document.getElementById('pick-year-val').innerText = pickerYear; }
+    window.changePickYear = (d) => { pickerYear += d; document.getElementById('pick-year-val').innerText = pickerYear; }
+    window.goToMonth = (m) => { currentDate.setFullYear(pickerYear); currentDate.setMonth(m); renderCalendar(); document.getElementById('month-picker-modal').style.display = 'none'; }
+    function getCurrentDateStr() { const d=new Date(); return `${d.getDate()}-${d.getMonth()}-${d.getFullYear()}`; }
+    function parseDateStr(str) { const [d, m, y] = str.split('-').map(Number); return new Date(y, m, d); }
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid'); grid.innerHTML = `<div class="day-head">Pt</div><div class="day-head">Sa</div><div class="day-head">Ça</div><div class="day-head">Pe</div><div class="day-head">Cu</div><div class="day-head">Ct</div><div class="day-head">Pz</div>`;
+        const y = currentDate.getFullYear(), m = currentDate.getMonth();
+        const names = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+        document.getElementById('monthDisplay').innerText = `${names[m]} ${y}`;
+        const first = new Date(y, m, 1).getDay(), start = first===0?6:first-1, days = new Date(y, m+1, 0).getDate();
+        for(let i=0; i<start; i++) grid.innerHTML+='<div></div>';
+        const todayStr = getCurrentDateStr();
+        for(let d=1; d<=days; d++) {
+            let dk = `${d}-${m}-${y}`, dt = tasks.filter(t=>t.date===dk), dots = "";
+            dt.forEach(t => { if(Array.isArray(t.person)) t.person.forEach(p => dots += `<span class="task-dot">${p.split(' ')[0]}</span>`); else dots += `<span class="task-dot">${t.person.split(' ')[0]}</span>`; });
+            let cls = (dk===todayStr)?"day-cell today":"day-cell";
+            grid.innerHTML += `<div class="${cls}" onclick="openModal('${dk}')"><b>${d}</b>${dots}</div>`;
+        }
+    }
+    window.openModal = (dk) => { selectedDateStr = dk; document.getElementById('modalDateText').innerText = dk; openModalLogic(dk); document.querySelector('#taskModal').style.display = 'flex'; }
+    window.closeModal = () => document.querySelector('#taskModal').style.display = 'none';
+    function openModalLogic(dk) {
+        const dt = tasks.filter(t=>t.date===dk);
+        document.getElementById('dayTaskList').innerHTML = dt.length ? dt.map(t => {
+            const pStr = Array.isArray(t.person) ? t.person.join(", ") : t.person;
+            return `<div style="padding:10px; background:#f9f9f9; border-radius:8px; margin-bottom:5px; border-left:4px solid #764ba2;"><strong>${pStr}</strong><br>📍 ${t.projectName} ${userRole==='admin' ? `<button onclick="delTask('${t.id}')" style="float:right; color:red; border:none;">🗑</button>` : ''}</div>`;
+        }).join('') : 'Görev yok';
+    }
 
 </script>
 </body>
