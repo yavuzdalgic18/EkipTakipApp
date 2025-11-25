@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Personel Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <style>
+        :root { --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg: #f3f5f9; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; }
+        
+        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .icon-btn { border:none; background:none; font-size:1.5rem; cursor:pointer; }
+        
+        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+        .view-section { display: none; } .view-section.active { display: block; }
+        
+        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .hero { background: var(--primary-grad); color: white; padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+        
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; padding: 10px 0; display: flex; justify-content: space-around; border-top: 1px solid #eee; z-index: 1000; }
+        .nav-item { font-size: 0.7rem; color: #888; text-align: center; cursor: pointer; }
+        .nav-item.active { color: #764ba2; font-weight: bold; }
+        .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 2px; }
+
+        /* Basit Takvim CSS */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top:10px; }
+        .day-cell { background: #f8f9fa; height: 80px; border-radius: 8px; padding: 2px; font-size: 0.8rem; text-align: center; border:1px solid transparent; }
+        .day-cell.today { border-color: #764ba2; background: white; }
+        .task-dot { display: block; width: 6px; height: 6px; background: #764ba2; border-radius: 50%; margin: 2px auto; }
+        
+        /* Listeler */
+        .badge { padding: 3px 8px; border-radius: 5px; font-size: 0.75rem; background: #eee; }
+        .badge.sahada { background: #d1fae5; color: #065f46; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h3>Merhaba, <span id="uName">Personel</span></h3>
+    <button class="icon-btn" onclick="logout()">🚪</button>
+</div>
+
+<div class="container">
+    
+    <div id="view-calendar" class="view-section active">
+        <div class="hero">
+            <h2 id="monthTitle" style="margin:0;">Takvim</h2>
+        </div>
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <button onclick="changeMonth(-1)">◀</button>
+                <span id="calDateDisplay"></span>
+                <button onclick="changeMonth(1)">▶</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+        <div id="dayDetail" class="card" style="display:none;">
+            <h4 id="detailDate"></h4>
+            <div id="detailList"></div>
+        </div>
+    </div>
+
+    <div id="view-projects" class="view-section">
+        <h3>Projeler</h3>
+        <div id="projectList"></div>
+    </div>
+
+    <div id="view-team" class="view-section">
+        <h3>Ekip Durumu</h3>
+        <div id="teamList"></div>
+    </div>
+
+    <div id="view-assets" class="view-section">
+        <h3>Araçlar</h3>
+        <div id="vehicleList"></div>
+        <h3 style="margin-top:20px;">Cihazlar</h3>
+        <div id="deviceList"></div>
+    </div>
+
+</div>
+
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('calendar', this)"><span class="nav-icon">📅</span>Takvim</div>
+    <div class="nav-item" onclick="switchTab('projects', this)"><span class="nav-icon">📂</span>Proje</div>
+    <div class="nav-item" onclick="switchTab('team', this)"><span class="nav-icon">👥</span>Ekip</div>
+    <div class="nav-item" onclick="switchTab('assets', this)"><span class="nav-icon">🚗</span>Varlıklar</div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY", authDomain: "ekiptakipapp.firebaseapp.com", projectId: "ekiptakipapp", storageBucket: "ekiptakipapp.firebasestorage.app", messagingSenderId: "55716082808", appId: "1:55716082808:web:b144b953684fc9f80c698d" };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let tasks=[], projects=[], vehicles=[], devices=[], users=[];
+    let currentDate = new Date();
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) window.location.href = 'login.html';
+        else {
+            const uDoc = await getDoc(doc(db, "users", user.email));
+            if(uDoc.exists()) document.getElementById('uName').innerText = uDoc.data().name;
+            startListeners();
+        }
+    });
+
+    window.logout = () => signOut(auth).then(()=>window.location.href='login.html');
+    window.switchTab = (id, el) => {
+        document.querySelectorAll('.view-section').forEach(x=>x.classList.remove('active'));
+        document.getElementById('view-'+id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+        el.classList.add('active');
+    };
+
+    function startListeners(){
+        onSnapshot(collection(db, "tasks"), s => { tasks=[]; s.docs.forEach(d=>tasks.push(d.data())); renderCalendar(); });
+        onSnapshot(collection(db, "projects"), s => { 
+            document.getElementById('projectList').innerHTML = s.docs.map(d=>{
+                const p = d.data();
+                return `<div class="card"><strong>${p.name}</strong><br><small>${p.manager} | ${p.start} - ${p.end}</small></div>`
+            }).join('');
+        });
+        onSnapshot(collection(db, "users"), s => {
+            users = []; s.docs.forEach(d=>users.push(d.data()));
+            document.getElementById('teamList').innerHTML = users.map(u => `<div class="card" style="display:flex;justify-content:space-between;"><span>${u.name}</span><span class="badge">${u.title||''}</span></div>`).join('');
+        });
+        onSnapshot(collection(db, "vehicles"), s => document.getElementById('vehicleList').innerHTML = s.docs.map(d=>`<div class="card">${d.data().plate} - <small>${d.data().info}</small></div>`).join(''));
+        onSnapshot(collection(db, "devices"), s => document.getElementById('deviceList').innerHTML = s.docs.map(d=>`<div class="card">${d.data().name} (${d.data().serial})</div>`).join(''));
+    }
+
+    // Basit Takvim
+    window.changeMonth = (d) => { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
+    function renderCalendar(){
+        const grid = document.getElementById('calendarGrid'); grid.innerHTML = "";
+        const y = currentDate.getFullYear(), m = currentDate.getMonth();
+        document.getElementById('calDateDisplay').innerText = new Date(y,m).toLocaleString('tr-TR', {month:'long', year:'numeric'});
+        const daysInMonth = new Date(y, m+1, 0).getDate();
+        
+        for(let d=1; d<=daysInMonth; d++){
+            const iso = new Date(y, m, d+1).toISOString().split('T')[0];
+            const hasTask = tasks.some(t => t.startDate <= iso && t.endDate >= iso);
+            grid.innerHTML += `<div class="day-cell ${iso === new Date().toISOString().split('T')[0] ? 'today':''}" onclick="showDay('${iso}')">${d} ${hasTask?'<span class="task-dot"></span>':''}</div>`;
+        }
+    }
+    window.showDay = (date) => {
+        const dayTasks = tasks.filter(t => t.startDate <= date && t.endDate >= date);
+        document.getElementById('dayDetail').style.display='block';
+        document.getElementById('detailDate').innerText = date.split('-').reverse().join('.');
+        document.getElementById('detailList').innerHTML = dayTasks.length ? dayTasks.map(t=>`<div style="border-bottom:1px solid #eee; padding:5px;"><strong>${t.projectName}</strong><br>${Array.isArray(t.person)?t.person.join(', '):t.person}</div>`).join('') : 'Görev yok.';
+    }
+</script>
+</body>
+</html>
