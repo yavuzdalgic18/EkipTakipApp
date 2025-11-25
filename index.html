@@ -288,13 +288,18 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // --- ONESIGNAL AYARLARI ---
+  // --- ONESIGNAL AYARLARI (GÜNCELLENDİ) ---
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
         OneSignal.init({
             appId: "08d90e98-c6b4-429c-aab5-f11164ddc881",
-            notifyButton: { enable: false }, // Kendi butonumuzu kullanacağız
+            notifyButton: { enable: false }, 
             allowLocalhostAsSecureOrigin: true,
+            // ÖNEMLİ: Dosyanın yerini tam olarak gösteriyoruz
+            serviceWorker: {
+                path: "OneSignalSDKWorker.js",
+                workerName: "OneSignalSDKWorker.js"
+            }
         });
     });
 
