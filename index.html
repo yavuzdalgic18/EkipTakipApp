@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V33 - Final Fix)</title>
+    <title>Ekip Takip Pro (V34 - Temizlik Aracı)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -79,7 +79,7 @@
         .day-head { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
         .day-cell { 
             background: #f8f9fa; 
-            height: 100px; /* Sabit yükseklik */
+            height: 100px; 
             border-radius: 8px; 
             padding: 4px; 
             font-size: 0.8rem; 
@@ -87,7 +87,7 @@
             cursor: pointer; 
             display: flex; 
             flex-direction: column; 
-            overflow-y: auto; /* İÇERİK TAŞARSA KAYDIR */
+            overflow-y: auto; 
             border: 1px solid transparent;
             transition: all 0.2s;
         }
@@ -253,6 +253,13 @@
                 </div>
             </div>
             <div class="modern-card" id="userListArea"></div>
+            
+            <div class="admin-only modern-card" style="border: 2px solid red; background: #fff5f5;">
+                <h3 style="color:#c0392b; margin-top:0;">⚠️ Tehlikeli Bölge</h3>
+                <p style="font-size:0.8rem; color:#666;">Hatalı veri girişi nedeniyle oluşan tüm görevleri silmek için aşağıdaki butonu kullanın. Bu işlem geri alınamaz.</p>
+                <button class="btn-main" onclick="clearAllTasks()" style="background:#e74c3c;">⚠️ TÜM GÖREVLERİ SİL VE SIFIRLA</button>
+            </div>
+
         </div>
 
         <div id="view-reports" class="view-section">
@@ -330,7 +337,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // --- ANAHTARLAR ---
     const k1 = "AIzaSyD4XZR8JAMe-"; const k2 = "Qr2Oj2UGnp9mFc8En38gxY";
@@ -565,7 +572,31 @@
         }
     }
 
-    // --- GÖREV KAYIT (OTOMATİK KAPANMA & TOAST DAHİL) ---
+    // --- TEMİZLİK ARACI (YENİ) ---
+    window.clearAllTasks = async () => {
+        if(!confirm("DİKKAT! Tüm takvim verileri ve görevler silinecek. Onaylıyor musunuz?")) return;
+        if(!confirm("Son Kararınız mı? Bu işlem geri alınamaz!")) return;
+        
+        showToast("Temizlik başladı...", "info");
+        try {
+            const q = query(collection(db, "tasks"));
+            const querySnapshot = await getDocs(q);
+            const batch = writeBatch(db);
+            let count = 0;
+
+            querySnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+                count++;
+            });
+
+            await batch.commit();
+            showToast(`${count} görev silindi. Takvim temiz!`, "success");
+        } catch (e) {
+            showToast("Hata oluştu: " + e.message, "error");
+        }
+    }
+
+    // --- GÖREV KAYIT ---
     window.saveTask = async () => {
         const btn = document.getElementById('btn-save-task');
         const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
@@ -585,7 +616,6 @@
         });
         if (conflictMsg && !confirm(`DİKKAT:\n${conflictMsg}\nYine de atamak istiyor musunuz?`)) return;
 
-        // BUTONU KİLİTLE (ÇİFT TIKLAMA ÖNLEME)
         btn.disabled = true;
         btn.innerText = "Kaydediliyor...";
 
@@ -602,12 +632,11 @@
                 plate: plate 
             });
             
-            // TEMİZLİK VE KAPANIŞ
             document.getElementById('t-loc').value=""; 
             document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false);
             
             showToast("Görev atandı!", "success");
-            closeModal(); // PENCEREYİ KAPAT
+            closeModal(); 
         } catch (e) {
             showToast("Hata: " + e.message, "error");
         } finally {
@@ -620,11 +649,10 @@
         if(confirm("Bu görevi silmek istediğine emin misin?")) {
             await deleteDoc(doc(db, "tasks", id));
             showToast("Görev silindi", "error");
-            closeModal(); // SİLİNCE PENCEREYİ KAPAT
+            closeModal();
         }
     }
 
-    // DİĞER CRUD İŞLEMLERİNDE DE TOAST EKLİYORUZ
     window.addVehicle=async()=>{const p=document.getElementById('v-plate').value; if(!p)return; await addDoc(collection(db,"vehicles"),{plate:p,info:document.getElementById('v-info').value,inspectionDate:document.getElementById('v-inspection').value,currentHolder:null}); showToast("Araç eklendi"); resetVehicleForm();}
     window.updateVehicleDB=async()=>{await updateDoc(doc(db,"vehicles",editingVehicleId),{plate:document.getElementById('v-plate').value,info:document.getElementById('v-info').value,inspectionDate:document.getElementById('v-inspection').value}); showToast("Araç güncellendi"); resetVehicleForm();}
     window.editVehicle=(id)=>{const v=vehicles.find(x=>x.id===id); if(!v)return; document.getElementById('v-plate').value=v.plate; document.getElementById('v-info').value=v.info; document.getElementById('v-inspection').value=v.inspectionDate||""; editingVehicleId=id; document.getElementById('vehicleFormTitle').innerText="Düzenle"; document.getElementById('btn-v-save').style.display='none'; document.getElementById('btn-v-update').style.display='block'; document.getElementById('btn-v-cancel').style.display='block';}
