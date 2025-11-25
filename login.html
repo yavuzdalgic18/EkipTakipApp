@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Giriş Yap - Ekip Takip Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: var(--primary-grad); 
+            margin: 0; 
+            padding: 0; 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+
+        .login-container {
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .login-box { 
+            background: white; 
+            padding: 30px 25px; 
+            border-radius: 20px; 
+            width: 100%; 
+            max-width: 380px; 
+            text-align: center; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
+            position: relative;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        h2 { margin-top: 0; color: #333; margin-bottom: 20px; }
+        
+        /* Inputlar mobilde daha rahat tıklansın diye padding arttırıldı */
+        input { 
+            width: 100%; 
+            padding: 15px; 
+            margin: 8px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 12px; 
+            background: #f9f9f9; 
+            font-size: 16px; 
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus { border-color: #764ba2; background: #fff; }
+
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            background: #764ba2; 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 600; 
+            font-size: 16px; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+            transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.98); }
+
+        .toggle-link { margin-top: 20px; color: #764ba2; cursor: pointer; font-size: 0.9rem; text-decoration: underline; display: inline-block; padding: 10px; }
+        .hidden { display: none; }
+        #loginError { color: #e74c3c; margin-top: 10px; font-size: 0.85rem; font-weight: 500; }
+
+        /* Mobil ekranlar için ek düzenleme */
+        @media (max-height: 600px) {
+            .login-box { padding: 20px; }
+            h2 { margin-bottom: 10px; font-size: 1.2rem; }
+            input { padding: 12px; margin: 5px 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="login-box">
+        <h2 id="formTitle">Ekip Takip Pro</h2>
+        
+        <div id="loginArea">
+            <input type="email" id="loginEmail" placeholder="E-Posta" inputmode="email">
+            <input type="password" id="loginPass" placeholder="Şifre">
+            <button onclick="handleLogin()">Giriş Yap</button>
+            <div class="toggle-link" onclick="toggleForm('register')">Hesabın yok mu? Kayıt Ol</div>
+        </div>
+
+        <div id="registerArea" class="hidden">
+            <input type="text" id="regName" placeholder="Ad Soyad" autocapitalize="words">
+            <input type="text" id="regTitle" placeholder="Ünvan (Örn: Mühendis)">
+            <input type="email" id="regEmail" placeholder="E-Posta" inputmode="email">
+            <input type="password" id="regPass" placeholder="Şifre (Min 6 hane)">
+            <button onclick="handleRegister()" style="background:#27ae60;">Kaydol</button>
+            <div class="toggle-link" onclick="toggleForm('login')">Giriş Yap</div>
+        </div>
+
+        <div id="loginError"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // --- Firebase Ayarları ---
+    const k1 = "AIzaSyD4XZR8JAMe-"; const k2 = "Qr2Oj2UGnp9mFc8En38gxY";
+    const firebaseConfig = {
+      apiKey: k1 + k2,
+      authDomain: "ekiptakipapp.firebaseapp.com",
+      projectId: "ekiptakipapp",
+      storageBucket: "ekiptakipapp.firebasestorage.app",
+      messagingSenderId: "55716082808",
+      appId: "1:55716082808:web:b144b953684fc9f80c698d",
+      measurementId: "G-S6Q0H5RHR7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Oturum kontrolü: Zaten giriş yapılmışsa ana sayfaya at
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            window.location.href = "index.html";
+        }
+    });
+
+    // Formlar arası geçiş
+    window.toggleForm = (target) => {
+        const loginArea = document.getElementById('loginArea');
+        const registerArea = document.getElementById('registerArea');
+        const title = document.getElementById('formTitle');
+        const errorDiv = document.getElementById('loginError');
+        
+        errorDiv.innerText = ""; // Hataları temizle
+
+        if(target === 'register') {
+            loginArea.classList.add('hidden');
+            registerArea.classList.remove('hidden');
+            title.innerText = "Yeni Hesap Oluştur";
+        } else {
+            registerArea.classList.add('hidden');
+            loginArea.classList.remove('hidden');
+            title.innerText = "Ekip Takip Pro";
+        }
+    }
+
+    window.handleLogin = () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        if(!email || !pass) { document.getElementById('loginError').innerText = "Lütfen tüm alanları doldurun."; return; }
+        
+        signInWithEmailAndPassword(auth, email, pass)
+            .then(() => {
+                // Başarılı giriş, onAuthStateChanged yönlendirmeyi yapacak
+            })
+            .catch(err => {
+                let msg = "Giriş başarısız.";
+                if(err.code === 'auth/invalid-credential') msg = "E-posta veya şifre hatalı.";
+                if(err.code === 'auth/too-many-requests') msg = "Çok fazla deneme yaptınız, biraz bekleyin.";
+                document.getElementById('loginError').innerText = msg;
+            });
+    };
+
+    window.handleRegister = async () => {
+        const name = document.getElementById('regName').value;
+        const title = document.getElementById('regTitle').value;
+        const email = document.getElementById('regEmail').value;
+        const pass = document.getElementById('regPass').value;
+
+        if(!name || !email || !pass) { document.getElementById('loginError').innerText = "Tüm alanları doldurunuz."; return; }
+        if(pass.length < 6) { document.getElementById('loginError').innerText = "Şifre en az 6 karakter olmalı."; return; }
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+            // Firestore'a kullanıcıyı kaydet
+            await setDoc(doc(db, "users", email), { 
+                name: name, 
+                title: title, 
+                email: email, 
+                role: 'admin' // İlk kayıtta admin veriyoruz, mantığına göre değiştirebilirsin
+            });
+            // Başarılı kayıt, yönlendirmeyi onAuthStateChanged yapacak
+        } catch (err) { 
+            let msg = err.message;
+            if(err.code === 'auth/email-already-in-use') msg = "Bu E-posta zaten kullanılıyor.";
+            document.getElementById('loginError').innerText = msg; 
+        }
+    };
+</script>
+</body>
+</html>
