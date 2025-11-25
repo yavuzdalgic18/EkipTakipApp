@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V37 - Güvenli Kayıt)</title>
+    <title>Ekip Takip Pro (V38 - UI Fix)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -16,7 +16,7 @@
     <style>
         :root { --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f3f5f9; --text-main: #2d3436; --nav-height: 75px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 100px; color: var(--text-main); height: 100vh; overflow-x: hidden; }
 
         /* TOAST */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
@@ -27,30 +27,48 @@
         @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.9); } }
 
-        button:active, .day-cell:active, .nav-item:active, .info-card:active { transform: scale(0.97); transition: transform 0.1s ease; }
-        .hidden { display: none !important; } 
-        .admin-only { display: none; } 
-
-        /* GİRİŞ EKRANI */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary-grad); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .login-box { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        /* GİRİŞ EKRANI DÜZELTMESİ (SCROLL EKLENDİ) */
+        #login-screen { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: var(--primary-grad); z-index: 9999; 
+            overflow-y: auto; /* Mobilde aşağı kaydırma aktif */
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .login-box { 
+            background: white; padding: 30px; border-radius: 20px; 
+            width: 100%; max-width: 350px; text-align: center; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
+            margin: auto; /* Ortalamayı garantile */
+        }
         .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; background: #f9f9f9; font-size: 16px; }
         .login-box button { width: 100%; padding: 15px; background: #764ba2; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 10px; }
-        
-        /* APP UI */
-        .view-section { display: none; animation: fadeIn 0.3s; } 
-        .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+        /* SEKME AYRIMI (KESİN ÇÖZÜM) */
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; position: relative; }
+        .view-section { 
+            display: none; /* Varsayılan olarak hepsi gizli */
+            width: 100%; 
+            animation: fadeIn 0.3s; 
+        }
+        .view-section.active { 
+            display: block !important; /* Sadece aktif olan görünür */
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* DİĞER STİLLER */
+        .hidden { display: none !important; } 
+        .admin-only { display: none; } 
         .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; }
-        
+        .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; transition: transform 0.1s; }
+        .icon-btn:active { transform: scale(0.9); }
+
         .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; }
         .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
         .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
+        .nav-item:active { transform: scale(0.95); }
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
         .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .hero-card { background: var(--primary-grad); border-radius: 25px; padding: 25px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3); }
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
@@ -61,6 +79,8 @@
         .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         .info-card.active { border-left-color: #27ae60; } 
         .info-card.custody { border-left-color: #f39c12; }
+        .info-card:active { transform: scale(0.98); transition: 0.1s; }
+        
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
         .badge-green { background: #d1fae5; color: #065f46; } 
         .badge-red { background: #fee2e2; color: #991b1b; } 
@@ -77,11 +97,13 @@
         .day-cell b { align-self: center; margin-bottom: 4px; color: #333; position:sticky; top:0; background:#f8f9fa; width:100%; text-align:center; z-index:2; }
         .day-cell.today { border: 2px solid #764ba2; background: white; }
         .day-cell.today b { background: white; }
+        .day-cell:active { transform: scale(0.96); }
         .task-dot { font-size: 0.65rem; background: #e0e7ff; color: #4338ca; padding: 3px 5px; margin-bottom: 2px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; flex-shrink: 0; }
 
         input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; transition: 0.3s; }
         input:focus, select:focus { border-color: #764ba2; background: #fff; }
         .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 5px; transition: transform 0.1s; }
+        .btn-main:active { transform: scale(0.97); }
         .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; margin-left: 5px; }
         .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
         .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
@@ -358,7 +380,6 @@
                 document.getElementById('reportDateSelector').value = currentReportDate;
                 startListeners();
             } else {
-                // İlk yönetici oluşturma (Güvenlik açığı olmaması için burayı artık production'da kapatabilirsiniz veya sadece belirli maile izin verebilirsiniz)
                 await setDoc(doc(db, "users", user.email), { name: "Yönetici", email: user.email, role: 'admin' });
                 window.location.reload();
             }
@@ -382,7 +403,6 @@
     window.handleLogin = () => { signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPass').value).catch(err => document.getElementById('loginError').innerText = err.message); };
     window.handleLogout = () => { signOut(auth); window.location.reload(); };
     
-    // --- GÜVENLİ KAYIT MANTIĞI (YENİ) ---
     window.handleRegister = async () => { 
         const email = document.getElementById('regEmail').value.trim();
         const pass = document.getElementById('regPass').value;
@@ -392,7 +412,6 @@
         if(!email || !pass) return showToast("E-posta ve şifre zorunlu", "error");
 
         try {
-            // 1. Önce veritabanında bu mail tanımlı mı diye bak
             const userRef = doc(db, "users", email);
             const userDoc = await getDoc(userRef);
 
@@ -401,11 +420,8 @@
                 return;
             }
 
-            // 2. Tanımlıysa Auth kaydını oluştur
             await createUserWithEmailAndPassword(auth, email, pass);
-            
-            // 3. Kullanıcı adını ve ünvanını güncelle (Rolü değiştirme!)
-            await updateDoc(userRef, { name: name, title: title }); // Mevcut rolü korur
+            await updateDoc(userRef, { name: name, title: title }); 
 
             showToast("Hesap başarıyla oluşturuldu! Giriş yapılıyor...", "success");
         } catch (err) { 
@@ -441,7 +457,6 @@
     window.filterList = (input, listId, itemTag) => { const filter = input.value.toLowerCase(); document.getElementById(listId).querySelectorAll(itemTag).forEach(item => { item.style.display = (item.textContent || item.innerText).toLowerCase().indexOf(filter) > -1 ? "" : "none"; }); }
     async function sendOneSignalNotification(userEmails, message) { /* API Code */ }
 
-    // --- REPORT LOGIC ---
     async function addLog(type, item, action, person) {
         await addDoc(collection(db, "logs"), { date: new Date().toISOString(), type: type, item: item, action: action, person: person, admin: currentUser.name });
     }
