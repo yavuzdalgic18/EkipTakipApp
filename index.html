@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V36 - Fix)</title>
+    <title>Ekip Takip Pro (V35 - Admin/Personel & Edit)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -18,7 +18,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
 
-        /* TOAST */
+        /* TOAST BİLDİRİM */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 400px; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
         .toast { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: space-between; animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: all; border-left: 6px solid #ccc; font-weight: 500; font-size: 0.9rem; }
         .toast.success { border-left-color: #27ae60; color: #27ae60; }
@@ -30,6 +30,7 @@
         /* UI TWEAKS */
         button:active, .day-cell:active, .nav-item:active, .info-card:active { transform: scale(0.97); transition: transform 0.1s ease; }
         .hidden { display: none !important; } 
+        /* Admin Only: JS ile kontrol edilecek ama CSS ile de gizleyelim */
         .admin-only { display: none; } 
 
         /* GİRİŞ EKRANI */
@@ -218,8 +219,8 @@
             <div class="modern-card"><div id="vehicleListArea" class="card-list"></div></div>
         </div>
 
-        <div id="view-users" class="view-section admin-only">
-            <div class="modern-card">
+        <div id="view-users" class="view-section">
+            <div class="admin-only modern-card">
                 <h3 id="userFormTitle">Kullanıcı Yönetimi</h3>
                 <input type="text" id="u-name" placeholder="Ad Soyad">
                 <input type="text" id="u-title" placeholder="Ünvan">
@@ -233,7 +234,7 @@
             </div>
             <div class="modern-card" id="userListArea"></div>
             
-            <div class="modern-card" style="border: 2px solid red; background: #fff5f5;">
+            <div class="admin-only modern-card" style="border: 2px solid red; background: #fff5f5;">
                 <h3 style="color:#c0392b; margin-top:0;">⚠️ Tehlikeli Bölge</h3>
                 <button class="btn-main" onclick="clearAllTasks()" style="background:#e74c3c;">⚠️ TÜM GÖREVLERİ SİL VE SIFIRLA</button>
             </div>
@@ -257,13 +258,12 @@
             </div>
              <div class="modern-card">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3>Personel Aylık Çalışma Gün Sayısı</h3>
+                    <h3>Personel Eforu</h3>
                     <button class="btn-sm" style="background:#27ae60; color:white; border:none; border-radius:5px; cursor:pointer;" onclick="exportExcel()">Excel İndir</button>
                 </div>
                 <table class="log-table" id="personnelReportTable" style="width:100%;"><tbody id="personnelReportBody"></tbody></table>
             </div>
         </div>
-
     </div>
 
     <div class="bottom-nav">
@@ -388,8 +388,6 @@
         load("vehicles", vehicles, renderVehicleList);
         load("devices", devices, renderDeviceList);
         onSnapshot(collection(db, "users"), (s) => { users=[]; s.docs.forEach(d=>users.push(d.data())); renderTeamStatus(); renderUserList(); loadDropdowns(); });
-        
-        // ZİMMET İÇİN SON 500 KAYIT (TARİHTEN BAĞIMSIZ)
         onSnapshot(query(collection(db, "logs"), orderBy("date", "desc"), limit(500)), (s) => { logs = []; s.docs.forEach(d => logs.push(d.data())); if(userRole==='admin') filterReports(); });
 
         onSnapshot(collection(db, "tasks"), (snapshot) => {
@@ -411,111 +409,90 @@
     window.filterList = (input, listId, itemTag) => { const filter = input.value.toLowerCase(); document.getElementById(listId).querySelectorAll(itemTag).forEach(item => { item.style.display = (item.textContent || item.innerText).toLowerCase().indexOf(filter) > -1 ? "" : "none"; }); }
     async function sendOneSignalNotification(userEmails, message) { /* API Code */ }
 
-    // --- REPORT LOGIC ---
-    async function addLog(type, item, action, person) {
-        await addDoc(collection(db, "logs"), { date: new Date().toISOString(), type: type, item: item, action: action, person: person, admin: currentUser.name });
-    }
-    
-    // Filtreleme Butonları (Tümü | Araç | Cihaz)
-    window.setReportFilter = (filter, btn) => { 
-        currentReportFilter = filter; 
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); 
-        btn.classList.add('active'); 
-        filterReports(); 
-    }
-    
-    window.filterReports = () => { 
-        currentReportDate = document.getElementById('reportDateSelector').value; // Sadece Personel Raporu için
-        renderLogs(); // Zimmet (Tarihten Bağımsız)
-        renderPersonnelReport(); // Personel (Tarihe Bağlı)
-    }
-    
-    // ZİMMET: Tarih filtresi YOK, sadece Tip filtresi
-    function renderLogs() {
-        const table = document.getElementById('logTable');
-        const filteredLogs = logs.filter(l => currentReportFilter === 'all' || l.type === currentReportFilter);
-        
-        if (filteredLogs.length === 0) { table.innerHTML = '<tr><td>Kayıt yok.</td></tr>'; return; }
-        table.innerHTML = filteredLogs.map(l => {
-            const d = new Date(l.date);
-            const dateStr = `${d.getDate()}.${d.getMonth()+1} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
-            const actionClass = l.action === 'take' ? 'action-take' : 'action-return';
-            const actionText = l.action === 'take' ? 'Aldı' : 'Verdi';
-            const icon = l.type === 'vehicle' ? '🚗' : '🧰';
-            return `<tr><td><span class="log-date">${dateStr}</span></td><td>${icon} <strong>${l.person}</strong><br>${l.item} <span class="log-action ${actionClass}">${actionText}</span></td></tr>`;
-        }).join('');
-    }
-
-    // PERSONEL EFORU: Tarihe Bağlı
-    function renderPersonnelReport() {
-        const [year, month] = currentReportDate.split('-').map(Number);
-        const reportData = {}; users.forEach(u => reportData[u.name] = 0);
-        tasks.forEach(t => {
-            let start = new Date(t.startDate || parseDateStr(t.date));
-            let end = new Date(t.endDate || parseDateStr(t.date));
-            let loop = new Date(start);
-            while(loop <= end) {
-                if (loop.getFullYear() === year && loop.getMonth() === (month - 1)) {
-                    if (Array.isArray(t.person)) t.person.forEach(p => { if(reportData[p] !== undefined) reportData[p]++; });
-                    else if(reportData[t.person] !== undefined) reportData[t.person]++;
-                }
-                loop.setDate(loop.getDate() + 1);
-            }
-        });
-        document.getElementById('personnelReportBody').innerHTML = Object.keys(reportData).map(key => `<tr><td>${key}</td><td style="font-weight:bold;">${reportData[key]} Gün</td></tr>`).join('');
-    }
-
-    // GÖREV DÜZENLEME
+    // --- GÖREV DÜZENLEME (YENİ) ---
     window.editTask = (id) => {
         const t = tasks.find(x => x.id === id);
         if (!t) return;
+        
         editingTaskId = id;
         document.getElementById('taskFormTitle').innerText = "Görevi Düzenle";
         document.getElementById('t-start-date').value = t.startDate || "";
         document.getElementById('t-end-date').value = t.endDate || "";
         document.getElementById('t-project-select').value = t.projectId || "";
         document.getElementById('t-loc').value = t.location || "";
+
+        // Multi Selectleri Doldur
         setMultiSelectValues('ms-person', Array.isArray(t.person) ? t.person : [t.person]);
         setMultiSelectValues('ms-device', Array.isArray(t.device) ? t.device : [t.device]);
         setMultiSelectValues('ms-plate', Array.isArray(t.plate) ? t.plate : [t.plate]);
+
+        // Butonları Ayarla
         document.getElementById('btn-save-task').style.display = 'none';
         document.getElementById('btn-update-task').style.display = 'block';
         document.getElementById('btn-cancel-task').style.display = 'block';
+
+        // Forma Kaydır
         document.getElementById('assignForm').scrollIntoView({behavior: 'smooth'});
     }
+
     window.updateTaskDB = async () => {
         const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
         const projVal = document.getElementById('t-project-select').value;
         const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
-        await updateDoc(doc(db, "tasks", editingTaskId), { startDate: document.getElementById('t-start-date').value, endDate: document.getElementById('t-end-date').value, person: per, projectName: projName, projectId: projVal, location: document.getElementById('t-loc').value, device: dev, plate: plate });
-        showToast("Görev güncellendi!", "success"); cancelTaskEdit();
+        
+        await updateDoc(doc(db, "tasks", editingTaskId), {
+            startDate: document.getElementById('t-start-date').value,
+            endDate: document.getElementById('t-end-date').value,
+            person: per,
+            projectName: projName,
+            projectId: projVal,
+            location: document.getElementById('t-loc').value,
+            device: dev,
+            plate: plate
+        });
+        
+        showToast("Görev güncellendi!", "success");
+        cancelTaskEdit();
     }
+
     window.cancelTaskEdit = () => {
         editingTaskId = null;
         document.getElementById('taskFormTitle').innerText = "Yeni Atama";
         document.getElementById('btn-save-task').style.display = 'block';
         document.getElementById('btn-update-task').style.display = 'none';
         document.getElementById('btn-cancel-task').style.display = 'none';
+        
         document.getElementById('t-loc').value = "";
         document.querySelectorAll('.multi-select-area input').forEach(c => c.checked = false);
     }
-    function setMultiSelectValues(id, values) { if(!values) return; document.querySelectorAll(`#${id} input`).forEach(cb => { cb.checked = values.includes(cb.value); }); }
 
-    // DİĞER FONKSİYONLAR...
+    function setMultiSelectValues(id, values) {
+        if(!values) return;
+        document.querySelectorAll(`#${id} input`).forEach(cb => {
+            cb.checked = values.includes(cb.value);
+        });
+    }
+    // ----------------------------
+
     window.saveTask = async () => {
         const btn = document.getElementById('btn-save-task');
         const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
         const projVal = document.getElementById('t-project-select').value;
         const sDate = document.getElementById('t-start-date').value;
         const eDate = document.getElementById('t-end-date').value;
+
         if(!projVal || per.length===0 || !sDate || !eDate) return showToast("Eksik bilgi", "error");
         if(sDate > eDate) return showToast("Tarih hatası", "error");
+
         let conflictMsg = "";
         dev.forEach(dName => {
             const deviceObj = devices.find(d => d.name === dName);
-            if (deviceObj && deviceObj.currentHolder && !per.includes(deviceObj.currentHolder)) { conflictMsg += `⚠️ ${dName} cihazı şu an ${deviceObj.currentHolder} zimmetinde!\n`; }
+            if (deviceObj && deviceObj.currentHolder && !per.includes(deviceObj.currentHolder)) {
+                conflictMsg += `⚠️ ${dName} cihazı şu an ${deviceObj.currentHolder} zimmetinde!\n`;
+            }
         });
         if (conflictMsg && !confirm(`DİKKAT:\n${conflictMsg}\nYine de atamak istiyor musunuz?`)) return;
+
         btn.disabled = true; btn.innerText = "Kaydediliyor...";
         try {
             const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
@@ -525,9 +502,47 @@
             closeModal();
         } catch (e) { showToast("Hata: " + e.message, "error"); } finally { btn.disabled = false; btn.innerText = "Kaydet"; }
     }
-    window.delTask = async (id) => { if(confirm("Silmek istediğine emin misin?")) { await deleteDoc(doc(db, "tasks", id)); showToast("Silindi", "error"); } }
-    window.clearAllTasks = async () => { if(!confirm("Tüm veriler silinecek?")) return; const q = query(collection(db, "tasks")); const querySnapshot = await getDocs(q); const batch = writeBatch(db); querySnapshot.forEach((doc) => batch.delete(doc.ref)); await batch.commit(); showToast("Temizlik Tamam", "success"); }
 
+    window.delTask = async (id) => { if(confirm("Silmek istediğine emin misin?")) { await deleteDoc(doc(db, "tasks", id)); showToast("Silindi", "error"); } }
+    window.clearAllTasks = async () => {
+        if(!confirm("Tüm veriler silinecek?")) return;
+        const q = query(collection(db, "tasks")); const querySnapshot = await getDocs(q); const batch = writeBatch(db);
+        querySnapshot.forEach((doc) => batch.delete(doc.ref)); await batch.commit(); showToast("Temizlik Tamam", "success");
+    }
+
+    // LIST RENDERERS (WITH PERMISSIONS)
+    function renderVehicleList(){document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => { 
+        let zimmetHtml = v.currentHolder ? `<div style="margin-top:5px;"><span class="badge badge-orange">👤 ${v.currentHolder}</span> ${userRole==='admin'?`<button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade Al</button>`:''}</div>` : (userRole==='admin' ? `<div style="margin-top:5px;"><button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}','${v.info}')">Zimmetle</button></div>` : ''); 
+        let actionHtml = userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : '';
+        return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small></div>${actionHtml}</div>${zimmetHtml}</div>`; 
+    }).join('');}
+
+    function renderDeviceList(){
+        const todayISO = new Date().toISOString().split('T')[0];
+        document.getElementById('deviceListArea').innerHTML = devices.map(d => { 
+            let statusBadge = `<span class="badge badge-green">BOŞTA</span>`, zimmetHtml = ""; 
+            if(d.currentHolder) { statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; } 
+            else if(userRole==='admin') { zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; } 
+            
+            const at = tasks.find(t => { const s = t.startDate||parseDateStr(t.date).toISOString().split('T')[0]; const e = t.endDate||parseDateStr(t.date).toISOString().split('T')[0]; return todayISO >= s && todayISO <= e && (Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name); });
+            if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`; 
+            
+            let actionHtml = userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : '';
+            return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small></div>${actionHtml}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; 
+        }).join('');
+    }
+    
+    function renderProjects(){document.getElementById('projectListBody').innerHTML=projects.map(p=>{
+        let actionHtml = userRole==='admin' ? `<div style="float:right;"><button onclick="editProject('${p.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteProject('${p.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : '';
+        return `<div style="padding:15px; border-bottom:1px solid #eee;"><strong>${p.name}</strong> (${p.start||'-'} / ${p.end||'?'})<br><small>${p.manager||'-'}</small> ${actionHtml}</div>`;}).join('');
+    }
+
+    function renderUserList(){document.getElementById('userListArea').innerHTML=users.map(u=>{
+        let actionHtml = userRole==='admin' ? `<div><button onclick="editUser('${u.email}')" style="border:none; bg:none; margin-right:5px;">✎</button><button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button></div>` : '';
+        return `<div class="user-card" style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small></div>${actionHtml}</div>`}).join('');
+    }
+
+    // DİĞER FONKSİYONLAR (Vehicle, Device, User Ekleme/Silme/Edit) - Admin Only
     window.addVehicle=async()=>{const p=document.getElementById('v-plate').value; if(!p)return; await addDoc(collection(db,"vehicles"),{plate:p,info:document.getElementById('v-info').value,inspectionDate:document.getElementById('v-inspection').value,currentHolder:null}); showToast("Araç eklendi"); resetVehicleForm();}
     window.updateVehicleDB=async()=>{await updateDoc(doc(db,"vehicles",editingVehicleId),{plate:document.getElementById('v-plate').value,info:document.getElementById('v-info').value,inspectionDate:document.getElementById('v-inspection').value}); showToast("Araç güncellendi"); resetVehicleForm();}
     window.editVehicle=(id)=>{const v=vehicles.find(x=>x.id===id); if(!v)return; document.getElementById('v-plate').value=v.plate; document.getElementById('v-info').value=v.info; document.getElementById('v-inspection').value=v.inspectionDate||""; editingVehicleId=id; document.getElementById('vehicleFormTitle').innerText="Düzenle"; document.getElementById('btn-v-save').style.display='none'; document.getElementById('btn-v-update').style.display='block'; document.getElementById('btn-v-cancel').style.display='block';}
@@ -554,6 +569,7 @@
     window.cancelProjectEdit=()=>{editingProjectId=null; document.getElementById('p-name').value=""; document.getElementById('p-cost').value=""; document.getElementById('p-offer').value=""; document.getElementById('p-start').value=""; document.getElementById('p-end').value=""; document.getElementById('projectFormTitle').innerText="Yeni Proje"; document.getElementById('btn-p-save').style.display='block'; document.getElementById('btn-p-update').style.display='none'; document.getElementById('btn-p-cancel').style.display='none';}
     window.deleteProject=async(id)=>{if(confirm("Sil?")) { await deleteDoc(doc(db,"projects",id)); showToast("Proje silindi", "error"); }}
 
+    // ORTAK FONKSİYONLAR
     function renderTeamStatus(){
         const todayStr=new Date().toISOString().split('T')[0];
         document.getElementById('teamListArea').innerHTML=users.map(u=>{
@@ -609,9 +625,11 @@
     window.openModal = (isoDate) => { 
         selectedDateStr = isoDate; 
         document.getElementById('modalDateText').innerText = isoDate.split('-').reverse().join('.'); 
+        // Formu sıfırla ve tarihleri doldur (Sadece admin için anlamlı ama UI açısından hazır olsun)
         cancelTaskEdit(); 
         document.getElementById('t-start-date').value = isoDate;
         document.getElementById('t-end-date').value = isoDate;
+        
         openModalLogic(isoDate); 
         document.querySelector('#taskModal').style.display = 'flex'; 
     }
@@ -627,6 +645,7 @@
         document.getElementById('dayTaskList').innerHTML = dt.length ? dt.map(t => {
             const pStr = Array.isArray(t.person) ? t.person.join(", ") : t.person;
             const rangeStr = (t.startDate && t.endDate) ? `<br><small>📅 ${t.startDate.split('-').reverse().join('.')} - ${t.endDate.split('-').reverse().join('.')}</small>` : '';
+            // ACTION BUTTONS (Edit & Delete) - Sadece Admin
             let actions = '';
             if(userRole === 'admin') {
                 actions = `
@@ -635,91 +654,12 @@
                         <button onclick="delTask('${t.id}')" style="border:none; background:none; color:red; font-size:1.2rem; cursor:pointer;">🗑</button>
                     </div>`;
             }
-            return `<div style="padding:10px; background:#f9f9f9; border-radius:8px; margin-bottom:5px; border-left:4px solid #764ba2;">${actions}<strong>${pStr}</strong><br>📍 ${t.projectName} ${rangeStr}</div>`;
+
+            return `<div style="padding:10px; background:#f9f9f9; border-radius:8px; margin-bottom:5px; border-left:4px solid #764ba2;">
+                        ${actions}
+                        <strong>${pStr}</strong><br>📍 ${t.projectName} ${rangeStr}
+                    </div>`;
         }).join('') : 'Bu tarihte görev yok.';
-    }
-
-    window.openCustodyModal = (type, id, name, extra) => {
-        custodyType = type; custodyTargetId = id;
-        document.getElementById('custodyItemName').innerText = `${name} (${extra||''})`;
-        document.getElementById('c-person').innerHTML = users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
-        document.getElementById('custodyModal').style.display = 'flex';
-    }
-    window.closeCustodyModal = () => document.getElementById('custodyModal').style.display = 'none';
-    window.saveCustody = async () => {
-        const person = document.getElementById('c-person').value;
-        const collectionName = custodyType === 'vehicle' ? 'vehicles' : 'devices';
-        await updateDoc(doc(db, collectionName, custodyTargetId), { currentHolder: person });
-        const itemName = document.getElementById('custodyItemName').innerText;
-        await addLog(custodyType, itemName, 'take', person);
-        showToast("Zimmetlendi", "success");
-        closeCustodyModal();
-    }
-    window.returnItem = async (type, id) => {
-        if(confirm("İade alınsın mı?")) {
-            const collectionName = type === 'vehicle' ? 'vehicles' : 'devices';
-            let prevHolder = "Bilinmiyor";
-            const itemDoc = type === 'vehicle' ? vehicles.find(v=>v.id===id) : devices.find(d=>d.id===id);
-            if(itemDoc) prevHolder = itemDoc.currentHolder;
-            await updateDoc(doc(db, collectionName, id), { currentHolder: null });
-            let itemDetail = itemDoc ? (type==='vehicle' ? `${itemDoc.plate}` : `${itemDoc.name}`) : '';
-            await addLog(type, itemDetail, 'return', prevHolder);
-            showToast("İade alındı", "success");
-        }
-    }
-    window.exportExcel = () => {
-        if (typeof XLSX === 'undefined') return showToast("Excel modülü yüklenemedi", "error");
-        const [year, month] = currentReportDate.split('-').map(Number);
-        const reportData = [];
-        users.forEach(u => {
-            let days = 0;
-            tasks.forEach(t => {
-                let start = new Date(t.startDate || parseDateStr(t.date));
-                let end = new Date(t.endDate || parseDateStr(t.date));
-                let loop = new Date(start);
-                while(loop <= end) {
-                    if (loop.getFullYear() === year && loop.getMonth() === (month - 1)) {
-                         if (Array.isArray(t.person)) { if(t.person.includes(u.name)) days++; }
-                         else if(t.person === u.name) days++;
-                    }
-                    loop.setDate(loop.getDate() + 1);
-                }
-            });
-            reportData.push({ "Personel": u.name, "Çalışma Günü": days });
-        });
-        const ws = XLSX.utils.json_to_sheet(reportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Efor");
-        XLSX.writeFile(wb, `Personel_Efor_${currentReportDate}.xlsx`);
-    }
-    
-    function renderVehicleList(){document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => { 
-        let zimmetHtml = v.currentHolder ? `<div style="margin-top:5px;"><span class="badge badge-orange">👤 ${v.currentHolder}</span> ${userRole==='admin'?`<button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade Al</button>`:''}</div>` : (userRole==='admin' ? `<div style="margin-top:5px;"><button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}','${v.info}')">Zimmetle</button></div>` : ''); 
-        let actionHtml = userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : '';
-        return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small></div>${actionHtml}</div>${zimmetHtml}</div>`; 
-    }).join('');}
-
-    function renderDeviceList(){
-        const todayISO = new Date().toISOString().split('T')[0];
-        document.getElementById('deviceListArea').innerHTML = devices.map(d => { 
-            let statusBadge = `<span class="badge badge-green">BOŞTA</span>`, zimmetHtml = ""; 
-            if(d.currentHolder) { statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; } 
-            else if(userRole==='admin') { zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; } 
-            const at = tasks.find(t => { const s = t.startDate||parseDateStr(t.date).toISOString().split('T')[0]; const e = t.endDate||parseDateStr(t.date).toISOString().split('T')[0]; return todayISO >= s && todayISO <= e && (Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name); });
-            if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`; 
-            let actionHtml = userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : '';
-            return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small></div>${actionHtml}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; 
-        }).join('');
-    }
-    
-    function renderProjects(){document.getElementById('projectListBody').innerHTML=projects.map(p=>{
-        let actionHtml = userRole==='admin' ? `<div style="float:right;"><button onclick="editProject('${p.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteProject('${p.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : '';
-        return `<div style="padding:15px; border-bottom:1px solid #eee;"><strong>${p.name}</strong> (${p.start||'-'} / ${p.end||'?'})<br><small>${p.manager||'-'}</small> ${actionHtml}</div>`;}).join('');
-    }
-
-    function renderUserList(){document.getElementById('userListArea').innerHTML=users.map(u=>{
-        let actionHtml = userRole==='admin' ? `<div><button onclick="editUser('${u.email}')" style="border:none; bg:none; margin-right:5px;">✎</button><button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button></div>` : '';
-        return `<div class="user-card" style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small></div>${actionHtml}</div>`}).join('');
     }
 </script>
 </body>
