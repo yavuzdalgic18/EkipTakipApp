@@ -18,12 +18,6 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
 
-        /* GİRİŞ EKRANI */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary-grad); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .login-box { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-        .login-box input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; background: #f9f9f9; font-size: 16px; }
-        .login-box button { width: 100%; padding: 15px; background: #764ba2; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; margin-top: 10px; }
-        
         /* GENEL STİLLER */
         .hidden { display: none !important; } 
         .admin-only { display: none; } 
@@ -102,25 +96,7 @@
 </head>
 <body>
 
-<div id="login-screen">
-    <div class="login-box">
-        <h2>Ekip Takip Pro</h2>
-        <input type="email" id="loginEmail" placeholder="E-Posta">
-        <input type="password" id="loginPass" placeholder="Şifre">
-        <button onclick="handleLogin()">Giriş Yap</button>
-        <div id="loginError" style="color:red; margin-top:10px; font-size:0.8rem;"></div>
-        <p style="margin-top:20px; color:#764ba2; cursor:pointer; font-size:0.9rem;" onclick="document.getElementById('registerArea').classList.toggle('hidden')">Yeni Hesap</p>
-        <div id="registerArea" class="hidden" style="margin-top:15px;">
-            <input type="text" id="regName" placeholder="Ad Soyad">
-            <input type="text" id="regTitle" placeholder="Ünvan">
-            <input type="email" id="regEmail" placeholder="E-Posta">
-            <input type="password" id="regPass" placeholder="Şifre">
-            <button onclick="handleRegister()" style="background:#27ae60;">Kaydol</button>
-        </div>
-    </div>
-</div>
-
-<div id="app-screen" class="hidden">
+<div id="app-screen">
     <div class="app-header">
         <div><small style="color:#888;">Merhaba,</small><h2 style="margin:0;" id="welcomeUser">Kullanıcı</h2></div>
         <div class="header-icons"><button class="icon-btn" onclick="requestNotificationPermission()">🔔</button><button class="icon-btn" onclick="handleLogout()">🚪</button></div>
@@ -303,7 +279,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // --- ANAHTARLAR (GÖMÜLÜ) ---
@@ -335,6 +311,7 @@
     let custodyTargetId = null, custodyType = null;
     let currentReportFilter = 'all', currentReportDate = new Date().toISOString().slice(0, 7);
 
+    // GİRİŞ KONTROLÜ - Login yoksa yönlendir
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const userDoc = await getDoc(doc(db, "users", user.email));
@@ -343,37 +320,26 @@
                 currentUser = userData; userRole = userData.role;
                 document.getElementById('welcomeUser').innerText = userData.name.split(' ')[0];
                 applyPermissions();
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('app-screen').classList.remove('hidden');
+                
+                // OneSignal Login
                 OneSignalDeferred.push(function(OneSignal) { OneSignal.login(user.email); });
                 document.getElementById('reportDateSelector').value = currentReportDate;
                 startListeners();
             } else {
-                await setDoc(doc(db, "users", user.email), { name: "Yönetici", email: user.email, role: 'admin' });
+                // Kullanıcı var ama DB'de kaydı yoksa (login sayfasında oluşturulmalıydı ama yine de önlem)
+                await setDoc(doc(db, "users", user.email), { name: "Yeni Üye", email: user.email, role: 'staff' });
                 window.location.reload();
             }
         } else {
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('app-screen').classList.add('hidden');
+            // Kullanıcı yoksa login sayfasına git
+            window.location.href = "login.html";
         }
     });
 
-    window.handleLogin = () => {
-        const email = document.getElementById('loginEmail').value;
-        const pass = document.getElementById('loginPass').value;
-        signInWithEmailAndPassword(auth, email, pass).catch(err => document.getElementById('loginError').innerText = err.message);
-    };
-    window.handleLogout = () => { signOut(auth); window.location.reload(); };
-    window.toggleRegister = () => { document.getElementById('registerArea').classList.toggle('hidden'); }
-    window.handleRegister = async () => {
-        const name = document.getElementById('regName').value;
-        const title = document.getElementById('regTitle').value;
-        const email = document.getElementById('regEmail').value;
-        const pass = document.getElementById('regPass').value;
-        try {
-            await createUserWithEmailAndPassword(auth, email, pass);
-            await setDoc(doc(db, "users", email), { name, title, email, role: 'admin' });
-        } catch (err) { alert(err.message); }
+    window.handleLogout = () => { 
+        signOut(auth).then(() => {
+            window.location.href = "login.html";
+        });
     };
 
     function applyPermissions() {
@@ -457,12 +423,10 @@
         const reportData = [];
         users.forEach(u => {
             let days = 0;
-            // Efor hesabı güncellendi: Aralık kontrolü
             tasks.forEach(t => {
                 let start = new Date(t.startDate || parseDateStr(t.date));
                 let end = new Date(t.endDate || parseDateStr(t.date));
                 
-                // Görev bu ayın içinde mi?
                 let loop = new Date(start);
                 while(loop <= end) {
                     if (loop.getFullYear() === year && loop.getMonth() === (month - 1)) {
@@ -550,7 +514,7 @@
         }
     }
 
-    // --- GÖREV KAYIT (MANTIK GÜNCELLEMESİ) ---
+    // --- GÖREV KAYIT ---
     window.saveTask = async () => {
         const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
         const projVal = document.getElementById('t-project-select').value;
@@ -571,7 +535,6 @@
 
         const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
         
-        // Veritabanına startDate ve endDate olarak kaydediyoruz.
         await addDoc(collection(db, "tasks"), { 
             startDate: sDate, 
             endDate: eDate, 
@@ -613,8 +576,6 @@
             } else if(userRole==='admin') { 
                 zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; 
             } 
-            
-            // Cihaz Görevde mi? (Range Control)
             const at = tasks.find(t => {
                 const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
                 const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
@@ -622,7 +583,6 @@
                 const hasDev = Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name;
                 return inRange && hasDev;
             });
-
             if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`; 
             let calibHtml = d.calib ? `<br><small style="color:${new Date(d.calib) < new Date() ? 'red' : '#666'}">Kalibrasyon: ${d.calib}</small>` : ""; 
             return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small>${calibHtml}</div>${userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; 
@@ -646,7 +606,6 @@
     function renderTeamStatus(){
         const todayStr=new Date().toISOString().split('T')[0];
         document.getElementById('teamListArea').innerHTML=users.map(u=>{
-            // Aralığa göre durum kontrolü
             const at = tasks.find(t => {
                 const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
                 const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
@@ -654,7 +613,6 @@
                 const hasPerson = Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name;
                 return inRange && hasPerson;
             });
-            
             let statusHtml=at?`<div class="badge badge-green">SAHADA</div>`:`<div class="badge badge-gray">BOŞTA</div>`;
             const upcoming = tasks.filter(t => (t.startDate || parseDateStr(t.date).toISOString().split('T')[0]) > todayStr && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name)).sort((a,b) => (a.startDate||a.date).localeCompare(b.startDate||b.date))[0];
             let futureHtml = upcoming ? `<small style="color:#e67e22; display:block; margin-top:5px;">📅 Sonraki: ${upcoming.startDate || upcoming.date} - ${upcoming.projectName}</small>` : '';
@@ -692,14 +650,9 @@
     window.changePickYear = (d) => { pickerYear += d; document.getElementById('pick-year-val').innerText = pickerYear; }
     window.goToMonth = (m) => { currentDate.setFullYear(pickerYear); currentDate.setMonth(m); renderCalendar(); document.getElementById('month-picker-modal').style.display = 'none'; }
     function getCurrentDateStr() { const d=new Date(); return `${d.getDate()}-${d.getMonth()}-${d.getFullYear()}`; }
-    function parseDateStr(str) { 
-        if(!str) return new Date();
-        const parts = str.split('-');
-        // Format D-M-YYYY
-        return new Date(parts[2], parts[1], parts[0]); 
-    }
+    function parseDateStr(str) { if(!str) return new Date(); const parts = str.split('-'); return new Date(parts[2], parts[1], parts[0]); }
     
-    // --- TAKVİM RENDER (MANTIK GÜNCELLEMESİ) ---
+    // --- TAKVİM RENDER ---
     function renderCalendar() {
         const grid = document.getElementById('calendarGrid'); 
         grid.innerHTML = `<div class="day-head">Pt</div><div class="day-head">Sa</div><div class="day-head">Ça</div><div class="day-head">Pe</div><div class="day-head">Cu</div><div class="day-head">Ct</div><div class="day-head">Pz</div>`;
@@ -714,10 +667,7 @@
         const todayISO = todayObj.toISOString().split('T')[0];
 
         for(let d=1; d<=days; d++) {
-            // Hücrenin tarihini ISO formatına çevir (YYYY-MM-DD) karşılaştırma için
-            // Ay + 1 yapıyoruz çünkü getMonth 0-11 arası
             const cellDate = new Date(y, m, d);
-            // Timezone farkını çözmek için yerel string
             const offset = cellDate.getTimezoneOffset();
             const cellISO = new Date(cellDate.getTime() - (offset*60*1000)).toISOString().split('T')[0];
 
@@ -733,15 +683,13 @@
             });
 
             let cls = (cellISO === todayISO) ? "day-cell today" : "day-cell";
-            // Tıklayınca yine ISO formatı gönderiyoruz ki modal doğru çalışsın
             grid.innerHTML += `<div class="${cls}" onclick="openModal('${cellISO}')"><b>${d}</b>${dots}</div>`;
         }
     }
 
     window.openModal = (isoDate) => { 
-        selectedDateStr = isoDate; // Global değişkene ata
-        document.getElementById('modalDateText').innerText = isoDate.split('-').reverse().join('.'); // Kullanıcıya güzel göster
-        // Modalı açarken formdaki tarihleri de o güne eşitle
+        selectedDateStr = isoDate; 
+        document.getElementById('modalDateText').innerText = isoDate.split('-').reverse().join('.'); 
         document.getElementById('t-start-date').value = isoDate;
         document.getElementById('t-end-date').value = isoDate;
         
@@ -751,7 +699,6 @@
     window.closeModal = () => document.querySelector('#taskModal').style.display = 'none';
     
     function openModalLogic(isoDate) {
-        // Görev aralığı bu tarihi kapsıyor mu?
         const dt = tasks.filter(t => {
             const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
             const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
@@ -760,12 +707,10 @@
 
         document.getElementById('dayTaskList').innerHTML = dt.length ? dt.map(t => {
             const pStr = Array.isArray(t.person) ? t.person.join(", ") : t.person;
-            // Görev tarih aralığını kartta göster
             const rangeStr = (t.startDate && t.endDate) ? `<br><small>📅 ${t.startDate.split('-').reverse().join('.')} - ${t.endDate.split('-').reverse().join('.')}</small>` : '';
             return `<div style="padding:10px; background:#f9f9f9; border-radius:8px; margin-bottom:5px; border-left:4px solid #764ba2;"><strong>${pStr}</strong><br>📍 ${t.projectName} ${rangeStr} ${userRole==='admin' ? `<button onclick="delTask('${t.id}')" style="float:right; color:red; border:none;">🗑</button>` : ''}</div>`;
         }).join('') : 'Bu tarihte görev yok.';
     }
-
 </script>
 </body>
 </html>
