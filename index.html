@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V30 - Excel Dahil)</title>
+    <title>Ekip Takip Pro (V31 - Range & Search)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -11,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
     <style>
@@ -47,6 +46,9 @@
         .hero-card { background: var(--primary-grad); border-radius: 25px; padding: 25px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3); }
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
+
+        /* ARAMA ÇUBUĞU */
+        .search-bar { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23ccc" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat right 15px center; margin-bottom: 15px; font-size: 0.9rem; }
 
         /* KARTLAR & LİSTELER */
         .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -155,6 +157,7 @@
         </div>
 
         <div id="view-projects" class="view-section">
+            <input type="text" class="search-bar" placeholder="Proje Ara..." onkeyup="filterList(this, 'projectListBody', 'div')">
             <div class="admin-only modern-card" id="projectFormContainer">
                 <h3 id="projectFormTitle">Yeni Proje</h3>
                 <input type="text" id="p-name" placeholder="Proje Adı">
@@ -174,10 +177,12 @@
         </div>
 
         <div id="view-team" class="view-section">
+            <input type="text" class="search-bar" placeholder="Personel Ara..." onkeyup="filterList(this, 'teamListArea', 'div.person-row')">
             <div class="modern-card" id="teamListArea"></div>
         </div>
 
         <div id="view-devices" class="view-section">
+            <input type="text" class="search-bar" placeholder="Cihaz/Seri No Ara..." onkeyup="filterList(this, 'deviceListArea', 'div.info-card')">
             <div class="admin-only modern-card" id="deviceFormContainer">
                 <h3 id="deviceFormTitle">Yeni Cihaz</h3>
                 <input type="text" id="d-name" placeholder="Cihaz Adı">
@@ -193,6 +198,7 @@
         </div>
 
         <div id="view-vehicles" class="view-section">
+            <input type="text" class="search-bar" placeholder="Plaka/Model Ara..." onkeyup="filterList(this, 'vehicleListArea', 'div.info-card')">
             <div class="admin-only modern-card" id="vehicleFormContainer">
                 <h3 id="vehicleFormTitle">Yeni Araç</h3>
                 <input type="text" id="v-plate" placeholder="Plaka">
@@ -273,10 +279,17 @@
 <div class="modal-overlay" id="taskModal" onclick="if(event.target===this) closeModal()">
     <div class="modal-card">
         <div style="display:flex; justify-content:space-between; margin-bottom:20px;"><h2>Görevler</h2><span onclick="closeModal()" style="font-size:1.5rem; cursor:pointer;">✕</span></div>
-        <p id="modalDateText"></p>
+        <p id="modalDateText" style="margin-bottom:10px; font-weight:bold; color:#764ba2;"></p>
+        
         <div id="dayTaskList" style="margin-bottom:20px;"></div>
+        
         <div class="admin-only">
             <h3>Yeni Atama</h3>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;"><label>Başlangıç</label><input type="date" id="t-start-date"></div>
+                <div style="flex:1;"><label>Bitiş</label><input type="date" id="t-end-date"></div>
+            </div>
+
             <label>Personel</label><div class="multi-select-area" id="ms-person"></div>
             <label>Proje</label><select id="t-project-select"></select>
             <input type="text" id="t-loc" placeholder="Konum">
@@ -397,8 +410,23 @@
             tasks=[]; snapshot.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
             renderCalendar();
             if(document.querySelector('.modal-overlay').style.display === 'flex') openModalLogic(selectedDateStr);
-            updateStats(getCurrentDateStr()); renderTeamStatus(); renderDeviceList(); filterReports();
+            updateStats(new Date().toISOString().split('T')[0]); renderTeamStatus(); renderDeviceList(); filterReports();
             isFirstLoad = false;
+        });
+    }
+
+    // ARAMA FONKSİYONU
+    window.filterList = (input, listId, itemTag) => {
+        const filter = input.value.toLowerCase();
+        const list = document.getElementById(listId);
+        const items = list.querySelectorAll(itemTag);
+        items.forEach(item => {
+            const text = item.textContent || item.innerText;
+            if (text.toLowerCase().indexOf(filter) > -1) {
+                item.style.display = "";
+            } else {
+                item.style.display = "none";
+            }
         });
     }
 
@@ -422,7 +450,6 @@
         try { await fetch('https://onesignal.com/api/v1/notifications', options); } catch (e) { console.log(e); }
     }
 
-    // EXCEL EXPORT (Düzeltildi - Window'a atandı)
     window.exportExcel = () => {
         if (typeof XLSX === 'undefined') return alert("Excel kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.");
         
@@ -430,11 +457,19 @@
         const reportData = [];
         users.forEach(u => {
             let days = 0;
+            // Efor hesabı güncellendi: Aralık kontrolü
             tasks.forEach(t => {
-                const tDate = parseDateStr(t.date);
-                if (tDate.getFullYear() === year && tDate.getMonth() === (month - 1)) {
-                    if (Array.isArray(t.person)) { if(t.person.includes(u.name)) days++; }
-                    else if(t.person === u.name) days++;
+                let start = new Date(t.startDate || parseDateStr(t.date));
+                let end = new Date(t.endDate || parseDateStr(t.date));
+                
+                // Görev bu ayın içinde mi?
+                let loop = new Date(start);
+                while(loop <= end) {
+                    if (loop.getFullYear() === year && loop.getMonth() === (month - 1)) {
+                         if (Array.isArray(t.person)) { if(t.person.includes(u.name)) days++; }
+                         else if(t.person === u.name) days++;
+                    }
+                    loop.setDate(loop.getDate() + 1);
                 }
             });
             reportData.push({ "Personel": u.name, "Çalışma Günü": days });
@@ -471,11 +506,18 @@
     function renderPersonnelReport() {
         const [year, month] = currentReportDate.split('-').map(Number);
         const reportData = {}; users.forEach(u => reportData[u.name] = 0);
+        
         tasks.forEach(t => {
-            const tDate = parseDateStr(t.date);
-            if (tDate.getFullYear() === year && tDate.getMonth() === (month - 1)) {
-                if (Array.isArray(t.person)) t.person.forEach(p => { if(reportData[p] !== undefined) reportData[p]++; });
-                else if(reportData[t.person] !== undefined) reportData[t.person]++;
+            let start = new Date(t.startDate || parseDateStr(t.date));
+            let end = new Date(t.endDate || parseDateStr(t.date));
+            
+            let loop = new Date(start);
+            while(loop <= end) {
+                if (loop.getFullYear() === year && loop.getMonth() === (month - 1)) {
+                    if (Array.isArray(t.person)) t.person.forEach(p => { if(reportData[p] !== undefined) reportData[p]++; });
+                    else if(reportData[t.person] !== undefined) reportData[t.person]++;
+                }
+                loop.setDate(loop.getDate() + 1);
             }
         });
         document.getElementById('personnelReportBody').innerHTML = Object.keys(reportData).map(key => `<tr><td>${key}</td><td style="font-weight:bold;">${reportData[key]} Gün</td></tr>`).join('');
@@ -508,10 +550,15 @@
         }
     }
 
+    // --- GÖREV KAYIT (MANTIK GÜNCELLEMESİ) ---
     window.saveTask = async () => {
         const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
         const projVal = document.getElementById('t-project-select').value;
-        if(!projVal || per.length===0) return alert("Eksik seçim");
+        const sDate = document.getElementById('t-start-date').value;
+        const eDate = document.getElementById('t-end-date').value;
+
+        if(!projVal || per.length===0 || !sDate || !eDate) return alert("Personel, Proje ve Tarih Aralığı seçmelisiniz.");
+        if(sDate > eDate) return alert("Başlangıç tarihi bitişten büyük olamaz.");
 
         let conflictMsg = "";
         dev.forEach(dName => {
@@ -523,10 +570,22 @@
         if (conflictMsg && !confirm(`DİKKAT:\n${conflictMsg}\nYine de atamak istiyor musunuz?`)) return;
 
         const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
-        await addDoc(collection(db, "tasks"), { date: selectedDateStr, person: per, projectName: projName, projectId: projVal, location: document.getElementById('t-loc').value, device: dev, plate: plate });
+        
+        // Veritabanına startDate ve endDate olarak kaydediyoruz.
+        await addDoc(collection(db, "tasks"), { 
+            startDate: sDate, 
+            endDate: eDate, 
+            person: per, 
+            projectName: projName, 
+            projectId: projVal, 
+            location: document.getElementById('t-loc').value, 
+            device: dev, 
+            plate: plate 
+        });
+        
         document.getElementById('t-loc').value=""; document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false);
         const targetEmails = users.filter(u => per.includes(u.name)).map(u => u.email);
-        if(targetEmails.length > 0) sendOneSignalNotification(targetEmails, `${selectedDateStr}: ${projName} projesindesin.`);
+        if(targetEmails.length > 0) sendOneSignalNotification(targetEmails, `${sDate} / ${eDate}: ${projName} görevindesin.`);
     }
     window.delTask = async (id) => { if(confirm("Sil?")) await deleteDoc(doc(db, "tasks", id)); }
 
@@ -544,7 +603,31 @@
     window.cancelDeviceEdit=resetDeviceForm;
     function resetDeviceForm(){editingDeviceId=null; document.getElementById('d-name').value=""; document.getElementById('d-serial').value=""; document.getElementById('d-calib').value=""; document.getElementById('deviceFormTitle').innerText="Yeni Cihaz Ekle"; document.getElementById('btn-d-save').style.display='block'; document.getElementById('btn-d-update').style.display='none'; document.getElementById('btn-d-cancel').style.display='none';}
     window.deleteDevice=async(id)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"devices",id));}
-    function renderDeviceList(){document.getElementById('deviceListArea').innerHTML = devices.map(d => { let statusBadge = `<span class="badge badge-green">BOŞTA</span>`, zimmetHtml = ""; if(d.currentHolder) { statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; } else if(userRole==='admin') { zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; } const todayStr = getCurrentDateStr(), dt = tasks.filter(t=>t.date===todayStr), at = dt.find(t => Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name); if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`; let calibHtml = d.calib ? `<br><small style="color:${new Date(d.calib) < new Date() ? 'red' : '#666'}">Kalibrasyon: ${d.calib}</small>` : ""; return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small>${calibHtml}</div>${userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; }).join('');}
+    function renderDeviceList(){
+        const todayISO = new Date().toISOString().split('T')[0];
+        document.getElementById('deviceListArea').innerHTML = devices.map(d => { 
+            let statusBadge = `<span class="badge badge-green">BOŞTA</span>`, zimmetHtml = ""; 
+            if(d.currentHolder) { 
+                statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; 
+                if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; 
+            } else if(userRole==='admin') { 
+                zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; 
+            } 
+            
+            // Cihaz Görevde mi? (Range Control)
+            const at = tasks.find(t => {
+                const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const inRange = todayISO >= s && todayISO <= e;
+                const hasDev = Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name;
+                return inRange && hasDev;
+            });
+
+            if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`; 
+            let calibHtml = d.calib ? `<br><small style="color:${new Date(d.calib) < new Date() ? 'red' : '#666'}">Kalibrasyon: ${d.calib}</small>` : ""; 
+            return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small>${calibHtml}</div>${userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; 
+        }).join('');
+    }
 
     window.addUserToDB=async()=>{const n=document.getElementById('u-name').value,e=document.getElementById('u-email').value,r=document.getElementById('u-role').value; if(!n)return; await setDoc(doc(db,"users",e),{name:n,email:e,role:r,title:document.getElementById('u-title').value}); alert("Ok");}
     window.editUser=(e)=>{const u=users.find(x=>x.email===e); if(!u)return; document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title||''; document.getElementById('u-email').value=u.email; document.getElementById('u-email').disabled=true; document.getElementById('u-role').value=u.role; editingUserEmail=e; document.getElementById('userFormTitle').innerText="Düzenle"; document.getElementById('btn-user-add').style.display='none'; document.getElementById('btn-user-update').style.display='block'; document.getElementById('btn-user-cancel').style.display='block';}
@@ -560,14 +643,39 @@
     window.deleteProject=async(id)=>{if(confirm("Sil?")) await deleteDoc(doc(db,"projects",id));}
     function renderProjects(){document.getElementById('projectListBody').innerHTML=projects.map(p=>{const pf=p.offer-p.cost; return `<div style="padding:15px; border-bottom:1px solid #eee;"><strong>${p.name}</strong> (${p.start||'-'} / ${p.end||'?'})<br><small>${p.manager||'-'} | Kar: ${pf}</small> ${userRole==='admin' ? `<div style="float:right;"><button onclick="editProject('${p.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteProject('${p.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div>`;}).join('');}
     
-    function renderTeamStatus(){const todayStr=getCurrentDateStr(); const todayDate=parseDateStr(todayStr); document.getElementById('teamListArea').innerHTML=users.map(u=>{
-        const dt=tasks.filter(t=>t.date===todayStr); const at=dt.find(t=>Array.isArray(t.person)?t.person.includes(u.name):t.person===u.name); 
-        let statusHtml=at?`<div class="badge badge-green">SAHADA</div>`:`<div class="badge badge-gray">BOŞTA</div>`;
-        const upcoming = tasks.filter(t => parseDateStr(t.date) > todayDate && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name)).sort((a,b) => parseDateStr(a.date)-parseDateStr(b.date))[0];
-        let futureHtml = upcoming ? `<small style="color:#e67e22; display:block; margin-top:5px;">📅 Sonraki: ${upcoming.date} - ${upcoming.projectName}</small>` : '';
-        return `<div class="person-row"><div style="display:flex; align-items:center;"><div class="avatar" style="margin-right:10px;">${u.name.charAt(0)}</div><div><div style="font-weight:600;">${u.name}</div><small>${u.title||''}</small>${futureHtml}</div></div>${statusHtml}</div>`;
-    }).join('');}
-    function updateStats(dk){const dt=tasks.filter(t=>t.date===dk); let s=new Set(); dt.forEach(t=>{if(Array.isArray(t.person))t.person.forEach(p=>s.add(p));else s.add(t.person)}); document.getElementById('stat-total').innerText=users.length; document.getElementById('stat-active').innerText=s.size; document.getElementById('stat-idle').innerText=Math.max(0,users.length-s.size);}
+    function renderTeamStatus(){
+        const todayStr=new Date().toISOString().split('T')[0];
+        document.getElementById('teamListArea').innerHTML=users.map(u=>{
+            // Aralığa göre durum kontrolü
+            const at = tasks.find(t => {
+                const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const inRange = todayStr >= s && todayStr <= e;
+                const hasPerson = Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name;
+                return inRange && hasPerson;
+            });
+            
+            let statusHtml=at?`<div class="badge badge-green">SAHADA</div>`:`<div class="badge badge-gray">BOŞTA</div>`;
+            const upcoming = tasks.filter(t => (t.startDate || parseDateStr(t.date).toISOString().split('T')[0]) > todayStr && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name)).sort((a,b) => (a.startDate||a.date).localeCompare(b.startDate||b.date))[0];
+            let futureHtml = upcoming ? `<small style="color:#e67e22; display:block; margin-top:5px;">📅 Sonraki: ${upcoming.startDate || upcoming.date} - ${upcoming.projectName}</small>` : '';
+            return `<div class="person-row"><div style="display:flex; align-items:center;"><div class="avatar" style="margin-right:10px;">${u.name.charAt(0)}</div><div><div style="font-weight:600;">${u.name}</div><small>${u.title||''}</small>${futureHtml}</div></div>${statusHtml}</div>`;
+        }).join('');
+    }
+
+    function updateStats(todayISO){
+        let activeSet = new Set();
+        tasks.forEach(t => {
+            const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
+            const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
+            if (todayISO >= s && todayISO <= e) {
+                if(Array.isArray(t.person)) t.person.forEach(p=>activeSet.add(p)); else activeSet.add(t.person);
+            }
+        });
+        document.getElementById('stat-total').innerText=users.length; 
+        document.getElementById('stat-active').innerText=activeSet.size; 
+        document.getElementById('stat-idle').innerText=Math.max(0,users.length-activeSet.size);
+    }
+
     function loadDropdowns(){
         if(document.getElementById('p-manager')) document.getElementById('p-manager').innerHTML=users.map(u=>`<option>${u.name}</option>`).join('');
         if(document.getElementById('t-project-select')) document.getElementById('t-project-select').innerHTML=`<option value="">Seç</option>`+projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
@@ -584,31 +692,78 @@
     window.changePickYear = (d) => { pickerYear += d; document.getElementById('pick-year-val').innerText = pickerYear; }
     window.goToMonth = (m) => { currentDate.setFullYear(pickerYear); currentDate.setMonth(m); renderCalendar(); document.getElementById('month-picker-modal').style.display = 'none'; }
     function getCurrentDateStr() { const d=new Date(); return `${d.getDate()}-${d.getMonth()}-${d.getFullYear()}`; }
-    function parseDateStr(str) { const [d, m, y] = str.split('-').map(Number); return new Date(y, m, d); }
+    function parseDateStr(str) { 
+        if(!str) return new Date();
+        const parts = str.split('-');
+        // Format D-M-YYYY
+        return new Date(parts[2], parts[1], parts[0]); 
+    }
     
+    // --- TAKVİM RENDER (MANTIK GÜNCELLEMESİ) ---
     function renderCalendar() {
-        const grid = document.getElementById('calendarGrid'); grid.innerHTML = `<div class="day-head">Pt</div><div class="day-head">Sa</div><div class="day-head">Ça</div><div class="day-head">Pe</div><div class="day-head">Cu</div><div class="day-head">Ct</div><div class="day-head">Pz</div>`;
+        const grid = document.getElementById('calendarGrid'); 
+        grid.innerHTML = `<div class="day-head">Pt</div><div class="day-head">Sa</div><div class="day-head">Ça</div><div class="day-head">Pe</div><div class="day-head">Cu</div><div class="day-head">Ct</div><div class="day-head">Pz</div>`;
         const y = currentDate.getFullYear(), m = currentDate.getMonth();
         const names = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
         document.getElementById('monthDisplay').innerText = `${names[m]} ${y}`;
         const first = new Date(y, m, 1).getDay(), start = first===0?6:first-1, days = new Date(y, m+1, 0).getDate();
+        
         for(let i=0; i<start; i++) grid.innerHTML+='<div></div>';
-        const todayStr = getCurrentDateStr();
+        
+        const todayObj = new Date();
+        const todayISO = todayObj.toISOString().split('T')[0];
+
         for(let d=1; d<=days; d++) {
-            let dk = `${d}-${m}-${y}`, dt = tasks.filter(t=>t.date===dk), dots = "";
-            dt.forEach(t => { if(Array.isArray(t.person)) t.person.forEach(p => dots += `<span class="task-dot">${p}</span>`); else dots += `<span class="task-dot">${t.person}</span>`; });
-            let cls = (dk===todayStr)?"day-cell today":"day-cell";
-            grid.innerHTML += `<div class="${cls}" onclick="openModal('${dk}')"><b>${d}</b>${dots}</div>`;
+            // Hücrenin tarihini ISO formatına çevir (YYYY-MM-DD) karşılaştırma için
+            // Ay + 1 yapıyoruz çünkü getMonth 0-11 arası
+            const cellDate = new Date(y, m, d);
+            // Timezone farkını çözmek için yerel string
+            const offset = cellDate.getTimezoneOffset();
+            const cellISO = new Date(cellDate.getTime() - (offset*60*1000)).toISOString().split('T')[0];
+
+            let dots = "";
+            tasks.forEach(t => {
+                const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
+                
+                if (cellISO >= s && cellISO <= e) {
+                    if(Array.isArray(t.person)) t.person.forEach(p => dots += `<span class="task-dot">${p}</span>`);
+                    else dots += `<span class="task-dot">${t.person}</span>`;
+                }
+            });
+
+            let cls = (cellISO === todayISO) ? "day-cell today" : "day-cell";
+            // Tıklayınca yine ISO formatı gönderiyoruz ki modal doğru çalışsın
+            grid.innerHTML += `<div class="${cls}" onclick="openModal('${cellISO}')"><b>${d}</b>${dots}</div>`;
         }
     }
-    window.openModal = (dk) => { selectedDateStr = dk; document.getElementById('modalDateText').innerText = dk; openModalLogic(dk); document.querySelector('#taskModal').style.display = 'flex'; }
+
+    window.openModal = (isoDate) => { 
+        selectedDateStr = isoDate; // Global değişkene ata
+        document.getElementById('modalDateText').innerText = isoDate.split('-').reverse().join('.'); // Kullanıcıya güzel göster
+        // Modalı açarken formdaki tarihleri de o güne eşitle
+        document.getElementById('t-start-date').value = isoDate;
+        document.getElementById('t-end-date').value = isoDate;
+        
+        openModalLogic(isoDate); 
+        document.querySelector('#taskModal').style.display = 'flex'; 
+    }
     window.closeModal = () => document.querySelector('#taskModal').style.display = 'none';
-    function openModalLogic(dk) {
-        const dt = tasks.filter(t=>t.date===dk);
+    
+    function openModalLogic(isoDate) {
+        // Görev aralığı bu tarihi kapsıyor mu?
+        const dt = tasks.filter(t => {
+            const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
+            const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
+            return isoDate >= s && isoDate <= e;
+        });
+
         document.getElementById('dayTaskList').innerHTML = dt.length ? dt.map(t => {
             const pStr = Array.isArray(t.person) ? t.person.join(", ") : t.person;
-            return `<div style="padding:10px; background:#f9f9f9; border-radius:8px; margin-bottom:5px; border-left:4px solid #764ba2;"><strong>${pStr}</strong><br>📍 ${t.projectName} ${userRole==='admin' ? `<button onclick="delTask('${t.id}')" style="float:right; color:red; border:none;">🗑</button>` : ''}</div>`;
-        }).join('') : 'Görev yok';
+            // Görev tarih aralığını kartta göster
+            const rangeStr = (t.startDate && t.endDate) ? `<br><small>📅 ${t.startDate.split('-').reverse().join('.')} - ${t.endDate.split('-').reverse().join('.')}</small>` : '';
+            return `<div style="padding:10px; background:#f9f9f9; border-radius:8px; margin-bottom:5px; border-left:4px solid #764ba2;"><strong>${pStr}</strong><br>📍 ${t.projectName} ${rangeStr} ${userRole==='admin' ? `<button onclick="delTask('${t.id}')" style="float:right; color:red; border:none;">🗑</button>` : ''}</div>`;
+        }).join('') : 'Bu tarihte görev yok.';
     }
 
 </script>
