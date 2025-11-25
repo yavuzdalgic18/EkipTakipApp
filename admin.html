@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yönetici Paneli - Ekip Takip</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --primary: #667eea; --sec: #764ba2; --bg: #f3f5f9; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; }
+        
+        .nav-top { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; background: white; display: flex; overflow-x: auto; padding: 10px 0; border-top: 1px solid #ddd; z-index: 999; }
+        .nav-item { flex: 1; min-width: 60px; text-align: center; font-size: 0.7rem; color: #888; cursor: pointer; }
+        .nav-item.active { color: var(--sec); font-weight: bold; }
+        .nav-icon { display: block; font-size: 1.4rem; margin-bottom: 2px; }
+
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        
+        .card { background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .btn { width: 100%; padding: 10px; background: linear-gradient(135deg, var(--primary), var(--sec)); color: white; border: none; border-radius: 8px; cursor: pointer; margin-top:5px; }
+        input, select { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;}
+        
+        /* Tablo Stilleri */
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { text-align: left; background: #f0f0f0; padding: 8px; }
+        td { border-bottom: 1px solid #eee; padding: 8px; }
+
+        /* Modal */
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; z-index:2000; }
+        .modal-content { background:white; padding:20px; border-radius:15px; width:90%; max-width:400px; max-height:80vh; overflow-y:auto; }
+    </style>
+</head>
+<body>
+
+<div class="nav-top">
+    <h3 style="margin:0;">Yönetici Paneli</h3>
+    <button onclick="logout()" style="background:none; border:none; font-size:1.5rem;">🚪</button>
+</div>
+
+<div class="container">
+
+    <div id="view-calendar" class="view-section active">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <button onclick="changeMonth(-1)">◀</button>
+                <strong id="calMonthDisplay"></strong>
+                <button onclick="changeMonth(1)">▶</button>
+            </div>
+            <div id="calendarGrid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center;"></div>
+        </div>
+        <div id="dayTaskList" class="card" style="display:none;"></div>
+        <button class="btn" onclick="openTaskModal()">+ Yeni Görev Ata</button>
+    </div>
+
+    <div id="view-projects" class="view-section">
+        <div class="card">
+            <h3>Yeni Proje</h3>
+            <input id="pName" placeholder="Proje Adı">
+            <input id="pMan" placeholder="Yönetici">
+            <input type="date" id="pStart"><input type="date" id="pEnd">
+            <button class="btn" onclick="addProject()">Ekle</button>
+        </div>
+        <div id="projectList"></div>
+    </div>
+
+    <div id="view-team" class="view-section">
+        <div id="teamList"></div>
+    </div>
+
+    <div id="view-assets" class="view-section">
+        <div class="card">
+            <h3>Yeni Araç</h3>
+            <input id="vPlate" placeholder="Plaka">
+            <button class="btn" onclick="addVehicle()">Ekle</button>
+        </div>
+        <div id="vehicleList"></div>
+        
+        <div class="card" style="margin-top:20px;">
+            <h3>Yeni Cihaz</h3>
+            <input id="dName" placeholder="Cihaz Adı">
+            <button class="btn" onclick="addDevice()">Ekle</button>
+        </div>
+        <div id="deviceList"></div>
+    </div>
+
+    <div id="view-users" class="view-section">
+        <div class="card">
+            <h3>Kullanıcı Yetkilendirme</h3>
+            <input id="uEmail" placeholder="E-Posta (Sisteme kayıtlı olmalı)">
+            <select id="uRole"><option value="staff">Personel</option><option value="admin">Yönetici</option></select>
+            <button class="btn" onclick="updateUserRole()">Yetki Güncelle</button>
+        </div>
+        <div id="userList"></div>
+    </div>
+
+    <div id="view-reports" class="view-section">
+        <div class="card">
+            <h3>Rapor Dönemi</h3>
+            <input type="month" id="reportDate" onchange="renderReports()">
+        </div>
+        
+        <div class="card">
+            <h3>Zimmet Geçmişi</h3>
+            <table>
+                <thead><tr><th>Tarih</th><th>Tür</th><th>Nesne</th><th>Kişi</th></tr></thead>
+                <tbody id="logTable"></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <div style="display:flex; justify-content:space-between;">
+                <h3>Personel Eforu</h3>
+                <button onclick="exportExcel()" style="padding:5px; background:green; color:white; border:none; border-radius:5px;">Excel</button>
+            </div>
+            <table>
+                <thead><tr><th>Personel</th><th>Gün</th><th>Adet</th></tr></thead>
+                <tbody id="eforTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<div id="taskModal" class="modal">
+    <div class="modal-content">
+        <h3>Görev Ata</h3>
+        <label>Başlangıç - Bitiş</label>
+        <div style="display:flex; gap:5px;"><input type="date" id="tStart"><input type="date" id="tEnd"></div>
+        <label>Proje</label><select id="tProj"></select>
+        <label>Personel (Çoklu seçim için CTRL'ye bas)</label><select id="tPers" multiple style="height:100px;"></select>
+        <button class="btn" onclick="saveTask()">Kaydet</button>
+        <button class="btn" onclick="document.getElementById('taskModal').style.display='none'" style="background:#ccc; color:#333; margin-top:5px;">İptal</button>
+    </div>
+</div>
+
+<div class="nav-bottom">
+    <div class="nav-item active" onclick="switchTab('calendar', this)"><span class="nav-icon">📅</span>Takvim</div>
+    <div class="nav-item" onclick="switchTab('projects', this)"><span class="nav-icon">📂</span>Proje</div>
+    <div class="nav-item" onclick="switchTab('team', this)"><span class="nav-icon">👥</span>Ekip</div>
+    <div class="nav-item" onclick="switchTab('assets', this)"><span class="nav-icon">🚗</span>Varlık</div>
+    <div class="nav-item" onclick="switchTab('users', this)"><span class="nav-icon">⚙️</span>Yetki</div>
+    <div class="nav-item" onclick="switchTab('reports', this)"><span class="nav-icon">📊</span>Rapor</div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, updateDoc, doc, onSnapshot, getDoc, setDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY", authDomain: "ekiptakipapp.firebaseapp.com", projectId: "ekiptakipapp", storageBucket: "ekiptakipapp.firebasestorage.app", messagingSenderId: "55716082808", appId: "1:55716082808:web:b144b953684fc9f80c698d" };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let users=[], tasks=[], projects=[], logs=[];
+    let currentDate = new Date();
+
+    // GÜVENLİK KONTROLÜ
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { window.location.href = 'login.html'; return; }
+        const uDoc = await getDoc(doc(db, "users", user.email));
+        if (!uDoc.exists() || uDoc.data().role !== 'admin') {
+            alert("Yetkisiz Giriş!");
+            window.location.href = 'user.html';
+        } else {
+            initApp();
+        }
+    });
+
+    function initApp(){
+        loadData("users", (d) => { users=d; renderUsers(); renderTaskModalOpts(); });
+        loadData("projects", (d) => { projects=d; renderProjects(); renderTaskModalOpts(); });
+        loadData("vehicles", (d) => renderSimpleList('vehicleList', d, 'plate'));
+        loadData("devices", (d) => renderSimpleList('deviceList', d, 'name'));
+        loadData("tasks", (d) => { tasks=d; renderCalendar(); });
+        onSnapshot(query(collection(db,"logs"), orderBy("date","desc")), s=>{ logs=s.docs.map(d=>d.data()); renderReports(); });
+        
+        document.getElementById('reportDate').value = new Date().toISOString().slice(0,7);
+    }
+
+    function loadData(col, cb) {
+        onSnapshot(collection(db, col), s => {
+            const data = s.docs.map(d => ({id:d.id, ...d.data()}));
+            cb(data);
+        });
+    }
+
+    // UI İŞLEMLERİ
+    window.switchTab = (id, el) => {
+        document.querySelectorAll('.view-section').forEach(x=>x.classList.remove('active'));
+        document.getElementById('view-'+id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+        el.classList.add('active');
+        if(id==='reports') renderReports();
+    };
+    window.logout = () => signOut(auth).then(()=>window.location.href='login.html');
+
+    // TAKVİM
+    window.changeMonth = (d) => { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
+    function renderCalendar(){
+        const grid = document.getElementById('calendarGrid'); grid.innerHTML="";
+        const y=currentDate.getFullYear(), m=currentDate.getMonth();
+        document.getElementById('calMonthDisplay').innerText = new Date(y,m).toLocaleString('tr-TR',{month:'long',year:'numeric'});
+        const days = new Date(y,m+1,0).getDate();
+        for(let d=1; d<=days; d++){
+            const iso = new Date(y,m,d+1).toISOString().split('T')[0];
+            const hasTask = tasks.some(t=>t.startDate<=iso && t.endDate>=iso);
+            grid.innerHTML += `<div style="padding:10px; border:1px solid #eee; background:${hasTask?'#e0e7ff':'#fff'}; border-radius:5px;">${d}</div>`;
+        }
+    }
+
+    // FORM İŞLEMLERİ
+    window.addProject = () => addDoc(collection(db,"projects"), { name:document.getElementById('pName').value, manager:document.getElementById('pMan').value, start:document.getElementById('pStart').value, end:document.getElementById('pEnd').value });
+    window.addVehicle = () => addDoc(collection(db,"vehicles"), { plate:document.getElementById('vPlate').value, currentHolder:null });
+    window.addDevice = () => addDoc(collection(db,"devices"), { name:document.getElementById('dName').value, currentHolder:null });
+    window.updateUserRole = () => updateDoc(doc(db,"users",document.getElementById('uEmail').value), { role:document.getElementById('uRole').value });
+
+    // GÖREV ATAMA
+    window.openTaskModal = () => document.getElementById('taskModal').style.display='flex';
+    window.saveTask = async () => {
+        const selPers = Array.from(document.getElementById('tPers').selectedOptions).map(o=>o.value);
+        await addDoc(collection(db,"tasks"), {
+            startDate: document.getElementById('tStart').value,
+            endDate: document.getElementById('tEnd').value,
+            projectId: document.getElementById('tProj').value,
+            person: selPers
+        });
+        document.getElementById('taskModal').style.display='none';
+        alert("Görev Atandı");
+    }
+
+    // RAPORLAMA
+    window.renderReports = () => {
+        const month = document.getElementById('reportDate').value;
+        // Log Tablosu
+        const filteredLogs = logs.filter(l => l.date.startsWith(month));
+        document.getElementById('logTable').innerHTML = filteredLogs.map(l => 
+            `<tr><td>${l.date.split('T')[0]}</td><td>${l.type}</td><td>${l.item}</td><td>${l.person}</td></tr>`
+        ).join('');
+
+        // Efor Tablosu
+        const stats = {};
+        tasks.forEach(t => {
+            if(t.startDate.startsWith(month) || t.endDate.startsWith(month)){
+                const ppl = Array.isArray(t.person) ? t.person : [t.person];
+                ppl.forEach(p => {
+                    if(!stats[p]) stats[p] = {days:0, count:0};
+                    stats[p].count++;
+                    const d1=new Date(t.startDate), d2=new Date(t.endDate);
+                    stats[p].days += (Math.abs(d2-d1)/86400000)+1;
+                });
+            }
+        });
+        document.getElementById('eforTable').innerHTML = Object.keys(stats).map(k => 
+            `<tr><td>${k}</td><td>${stats[k].days}</td><td>${stats[k].count}</td></tr>`
+        ).join('');
+    }
+
+    window.exportExcel = () => {
+        const wb = XLSX.utils.table_to_book(document.getElementById('eforTable'), {sheet:"Efor"});
+        XLSX.writeFile(wb, "Rapor.xlsx");
+    }
+
+    // YARDIMCILAR
+    function renderProjects(){ document.getElementById('projectList').innerHTML = projects.map(p=>`<div class="card">${p.name}</div>`).join(''); }
+    function renderUsers(){ document.getElementById('userList').innerHTML = users.map(u=>`<div class="card" style="display:flex;justify-content:space-between;">${u.name} <b>${u.role}</b></div>`).join(''); }
+    function renderSimpleList(id, arr, key){ document.getElementById(id).innerHTML = arr.map(i=>`<div class="card">${i[key]}</div>`).join(''); }
+    function renderTaskModalOpts(){
+        document.getElementById('tProj').innerHTML = projects.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+        document.getElementById('tPers').innerHTML = users.map(u=>`<option value="${u.name}">${u.name}</option>`).join('');
+    }
+
+</script>
+</body>
+</html>
