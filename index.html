@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V31 - Range & Search)</title>
+    <title>Ekip Takip Pro (V32 - Secure)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -44,7 +44,7 @@
         /* ARAMA ÇUBUĞU */
         .search-bar { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23ccc" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat right 15px center; margin-bottom: 15px; font-size: 0.9rem; }
 
-        /* KARTLAR & LİSTELER */
+        /* KARTLAR */
         .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
         .info-card.active { border-left-color: #27ae60; } 
@@ -76,7 +76,7 @@
         .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
         .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
         
-        /* MODAL & PICKER */
+        /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: end; }
         .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; }
         #month-picker-modal { display: none; position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 300px; background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 500; padding: 15px; }
@@ -192,12 +192,13 @@
         <div id="view-users" class="view-section">
             <div class="admin-only modern-card">
                 <h3 id="userFormTitle">Kullanıcı Yönetimi</h3>
+                <p style="font-size:0.75rem; color:#666; margin-bottom:10px;">Buraya eklediğiniz mail adresi, kayıt sayfasında "beyaz liste" olarak kabul edilir. Kişi kendi şifresini kayıt olurken belirler.</p>
                 <input type="text" id="u-name" placeholder="Ad Soyad">
                 <input type="text" id="u-title" placeholder="Ünvan">
-                <input type="email" id="u-email" placeholder="E-Posta">
+                <input type="email" id="u-email" placeholder="E-Posta (Gmail vb.)">
                 <select id="u-role"><option value="staff">Personel</option><option value="admin">Yönetici</option></select>
                 <div style="display:flex; gap:5px;">
-                    <button class="btn-main" id="btn-user-add" onclick="addUserToDB()">Ekle</button>
+                    <button class="btn-main" id="btn-user-add" onclick="addUserToDB()">Yetkili Ekle</button>
                     <button class="btn-main" id="btn-user-update" onclick="updateUserDB()" style="background:#f39c12; display:none;">Güncelle</button>
                     <button class="btn-main" id="btn-user-cancel" onclick="cancelUserEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
                 </div>
@@ -298,7 +299,6 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ONESIGNAL
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
         OneSignal.init({ appId: "08d90e98-c6b4-429c-aab5-f11164ddc881" });
@@ -311,7 +311,7 @@
     let custodyTargetId = null, custodyType = null;
     let currentReportFilter = 'all', currentReportDate = new Date().toISOString().slice(0, 7);
 
-    // GİRİŞ KONTROLÜ - Login yoksa yönlendir
+    // GİRİŞ KONTROLÜ
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const userDoc = await getDoc(doc(db, "users", user.email));
@@ -321,17 +321,15 @@
                 document.getElementById('welcomeUser').innerText = userData.name.split(' ')[0];
                 applyPermissions();
                 
-                // OneSignal Login
                 OneSignalDeferred.push(function(OneSignal) { OneSignal.login(user.email); });
                 document.getElementById('reportDateSelector').value = currentReportDate;
                 startListeners();
             } else {
-                // Kullanıcı var ama DB'de kaydı yoksa (login sayfasında oluşturulmalıydı ama yine de önlem)
-                await setDoc(doc(db, "users", user.email), { name: "Yeni Üye", email: user.email, role: 'staff' });
-                window.location.reload();
+                // Eğer Auth var ama DB kaydı silinmişse güvenlik için logout at
+                alert("Kullanıcı kaydınız bulunamadı.");
+                signOut(auth).then(()=> window.location.href="login.html");
             }
         } else {
-            // Kullanıcı yoksa login sayfasına git
             window.location.href = "login.html";
         }
     });
@@ -589,7 +587,25 @@
         }).join('');
     }
 
-    window.addUserToDB=async()=>{const n=document.getElementById('u-name').value,e=document.getElementById('u-email').value,r=document.getElementById('u-role').value; if(!n)return; await setDoc(doc(db,"users",e),{name:n,email:e,role:r,title:document.getElementById('u-title').value}); alert("Ok");}
+    // --- KULLANICI YÖNETİMİ (BU KISIM ÖNEMLİ) ---
+    // Yönetici kullanıcı eklediğinde bu veritabanına yazılır. Bu sayede login.html'deki kontrol çalışır.
+    window.addUserToDB=async()=>{
+        const n=document.getElementById('u-name').value;
+        const e=document.getElementById('u-email').value.trim();
+        const r=document.getElementById('u-role').value; 
+        if(!n || !e) return alert("Ad ve E-posta zorunludur.");
+        
+        // Burada setDoc kullanıyoruz ki mail adresi "doc ID" olsun.
+        await setDoc(doc(db,"users",e), {
+            name:n, 
+            email:e, 
+            role:r, 
+            title:document.getElementById('u-title').value
+        }); 
+        alert("Kullanıcı yetkilendirildi. Artık bu mail adresiyle kayıt olabilir.");
+        cancelUserEdit();
+    }
+
     window.editUser=(e)=>{const u=users.find(x=>x.email===e); if(!u)return; document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title||''; document.getElementById('u-email').value=u.email; document.getElementById('u-email').disabled=true; document.getElementById('u-role').value=u.role; editingUserEmail=e; document.getElementById('userFormTitle').innerText="Düzenle"; document.getElementById('btn-user-add').style.display='none'; document.getElementById('btn-user-update').style.display='block'; document.getElementById('btn-user-cancel').style.display='block';}
     window.updateUserDB=async()=>{await updateDoc(doc(db,"users",editingUserEmail),{name:document.getElementById('u-name').value,title:document.getElementById('u-title').value,role:document.getElementById('u-role').value}); cancelUserEdit();}
     window.cancelUserEdit=()=>{editingUserEmail=null; document.getElementById('u-name').value=""; document.getElementById('u-title').value=""; document.getElementById('u-email').value=""; document.getElementById('u-email').disabled=false; document.getElementById('userFormTitle').innerText="Yeni Kullanıcı"; document.getElementById('btn-user-add').style.display='block'; document.getElementById('btn-user-update').style.display='none'; document.getElementById('btn-user-cancel').style.display='none';}
@@ -652,7 +668,6 @@
     function getCurrentDateStr() { const d=new Date(); return `${d.getDate()}-${d.getMonth()}-${d.getFullYear()}`; }
     function parseDateStr(str) { if(!str) return new Date(); const parts = str.split('-'); return new Date(parts[2], parts[1], parts[0]); }
     
-    // --- TAKVİM RENDER ---
     function renderCalendar() {
         const grid = document.getElementById('calendarGrid'); 
         grid.innerHTML = `<div class="day-head">Pt</div><div class="day-head">Sa</div><div class="day-head">Ça</div><div class="day-head">Pe</div><div class="day-head">Cu</div><div class="day-head">Ct</div><div class="day-head">Pz</div>`;
