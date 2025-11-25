@@ -43,7 +43,6 @@
 
         h2 { margin-top: 0; color: #333; margin-bottom: 20px; }
         
-        /* Inputlar mobilde daha rahat tıklansın diye padding arttırıldı */
         input { 
             width: 100%; 
             padding: 15px; 
@@ -77,7 +76,6 @@
         .hidden { display: none; }
         #loginError { color: #e74c3c; margin-top: 10px; font-size: 0.85rem; font-weight: 500; }
 
-        /* Mobil ekranlar için ek düzenleme */
         @media (max-height: 600px) {
             .login-box { padding: 20px; }
             h2 { margin-bottom: 10px; font-size: 1.2rem; }
@@ -99,6 +97,9 @@
         </div>
 
         <div id="registerArea" class="hidden">
+            <p style="font-size:0.8rem; color:#666; margin-bottom:15px;">
+                ⚠️ Sadece yöneticinizin sisteme eklediği mail adresiyle kayıt olabilirsiniz.
+            </p>
             <input type="text" id="regName" placeholder="Ad Soyad" autocapitalize="words">
             <input type="text" id="regTitle" placeholder="Ünvan (Örn: Mühendis)">
             <input type="email" id="regEmail" placeholder="E-Posta" inputmode="email">
@@ -114,7 +115,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // --- Firebase Ayarları ---
     const k1 = "AIzaSyD4XZR8JAMe-"; const k2 = "Qr2Oj2UGnp9mFc8En38gxY";
@@ -132,21 +133,17 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Oturum kontrolü: Zaten giriş yapılmışsa ana sayfaya at
     onAuthStateChanged(auth, (user) => {
         if (user) {
             window.location.href = "index.html";
         }
     });
 
-    // Formlar arası geçiş
     window.toggleForm = (target) => {
         const loginArea = document.getElementById('loginArea');
         const registerArea = document.getElementById('registerArea');
         const title = document.getElementById('formTitle');
-        const errorDiv = document.getElementById('loginError');
-        
-        errorDiv.innerText = ""; // Hataları temizle
+        document.getElementById('loginError').innerText = "";
 
         if(target === 'register') {
             loginArea.classList.add('hidden');
@@ -165,9 +162,6 @@
         if(!email || !pass) { document.getElementById('loginError').innerText = "Lütfen tüm alanları doldurun."; return; }
         
         signInWithEmailAndPassword(auth, email, pass)
-            .then(() => {
-                // Başarılı giriş, onAuthStateChanged yönlendirmeyi yapacak
-            })
             .catch(err => {
                 let msg = "Giriş başarısız.";
                 if(err.code === 'auth/invalid-credential') msg = "E-posta veya şifre hatalı.";
@@ -176,29 +170,47 @@
             });
     };
 
+    // --- KRİTİK GÜNCELLEME: YETKİ KONTROLLÜ KAYIT ---
     window.handleRegister = async () => {
         const name = document.getElementById('regName').value;
         const title = document.getElementById('regTitle').value;
-        const email = document.getElementById('regEmail').value;
+        const email = document.getElementById('regEmail').value.trim(); // Boşlukları temizle
         const pass = document.getElementById('regPass').value;
 
-        if(!name || !email || !pass) { document.getElementById('loginError').innerText = "Tüm alanları doldurunuz."; return; }
-        if(pass.length < 6) { document.getElementById('loginError').innerText = "Şifre en az 6 karakter olmalı."; return; }
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.innerText = "Kontrol ediliyor...";
+
+        if(!name || !email || !pass) { errorDiv.innerText = "Tüm alanları doldurunuz."; return; }
+        if(pass.length < 6) { errorDiv.innerText = "Şifre en az 6 karakter olmalı."; return; }
 
         try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-            // Firestore'a kullanıcıyı kaydet
-            await setDoc(doc(db, "users", email), { 
+            // 1. ADIM: Bu mail adresi veritabanında (whitelist) var mı?
+            const userRef = doc(db, "users", email);
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                // Eğer yönetici bu maili eklememişse HATA VER ve dur.
+                errorDiv.innerHTML = "⛔ <b>Yetkisiz Mail Adresi!</b><br>Bu mail adresi sisteme tanımlı değil. Lütfen yöneticinizle iletişime geçin.";
+                return;
+            }
+
+            // 2. ADIM: Mail listede varsa, Firebase Auth hesabını oluştur.
+            await createUserWithEmailAndPassword(auth, email, pass);
+            
+            // 3. ADIM: Kullanıcının girdiği Ad ve Ünvan ile mevcut kaydı güncelle.
+            // (setDoc yerine updateDoc kullanıyoruz ki yöneticinin verdiği yetki (role) silinmesin)
+            await updateDoc(userRef, { 
                 name: name, 
-                title: title, 
-                email: email, 
-                role: 'admin' // İlk kayıtta admin veriyoruz, mantığına göre değiştirebilirsin
+                title: title
+                // role: ... role alanına dokunmuyoruz, yönetici ne verdiyse o kalır.
             });
-            // Başarılı kayıt, yönlendirmeyi onAuthStateChanged yapacak
+
+            // Başarılı olursa onAuthStateChanged tetiklenir ve index.html'e gider.
+            
         } catch (err) { 
             let msg = err.message;
-            if(err.code === 'auth/email-already-in-use') msg = "Bu E-posta zaten kullanılıyor.";
-            document.getElementById('loginError').innerText = msg; 
+            if(err.code === 'auth/email-already-in-use') msg = "Bu E-posta zaten kayıtlı, giriş yapmayı deneyin.";
+            errorDiv.innerText = msg; 
         }
     };
 </script>
