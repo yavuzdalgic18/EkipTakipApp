@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V33 - Edit Task)</title>
+    <title>Ekip Takip Pro (V34 - Bildirimli)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -25,8 +25,8 @@
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* TOAST BİLDİRİM (YENİ) */
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: none; padding: 15px 20px; border-radius: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: slideInRight 0.3s; }
+        /* TOAST BİLDİRİM */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: none; padding: 15px 20px; border-radius: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: slideInRight 0.3s; font-weight: 600; font-size: 0.9rem; }
         @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .toast-success { background: #27ae60; }
         .toast-error { background: #e74c3c; }
@@ -47,24 +47,17 @@
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
 
-        /* ARAMA ÇUBUĞU */
+        /* ARAMA ÇUBUĞU & KARTLAR */
         .search-bar { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23ccc" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat right 15px center; margin-bottom: 15px; font-size: 0.9rem; }
-
-        /* KARTLAR */
         .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .info-card.active { border-left-color: #27ae60; } 
-        .info-card.busy { border-left-color: #e74c3c; } 
-        .info-card.custody { border-left-color: #f39c12; }
+        .info-card.active { border-left-color: #27ae60; } .info-card.busy { border-left-color: #e74c3c; } .info-card.custody { border-left-color: #f39c12; }
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
-        .badge-green { background: #d1fae5; color: #065f46; } 
-        .badge-red { background: #fee2e2; color: #991b1b; } 
-        .badge-orange { background: #ffedd5; color: #9a3412; } 
-        .badge-gray { background: #f3f4f6; color: #374151; }
+        .badge-green { background: #d1fae5; color: #065f46; } .badge-red { background: #fee2e2; color: #991b1b; } .badge-orange { background: #ffedd5; color: #9a3412; } .badge-gray { background: #f3f4f6; color: #374151; }
         .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
         .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
 
-        /* TAKVİM */
+        /* TAKVİM & FORM */
         .calendar-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
         .day-head { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
@@ -72,14 +65,11 @@
         .day-cell b { align-self: center; margin-bottom: 4px; color: #333; }
         .day-cell.today { border: 2px solid #764ba2; background: white; }
         .task-dot { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-
-        /* FORM */
         input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; }
         .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 5px; transition: opacity 0.3s; }
         .btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; margin-left: 5px; }
-        .btn-outline-red { background: white; border: 1px solid #e74c3c; color: #e74c3c; } 
-        .btn-outline-blue { background: white; border: 1px solid #3498db; color: #3498db; }
+        .btn-outline-red { background: white; border: 1px solid #e74c3c; color: #e74c3c; } .btn-outline-blue { background: white; border: 1px solid #3498db; color: #3498db; }
         .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
         .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
         
@@ -166,22 +156,6 @@
             <div class="modern-card" id="teamListArea"></div>
         </div>
 
-        <div id="view-devices" class="view-section">
-            <input type="text" class="search-bar" placeholder="Cihaz/Seri No Ara..." onkeyup="filterList(this, 'deviceListArea', 'div.info-card')">
-            <div class="admin-only modern-card" id="deviceFormContainer">
-                <h3 id="deviceFormTitle">Yeni Cihaz</h3>
-                <input type="text" id="d-name" placeholder="Cihaz Adı">
-                <input type="text" id="d-serial" placeholder="Seri No">
-                <label>Kalibrasyon:</label><input type="date" id="d-calib">
-                <div style="display:flex; gap:5px;">
-                    <button class="btn-main" id="btn-d-save" onclick="addDevice()">Ekle</button>
-                    <button class="btn-main" id="btn-d-update" onclick="updateDeviceDB()" style="background:#f39c12; display:none;">Güncelle</button>
-                    <button class="btn-main" id="btn-d-cancel" onclick="cancelDeviceEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
-                </div>
-            </div>
-            <div class="modern-card"><div id="deviceListArea" class="card-list"></div></div>
-        </div>
-
         <div id="view-vehicles" class="view-section">
             <input type="text" class="search-bar" placeholder="Plaka/Model Ara..." onkeyup="filterList(this, 'vehicleListArea', 'div.info-card')">
             <div class="admin-only modern-card" id="vehicleFormContainer">
@@ -196,6 +170,22 @@
                 </div>
             </div>
             <div class="modern-card"><div id="vehicleListArea" class="card-list"></div></div>
+        </div>
+
+        <div id="view-devices" class="view-section">
+            <input type="text" class="search-bar" placeholder="Cihaz/Seri No Ara..." onkeyup="filterList(this, 'deviceListArea', 'div.info-card')">
+            <div class="admin-only modern-card" id="deviceFormContainer">
+                <h3 id="deviceFormTitle">Yeni Cihaz</h3>
+                <input type="text" id="d-name" placeholder="Cihaz Adı">
+                <input type="text" id="d-serial" placeholder="Seri No">
+                <label>Kalibrasyon:</label><input type="date" id="d-calib">
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-d-save" onclick="addDevice()">Ekle</button>
+                    <button class="btn-main" id="btn-d-update" onclick="updateDeviceDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-d-cancel" onclick="cancelDeviceEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
+            </div>
+            <div class="modern-card"><div id="deviceListArea" class="card-list"></div></div>
         </div>
 
         <div id="view-users" class="view-section">
@@ -293,7 +283,7 @@
     import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- ANAHTARLAR (GÖMÜLÜ) ---
+    // --- Firebase Ayarları ---
     const k1 = "AIzaSyD4XZR8JAMe-"; const k2 = "Qr2Oj2UGnp9mFc8En38gxY";
     const firebaseConfig = {
       apiKey: k1 + k2,
@@ -309,22 +299,24 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ONESIGNAL
+    // --- ONESIGNAL AYARLARI ---
+    const MY_ONESIGNAL_APP_ID = "08d90e98-c6b4-429c-aab5-f11164ddc881";
+    const MY_REST_API_KEY = "os_v2_app_bdmq5gggwrbjzkvv6eiwjxoiqezo2iquiepeos4ocn5t7qjgjpyvlvosry6kh6pnckfgk7yglec2ek6qzibudwzwbryizc2snm2sl3q";
+    
+    // OneSignal Başlatma
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.init({ appId: "08d90e98-c6b4-429c-aab5-f11164ddc881" });
+        OneSignal.init({ appId: MY_ONESIGNAL_APP_ID });
     });
 
     let projects=[], tasks=[], users=[], vehicles=[], devices=[], logs=[];
     let currentUser=null, userRole='staff';
     let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), isFirstLoad=true;
     let pickerYear = new Date().getFullYear(), editingUserEmail=null, editingVehicleId=null, editingDeviceId=null, editingProjectId=null;
-    // Task Düzenleme için Değişken
-    let editingTaskId = null;
-    let custodyTargetId = null, custodyType = null;
+    let editingTaskId = null, custodyTargetId = null, custodyType = null;
     let currentReportFilter = 'all', currentReportDate = new Date().toISOString().slice(0, 7);
 
-    // GİRİŞ KONTROLÜ
+    // GİRİŞ KONTROLÜ VE ONESIGNAL LOGIN
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const userDoc = await getDoc(doc(db, "users", user.email));
@@ -334,7 +326,11 @@
                 document.getElementById('welcomeUser').innerText = userData.name.split(' ')[0];
                 applyPermissions();
                 
-                OneSignalDeferred.push(function(OneSignal) { OneSignal.login(user.email); });
+                // OneSignal'e bu kullanıcının kim olduğunu bildiriyoruz (Email ile)
+                OneSignalDeferred.push(function(OneSignal) { 
+                    OneSignal.login(user.email); 
+                });
+                
                 document.getElementById('reportDateSelector').value = currentReportDate;
                 startListeners();
             } else {
@@ -345,6 +341,33 @@
             window.location.href = "login.html";
         }
     });
+
+    // --- BİLDİRİM GÖNDERME FONKSİYONU ---
+    async function sendOneSignalNotification(userEmails, message) {
+        // Bu fonksiyon "App Closed" durumunda bile bildirim gitmesini sağlar.
+        const options = {
+            method: 'POST',
+            headers: { 
+                accept: 'application/json', 
+                'Authorization': 'Basic ' + MY_REST_API_KEY, 
+                'content-type': 'application/json' 
+            },
+            body: JSON.stringify({
+                app_id: MY_ONESIGNAL_APP_ID,
+                include_aliases: { "external_id": userEmails }, // E-posta ile hedefleme
+                target_channel: "push",
+                contents: { "en": message, "tr": message },
+                headings: { "en": "Yeni Görev", "tr": "Görev Atandı 🚀" }
+            })
+        };
+
+        try { 
+            await fetch('https://onesignal.com/api/v1/notifications', options);
+            console.log("Bildirim gönderildi!");
+        } catch (e) { 
+            console.error("Bildirim hatası:", e); 
+        }
+    }
 
     window.handleLogout = () => { signOut(auth).then(() => { window.location.href = "login.html"; }); };
 
@@ -358,7 +381,6 @@
         Notification.requestPermission().then(perm => { if (perm === "granted") showToast("Bildirimler Açık! 🔔", "success"); });
     };
 
-    // --- TOAST BİLDİRİM FONKSİYONU ---
     window.showToast = (msg, type = "success") => {
         const t = document.getElementById("toast-container");
         t.innerText = msg;
@@ -381,22 +403,13 @@
         onSnapshot(logsQuery, (s) => { logs = []; s.docs.forEach(d => logs.push(d.data())); filterReports(); });
 
         onSnapshot(collection(db, "tasks"), (snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === "added" && !isFirstLoad) {
-                    const data = change.doc.data();
-                    const isForMe = Array.isArray(data.person) ? data.person.includes(currentUser.name) : data.person === currentUser.name;
-                    if (isForMe && Notification.permission === "granted") sendOneSignalNotification([currentUser.email], `Yeni görev: ${data.projectName}`);
-                }
-            });
             tasks=[]; snapshot.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
             renderCalendar();
             if(document.querySelector('#taskModal').style.display === 'flex') openModalLogic(selectedDateStr);
             updateStats(new Date().toISOString().split('T')[0]); renderTeamStatus(); renderDeviceList(); filterReports();
-            isFirstLoad = false;
         });
     }
 
-    // ARAMA FONKSİYONU
     window.filterList = (input, listId, itemTag) => {
         const filter = input.value.toLowerCase();
         const list = document.getElementById(listId);
@@ -405,10 +418,6 @@
             const text = item.textContent || item.innerText;
             item.style.display = text.toLowerCase().indexOf(filter) > -1 ? "" : "none";
         });
-    }
-
-    async function sendOneSignalNotification(userEmails, message) {
-        // OneSignal Implementation (Keep existing logic)
     }
 
     window.exportExcel = () => {
@@ -510,9 +519,8 @@
         }
     }
 
-    // --- GÖREV YÖNETİMİ (KAYIT & DÜZENLEME) ---
+    // --- GÖREV YÖNETİMİ ---
     
-    // Multi Select Değer Atama Yardımcısı
     function setMultiSelectValues(id, values) {
         const inputs = document.querySelectorAll(`#${id} input`);
         inputs.forEach(input => {
@@ -520,57 +528,42 @@
         });
     }
 
-    // Görevi Düzenlemeye Hazırla
     window.editTask = (id) => {
         const t = tasks.find(x => x.id === id);
         if(!t) return;
-        
         editingTaskId = id;
         document.getElementById('taskFormTitle').innerText = "Görevi Düzenle";
         document.getElementById('btn-save-task').innerText = "Güncelle";
         document.getElementById('btn-cancel-task').style.display = "block";
-        document.getElementById('btn-save-task').style.background = "#f39c12"; // Turuncu
-
-        // Formu Doldur
+        document.getElementById('btn-save-task').style.background = "#f39c12"; 
         document.getElementById('t-start-date').value = t.startDate || "";
         document.getElementById('t-end-date').value = t.endDate || "";
         document.getElementById('t-project-select').value = t.projectId || "";
         document.getElementById('t-loc').value = t.location || "";
-
-        // Multi Selectleri Doldur
         const persons = Array.isArray(t.person) ? t.person : [t.person];
         setMultiSelectValues('ms-person', persons);
-
         const devs = Array.isArray(t.device) ? t.device : [t.device];
         setMultiSelectValues('ms-device', devs);
-
         const plates = Array.isArray(t.plate) ? t.plate : [t.plate];
         setMultiSelectValues('ms-plate', plates);
     }
 
-    // Düzenlemeyi İptal Et
     window.cancelTaskEdit = () => {
         editingTaskId = null;
         document.getElementById('taskFormTitle').innerText = "Yeni Atama";
         document.getElementById('btn-save-task').innerText = "Kaydet";
-        document.getElementById('btn-save-task').style.background = ""; // Reset gradient
+        document.getElementById('btn-save-task').style.background = ""; 
         document.getElementById('btn-cancel-task').style.display = "none";
-        
-        // Formu Temizle
         document.getElementById('t-loc').value = "";
         document.getElementById('t-project-select').value = "";
         document.querySelectorAll('.multi-select-area input').forEach(c => c.checked = false);
-        
-        // Tarihleri o anki seçili güne resetle
         document.getElementById('t-start-date').value = selectedDateStr;
         document.getElementById('t-end-date').value = selectedDateStr;
     }
 
-    // Görevi Kaydet veya Güncelle
     window.saveTask = async () => {
         const btn = document.getElementById('btn-save-task');
-        btn.disabled = true; // Butonu kilitle
-
+        btn.disabled = true; 
         try {
             const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
             const projVal = document.getElementById('t-project-select').value;
@@ -610,15 +603,20 @@
             };
 
             if (editingTaskId) {
-                // GÜNCELLEME İŞLEMİ
                 await updateDoc(doc(db, "tasks", editingTaskId), taskData);
                 showToast("Görev güncellendi!", "success");
-                cancelTaskEdit(); // Edit modundan çık
+                cancelTaskEdit(); 
             } else {
-                // YENİ KAYIT İŞLEMİ
                 await addDoc(collection(db, "tasks"), taskData);
                 showToast("Görev atandı!", "success");
-                // Formu temizle ama tarihi koru
+
+                // --- BİLDİRİM TETİKLEME ---
+                const targetEmails = users.filter(u => per.includes(u.name)).map(u => u.email);
+                if(targetEmails.length > 0) {
+                    sendOneSignalNotification(targetEmails, `📅 ${sDate}: ${projName} projesinde görevlisin.`);
+                }
+                // --------------------------
+
                 document.getElementById('t-loc').value=""; 
                 document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false);
             }
@@ -627,23 +625,18 @@
             console.error(error);
             showToast("Bir hata oluştu: " + error.message, "error");
         } finally {
-            btn.disabled = false; // Buton kilidini aç
+            btn.disabled = false; 
         }
     }
     
     window.delTask = async (id) => { 
         if(confirm("Bu görevi silmek istediğinize emin misiniz?")) {
-            try {
-                await deleteDoc(doc(db, "tasks", id));
-                showToast("Görev silindi.", "success");
-            } catch(e) {
-                showToast("Silinemedi.", "error");
-            }
+            try { await deleteDoc(doc(db, "tasks", id)); showToast("Görev silindi.", "success"); } 
+            catch(e) { showToast("Silinemedi.", "error"); }
         } 
     }
 
-    // --- DİĞER CRUD İŞLEMLERİ (Vehicle, Device, User, Project) ---
-    // (Aynı yapıyı korudum, sadece toast ekledim)
+    // CRUD İŞLEMLERİ
     window.addVehicle=async()=>{const p=document.getElementById('v-plate').value; if(!p)return; await addDoc(collection(db,"vehicles"),{plate:p,info:document.getElementById('v-info').value,inspectionDate:document.getElementById('v-inspection').value,currentHolder:null}); showToast("Araç Eklendi"); resetVehicleForm();}
     window.updateVehicleDB=async()=>{await updateDoc(doc(db,"vehicles",editingVehicleId),{plate:document.getElementById('v-plate').value,info:document.getElementById('v-info').value,inspectionDate:document.getElementById('v-inspection').value}); showToast("Araç Güncellendi"); resetVehicleForm();}
     window.editVehicle=(id)=>{const v=vehicles.find(x=>x.id===id); if(!v)return; document.getElementById('v-plate').value=v.plate; document.getElementById('v-info').value=v.info; document.getElementById('v-inspection').value=v.inspectionDate||""; editingVehicleId=id; document.getElementById('vehicleFormTitle').innerText="Düzenle"; document.getElementById('btn-v-save').style.display='none'; document.getElementById('btn-v-update').style.display='block'; document.getElementById('btn-v-cancel').style.display='block';}
@@ -738,15 +731,10 @@
         if(document.getElementById('t-project-select')) document.getElementById('t-project-select').innerHTML=`<option value="">Seç</option>`+projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
         if(document.getElementById('c-person')) document.getElementById('c-person').innerHTML=users.map(u=>`<option value="${u.name}">${u.name}</option>`).join('');
         const fillMulti=(id,arr,k)=>{const el=document.getElementById(id);if(el)el.innerHTML=arr.map(i=>`<div class="ms-item"><input type="checkbox" value="${i[k]}">${i[k]}</div>`).join('')};
-        
-        // Eğer edit modundaysak dropdownları tekrar doldururken seçimleri korumamız gerekebilir.
-        // Ancak basitlik için, sadece edit modunda DEĞİLSEK dolduralım veya seçimleri kaybetmeyi göze alalım.
-        // Şimdilik her seferinde dolduruyor.
         fillMulti('ms-person',users,'name'); fillMulti('ms-device',devices,'name'); fillMulti('ms-plate',vehicles,'plate');
     }
     function getMultiSelectValues(id){return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i=>i.value);}
     
-    // UI
     window.switchTab = (tab) => { document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); document.getElementById('view-'+tab).classList.add('active'); event.currentTarget.classList.add('active'); if(tab==='reports') filterReports(); }
     window.changeMonth = (d) => { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
     window.toggleDatePicker = () => { document.getElementById('month-picker-modal').style.display = document.getElementById('month-picker-modal').style.display === 'block' ? 'none' : 'block'; pickerYear = currentDate.getFullYear(); document.getElementById('pick-year-val').innerText = pickerYear; }
@@ -792,19 +780,16 @@
     window.openModal = (isoDate) => { 
         selectedDateStr = isoDate; 
         document.getElementById('modalDateText').innerText = isoDate.split('-').reverse().join('.'); 
-        
-        // Modal açıldığında edit modunda değilsek tarihleri set et
         if(!editingTaskId) {
             document.getElementById('t-start-date').value = isoDate;
             document.getElementById('t-end-date').value = isoDate;
         }
-        
         openModalLogic(isoDate); 
         document.querySelector('#taskModal').style.display = 'flex'; 
     }
     window.closeModal = () => {
         document.querySelector('#taskModal').style.display = 'none';
-        cancelTaskEdit(); // Modal kapanırsa edit modunu da kapat
+        cancelTaskEdit(); 
     }
     
     function openModalLogic(isoDate) {
