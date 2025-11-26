@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V37 - İade Bildirimli)</title>
+    <title>Ekip Takip Pro (V38 - Araç Durum Güncellemesi)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -391,7 +391,7 @@
             tasks=[]; snapshot.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
             renderCalendar();
             if(document.querySelector('#taskModal').style.display === 'flex') openModalLogic(selectedDateStr);
-            updateStats(new Date().toISOString().split('T')[0]); renderTeamStatus(); renderDeviceList(); filterReports();
+            updateStats(new Date().toISOString().split('T')[0]); renderTeamStatus(); renderDeviceList(); renderVehicleList(); filterReports();
         });
 
         // --- KİŞİSEL BİLDİRİMLERİ DİNLEME ---
@@ -406,9 +406,7 @@
 
     // --- WHATSAPP BİLDİRİM SİSTEMİ (MOBİL UYUMLU & KURUMSAL) ---
     async function notifyUser(personName, message) {
-        // 1. Firebase'e Kaydet (Uygulama İçi Bildirim - Özet)
         try {
-            // Firebase'e sadece kısa özet kaydediyoruz
             const shortMsg = message.includes("Yeni Görev") ? "Yeni görev atandı. Detaylar için tıklayın." : (message.includes("iade") ? "Zimmet iade alındı." : message);
             await addDoc(collection(db, "notifications"), {
                 target: personName,
@@ -418,21 +416,16 @@
             });
         } catch(e) { console.error("Bildirim DB hatası", e); }
 
-        // 2. WhatsApp'ı Aç (Mobilde Çalışan Yöntem: api.whatsapp.com)
         const user = users.find(u => u.name === personName);
         if(user && user.phone) {
             let phone = user.phone.replace(/\D/g,''); 
-            // URL Encode ederek mesajı linke çevir
             const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
-            
-            // Mobilde 'popup blocked' olmaması için window.open
             window.open(url, '_blank');
         } else {
             showToast(`${personName} için tel no yok.`, "error");
         }
     }
 
-    // Bildirim Arayüzü İşlemleri
     window.toggleNotifications = () => {
         const drop = document.getElementById('notification-dropdown');
         drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
@@ -485,8 +478,6 @@
         await batch.commit();
         showToast("Bildirimler temizlendi.");
     }
-
-    // --- MEVCUT FONKSİYONLAR ---
 
     window.filterList = (input, listId, itemTag) => {
         const filter = input.value.toLowerCase();
@@ -572,7 +563,6 @@
     }
     window.closeCustodyModal = () => document.getElementById('custodyModal').style.display = 'none';
     
-    // ZİMMET VERME (BİLDİRİMLİ)
     window.saveCustody = async () => {
         try {
             const person = document.getElementById('c-person').value;
@@ -581,7 +571,6 @@
             const itemName = document.getElementById('custodyItemName').innerText;
             await addLog(custodyType, itemName, 'take', person);
             
-            // BİLDİRİM
             const msg = `*Sayın ${person},*\n\nTarafınıza yeni bir zimmet ataması yapılmıştır.\n\n📦 *Zimmet:* ${itemName}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}\n\nLütfen malzemeyi kontrol ediniz.`;
             notifyUser(person, msg);
             
@@ -590,7 +579,6 @@
         } catch(e) { showToast("Hata oluştu", "error"); }
     }
 
-    // ZİMMET İADE ALMA (GÜNCELLENDİ - BİLDİRİM EKLENDİ)
     window.returnItem = async (type, id) => {
         if(confirm("İade?")) {
             try {
@@ -606,7 +594,6 @@
                 
                 await addLog(type, itemDetail, 'return', prevHolder);
                 
-                // İADE BİLDİRİMİ GÖNDER
                 if(prevHolder && prevHolder !== "Bilinmiyor") {
                     const itemLabel = type === 'vehicle' ? 'Araç' : 'Cihaz';
                     const msg = `*Sayın ${prevHolder},*\n\nÜzerinizde bulunan zimmet iade alınmıştır.\n\n📦 *Tip:* ${itemLabel}\n🆔 *Detay:* ${itemDetail}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}\n\nSistemden düşümü yapılmıştır.`;
@@ -655,7 +642,6 @@
         document.getElementById('t-end-date').value = selectedDateStr;
     }
 
-    // GÖREV KAYDI GÜNCELLENDİ: DETAYLI BİLDİRİM
     window.saveTask = async () => {
         const btn = document.getElementById('btn-save-task');
         btn.disabled = true; 
@@ -706,12 +692,11 @@
                 await addDoc(collection(db, "tasks"), taskData);
                 showToast("Görev atandı!", "success");
                 
-                // KURUMSAL MESAJI OLUŞTUR
                 const teamStr = per.join(", ");
                 const platesStr = plate.length > 0 ? plate.join(", ") : "Yok";
                 const devStr = dev.length > 0 ? dev.join(", ") : "Yok";
                 const dateRange = `${sDate.split('-').reverse().join('.')} - ${eDate.split('-').reverse().join('.')}`;
-                const appLink = "https://yavuzdalgic18.github.io/EkipTakipApp/"; // Uygulama linki
+                const appLink = "https://yavuzdalgic18.github.io/EkipTakipApp/"; 
 
                 per.forEach(pName => {
                     const msg = `*Sayın ${pName},*\n\nAşağıdaki detaylara sahip yeni bir göreve atandınız.\n\n📂 *Proje:* ${projName}\n📍 *Konum:* ${loc}\n📅 *Tarih:* ${dateRange}\n\n👥 *Ekip:* ${teamStr}\n🚗 *Araçlar:* ${platesStr}\n🧰 *Ekipman:* ${devStr}\n\nDetaylar ve işlem yapmak için uygulamayı kontrol ediniz:\n🔗 ${appLink}`;
@@ -743,7 +728,37 @@
     window.cancelVehicleEdit=resetVehicleForm;
     function resetVehicleForm(){editingVehicleId=null; document.getElementById('v-plate').value=""; document.getElementById('v-info').value=""; document.getElementById('v-inspection').value=""; document.getElementById('vehicleFormTitle').innerText="Yeni Araç Ekle"; document.getElementById('btn-v-save').style.display='block'; document.getElementById('btn-v-update').style.display='none'; document.getElementById('btn-v-cancel').style.display='none';}
     window.deleteVehicle=async(id)=>{if(confirm("Sil?")) { await deleteDoc(doc(db,"vehicles",id)); showToast("Silindi"); }}
-    function renderVehicleList(){document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => { let inspHtml = v.inspectionDate ? (new Date(v.inspectionDate) < new Date() ? `<small style="color:red; display:block;">⚠️ Muayene: ${v.inspectionDate}</small>` : `<small style="color:#666;">📅 Muayene: ${v.inspectionDate}</small>`) : ""; let zimmetHtml = v.currentHolder ? `<div style="margin-top:5px;"><span class="badge badge-orange">👤 ${v.currentHolder}</span> ${userRole==='admin'?`<button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade Al</button>`:''}</div>` : (userRole==='admin' ? `<div style="margin-top:5px;"><button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}','${v.info}')">Zimmetle</button></div>` : ''); return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small>${inspHtml}</div>${userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div>${zimmetHtml}</div>`; }).join('');}
+    
+    // YENİLENEN ARAÇ LİSTELEME FONKSİYONU (GÖREV DURUMU EKLENDİ)
+    function renderVehicleList(){
+        const todayISO = new Date().toISOString().split('T')[0];
+        document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => { 
+            let inspHtml = v.inspectionDate ? (new Date(v.inspectionDate) < new Date() ? `<small style="color:red; display:block;">⚠️ Muayene: ${v.inspectionDate}</small>` : `<small style="color:#666;">📅 Muayene: ${v.inspectionDate}</small>`) : ""; 
+            
+            let statusBadge = `<span class="badge badge-green">BOŞTA</span>`;
+            let zimmetHtml = ""; 
+
+            if(v.currentHolder) { 
+                statusBadge = `<span class="badge badge-orange">👤 ${v.currentHolder}</span>`; 
+                if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade Al</button>`; 
+            } else if(userRole==='admin') { 
+                zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}','${v.info}')">Zimmetle</button>`; 
+            } 
+
+            // GÖREVDE Mİ KONTROLÜ
+            const at = tasks.find(t => {
+                const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const inRange = todayISO >= s && todayISO <= e;
+                const hasPlate = Array.isArray(t.plate) ? t.plate.includes(v.plate) : t.plate === v.plate;
+                return inRange && hasPlate;
+            });
+
+            if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`;
+
+            return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small>${inspHtml}</div>${userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; 
+        }).join('');
+    }
 
     window.addDevice=async()=>{const n=document.getElementById('d-name').value; if(!n)return; await addDoc(collection(db,"devices"),{name:n,serial:document.getElementById('d-serial').value,calib:document.getElementById('d-calib').value,currentHolder:null}); showToast("Cihaz Eklendi"); document.getElementById('d-name').value="";}
     window.updateDeviceDB=async()=>{await updateDoc(doc(db,"devices",editingDeviceId),{name:document.getElementById('d-name').value,serial:document.getElementById('d-serial').value,calib:document.getElementById('d-calib').value}); showToast("Güncellendi"); resetDeviceForm();}
