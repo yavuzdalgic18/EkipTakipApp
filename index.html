@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V38 - Araç Durum Güncellemesi)</title>
+    <title>Ekip Takip Pro (V38.5 - Profil Eklendi)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        /* TASARIM KODLARI */
+        /* TASARIM KODLARI - MEVCUT YAPI KORUNDU */
         :root { --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f3f5f9; --text-main: #2d3436; --nav-height: 75px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
@@ -259,6 +259,24 @@
                 <table class="log-table" id="personnelReportTable" style="width:100%;"><tbody id="personnelReportBody"></tbody></table>
             </div>
         </div>
+
+        <div id="view-profile" class="view-section">
+            <div class="modern-card">
+                <h3>Profilim</h3>
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div style="width:80px; height:80px; background:#764ba2; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto;" id="profileAvatar">?</div>
+                    <h2 id="profileName" style="margin:10px 0 5px 0;">-</h2>
+                    <p id="profileRole" style="color:#888; margin:0;">-</p>
+                </div>
+                <div style="border-top:1px solid #eee; padding-top:15px;">
+                    <h4>Şifre Değiştir</h4>
+                    <input type="password" id="new-pass" placeholder="Yeni Şifre">
+                    <input type="password" id="new-pass-confirm" placeholder="Yeni Şifre (Tekrar)">
+                    <button class="btn-main" onclick="updateUserPassword()">Şifreyi Güncelle</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="bottom-nav">
@@ -269,6 +287,7 @@
         <div class="nav-item" onclick="switchTab('devices')"><span class="icon">🧰</span>Cihaz</div>
         <div class="nav-item admin-only" onclick="switchTab('users')"><span class="icon">⚙️</span>Yetki</div>
         <div class="nav-item admin-only" onclick="switchTab('reports')"><span class="icon">📊</span>Rapor</div>
+        <div class="nav-item" onclick="switchTab('profile')"><span class="icon">👤</span>Profil</div>
     </div>
 </div>
 
@@ -311,7 +330,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // --- FIREBASE AYARLARI ---
@@ -346,6 +365,12 @@
                 const userData = userDoc.data();
                 currentUser = userData; userRole = userData.role;
                 document.getElementById('welcomeUser').innerText = userData.name.split(' ')[0];
+                
+                // Profil Bilgilerini Doldur
+                document.getElementById('profileName').innerText = userData.name;
+                document.getElementById('profileRole').innerText = userData.title || (userData.role === 'admin' ? 'Yönetici' : 'Personel');
+                document.getElementById('profileAvatar').innerText = userData.name.charAt(0);
+
                 applyPermissions();
                 document.getElementById('reportDateSelector').value = currentReportDate;
                 startListeners();
@@ -404,9 +429,34 @@
         });
     }
 
+    // --- ŞİFRE DEĞİŞTİRME (YENİ) ---
+    window.updateUserPassword = async () => {
+        const p1 = document.getElementById('new-pass').value;
+        const p2 = document.getElementById('new-pass-confirm').value;
+        
+        if(p1.length < 6) return showToast("Şifre en az 6 karakter olmalı", "error");
+        if(p1 !== p2) return showToast("Şifreler eşleşmiyor", "error");
+
+        try {
+            await updatePassword(auth.currentUser, p1);
+            showToast("Şifre başarıyla güncellendi!", "success");
+            document.getElementById('new-pass').value = "";
+            document.getElementById('new-pass-confirm').value = "";
+        } catch(e) {
+            console.error(e);
+            showToast("Hata: " + e.message, "error");
+            if(e.code === 'auth/requires-recent-login') {
+                alert("Güvenlik nedeniyle şifre değiştirmek için yeniden giriş yapmalısınız.");
+                handleLogout();
+            }
+        }
+    }
+
     // --- WHATSAPP BİLDİRİM SİSTEMİ (MOBİL UYUMLU & KURUMSAL) ---
     async function notifyUser(personName, message) {
+        // 1. Firebase'e Kaydet (Uygulama İçi Bildirim - Özet)
         try {
+            // Firebase'e sadece kısa özet kaydediyoruz
             const shortMsg = message.includes("Yeni Görev") ? "Yeni görev atandı. Detaylar için tıklayın." : (message.includes("iade") ? "Zimmet iade alındı." : message);
             await addDoc(collection(db, "notifications"), {
                 target: personName,
@@ -416,16 +466,21 @@
             });
         } catch(e) { console.error("Bildirim DB hatası", e); }
 
+        // 2. WhatsApp'ı Aç (Mobilde Çalışan Yöntem: api.whatsapp.com)
         const user = users.find(u => u.name === personName);
         if(user && user.phone) {
             let phone = user.phone.replace(/\D/g,''); 
+            // URL Encode ederek mesajı linke çevir
             const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+            
+            // Mobilde 'popup blocked' olmaması için window.open
             window.open(url, '_blank');
         } else {
             showToast(`${personName} için tel no yok.`, "error");
         }
     }
 
+    // Bildirim Arayüzü İşlemleri
     window.toggleNotifications = () => {
         const drop = document.getElementById('notification-dropdown');
         drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
@@ -478,6 +533,8 @@
         await batch.commit();
         showToast("Bildirimler temizlendi.");
     }
+
+    // --- MEVCUT FONKSİYONLAR ---
 
     window.filterList = (input, listId, itemTag) => {
         const filter = input.value.toLowerCase();
@@ -563,6 +620,7 @@
     }
     window.closeCustodyModal = () => document.getElementById('custodyModal').style.display = 'none';
     
+    // ZİMMET KAYDI GÜNCELLENDİ: BİLDİRİM EKLENDİ
     window.saveCustody = async () => {
         try {
             const person = document.getElementById('c-person').value;
@@ -571,6 +629,7 @@
             const itemName = document.getElementById('custodyItemName').innerText;
             await addLog(custodyType, itemName, 'take', person);
             
+            // BİLDİRİM METNİ OLUŞTUR
             const msg = `*Sayın ${person},*\n\nTarafınıza yeni bir zimmet ataması yapılmıştır.\n\n📦 *Zimmet:* ${itemName}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}\n\nLütfen malzemeyi kontrol ediniz.`;
             notifyUser(person, msg);
             
@@ -578,22 +637,18 @@
             closeCustodyModal();
         } catch(e) { showToast("Hata oluştu", "error"); }
     }
-
     window.returnItem = async (type, id) => {
         if(confirm("İade?")) {
             try {
                 const collectionName = type === 'vehicle' ? 'vehicles' : 'devices';
                 let prevHolder = "Bilinmiyor";
                 const itemDoc = type === 'vehicle' ? vehicles.find(v=>v.id===id) : devices.find(d=>d.id===id);
-                
                 if(itemDoc) prevHolder = itemDoc.currentHolder;
-                
                 await updateDoc(doc(db, collectionName, id), { currentHolder: null });
-                
                 let itemDetail = itemDoc ? (type==='vehicle' ? `${itemDoc.plate}` : `${itemDoc.name}`) : '';
-                
                 await addLog(type, itemDetail, 'return', prevHolder);
                 
+                // İADE BİLDİRİMİ GÖNDER
                 if(prevHolder && prevHolder !== "Bilinmiyor") {
                     const itemLabel = type === 'vehicle' ? 'Araç' : 'Cihaz';
                     const msg = `*Sayın ${prevHolder},*\n\nÜzerinizde bulunan zimmet iade alınmıştır.\n\n📦 *Tip:* ${itemLabel}\n🆔 *Detay:* ${itemDetail}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}\n\nSistemden düşümü yapılmıştır.`;
@@ -642,6 +697,7 @@
         document.getElementById('t-end-date').value = selectedDateStr;
     }
 
+    // GÖREV KAYDI GÜNCELLENDİ: DETAYLI BİLDİRİM
     window.saveTask = async () => {
         const btn = document.getElementById('btn-save-task');
         btn.disabled = true; 
@@ -692,11 +748,12 @@
                 await addDoc(collection(db, "tasks"), taskData);
                 showToast("Görev atandı!", "success");
                 
+                // KURUMSAL MESAJI OLUŞTUR
                 const teamStr = per.join(", ");
                 const platesStr = plate.length > 0 ? plate.join(", ") : "Yok";
                 const devStr = dev.length > 0 ? dev.join(", ") : "Yok";
                 const dateRange = `${sDate.split('-').reverse().join('.')} - ${eDate.split('-').reverse().join('.')}`;
-                const appLink = "https://yavuzdalgic18.github.io/EkipTakipApp/"; 
+                const appLink = "https://yavuzdalgic18.github.io/EkipTakipApp/"; // Uygulama linki
 
                 per.forEach(pName => {
                     const msg = `*Sayın ${pName},*\n\nAşağıdaki detaylara sahip yeni bir göreve atandınız.\n\n📂 *Proje:* ${projName}\n📍 *Konum:* ${loc}\n📅 *Tarih:* ${dateRange}\n\n👥 *Ekip:* ${teamStr}\n🚗 *Araçlar:* ${platesStr}\n🧰 *Ekipman:* ${devStr}\n\nDetaylar ve işlem yapmak için uygulamayı kontrol ediniz:\n🔗 ${appLink}`;
