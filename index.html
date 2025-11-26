@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V38.5 - Profil Eklendi)</title>
+    <title>Ekip Takip Pro (V41 - Desktop Scroll Fix)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -13,45 +13,49 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        /* TASARIM KODLARI - MEVCUT YAPI KORUNDU */
+        /* GENEL STİLLER (KORUNDU) */
         :root { --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f3f5f9; --text-main: #2d3436; --nav-height: 75px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
+
         .hidden { display: none !important; } 
         .admin-only { display: none; } 
         .view-section { display: none; animation: fadeIn 0.3s; } 
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
+
         /* TOAST BİLDİRİM */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: none; padding: 15px 20px; border-radius: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: slideInRight 0.3s; }
         @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .toast-success { background: #27ae60; }
         .toast-error { background: #e74c3c; }
 
-        /* HEADER & BİLDİRİM KUTUSU */
-        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; position: relative; }
+        /* HEADER */
+        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header-icons { display: flex; align-items: center; gap: 10px; position: relative; }
         .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; position: relative; }
-        
-        .notif-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; border: 2px solid white; display: none; }
-        
-        #notification-dropdown {
-            position: absolute; top: 70px; right: 20px; width: 300px; background: white; border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2500; display: none; overflow: hidden;
-            border: 1px solid #eee;
+        .notif-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: none; justify-content: center; align-items: center; border: 2px solid white; }
+
+        /* ALT MENÜ (SCROLL DÜZELTİLDİ + DRAG EKLENDİ) */
+        .bottom-nav { 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 600px; 
+            background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 15px; 
+            -ms-overflow-style: none; scrollbar-width: none; white-space: nowrap; cursor: grab; user-select: none; /* Sürükleme için imleç */
         }
+        .bottom-nav:active { cursor: grabbing; }
+        .bottom-nav::-webkit-scrollbar { display: none; }
+        
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; flex-shrink: 0; }
+        .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; pointer-events: none; /* İkon sürüklemeyi engellemesin */ }
+        .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
+
+        /* BİLDİRİM PENCERESİ */
+        #notification-dropdown { position: absolute; top: 60px; right: 0; width: 300px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2500; display: none; overflow: hidden; border: 1px solid #eee; }
         .notif-header { background: #f8f9fa; padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
         .notif-list { max-height: 300px; overflow-y: auto; }
         .notif-item { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; font-size: 0.85rem; }
-        .notif-item:last-child { border-bottom: none; }
-        .notif-item small { display: block; color: #888; margin-top: 3px; font-size: 0.7rem; }
         .notif-empty { padding: 20px; text-align: center; color: #aaa; font-size: 0.9rem; }
-
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
-        .bottom-nav::-webkit-scrollbar { display: none; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; }
-        .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
-        .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
 
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
         .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
@@ -59,6 +63,7 @@
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
 
+        /* ARAMA & KARTLAR */
         .search-bar { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23ccc" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat right 15px center; margin-bottom: 15px; font-size: 0.9rem; }
         .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
@@ -70,9 +75,8 @@
         .badge-red { background: #fee2e2; color: #991b1b; } 
         .badge-orange { background: #ffedd5; color: #9a3412; } 
         .badge-gray { background: #f3f4f6; color: #374151; }
-        .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
-        .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
-
+        
+        /* TAKVİM */
         .calendar-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
         .day-head { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
@@ -80,13 +84,12 @@
         .day-cell b { align-self: center; margin-bottom: 4px; color: #333; }
         .day-cell.today { border: 2px solid #764ba2; background: white; }
         .task-dot { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-        
+
+        /* FORM & TABLO */
         input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; }
         .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 5px; transition: opacity 0.3s; }
         .btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; margin-left: 5px; }
-        .btn-outline-red { background: white; border: 1px solid #e74c3c; color: #e74c3c; } 
-        .btn-outline-blue { background: white; border: 1px solid #3498db; color: #3498db; }
         .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
         .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
         
@@ -102,6 +105,9 @@
         .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         .log-table th { text-align: left; padding: 10px; background: #f4f6f8; }
         .log-table td { padding: 10px; border-bottom: 1px solid #eee; }
+        
+        .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
+        .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
     </style>
 </head>
 <body>
@@ -112,12 +118,13 @@
     <div class="app-header">
         <div><small style="color:#888;">Merhaba,</small><h2 style="margin:0;" id="welcomeUser">Kullanıcı</h2></div>
         
-        <div class="header-icons" style="position:relative;">
+        <div class="header-icons">
             <button class="icon-btn" onclick="toggleNotifications()">
                 🔔
                 <span id="notif-badge" class="notif-badge">0</span>
             </button>
-            <button class="icon-btn" style="margin-left:10px;" onclick="handleLogout()">🚪</button>
+            
+            <button class="icon-btn" onclick="handleLogout()">🚪</button>
             
             <div id="notification-dropdown">
                 <div class="notif-header">
@@ -132,6 +139,7 @@
     </div>
 
     <div class="container">
+        
         <div id="view-calendar" class="view-section active">
             <div class="hero-card">
                 <div class="hero-stat-grid">
@@ -186,22 +194,6 @@
             <div class="modern-card" id="teamListArea"></div>
         </div>
 
-        <div id="view-devices" class="view-section">
-            <input type="text" class="search-bar" placeholder="Cihaz/Seri No Ara..." onkeyup="filterList(this, 'deviceListArea', 'div.info-card')">
-            <div class="admin-only modern-card" id="deviceFormContainer">
-                <h3 id="deviceFormTitle">Yeni Cihaz</h3>
-                <input type="text" id="d-name" placeholder="Cihaz Adı">
-                <input type="text" id="d-serial" placeholder="Seri No">
-                <label>Kalibrasyon:</label><input type="date" id="d-calib">
-                <div style="display:flex; gap:5px;">
-                    <button class="btn-main" id="btn-d-save" onclick="addDevice()">Ekle</button>
-                    <button class="btn-main" id="btn-d-update" onclick="updateDeviceDB()" style="background:#f39c12; display:none;">Güncelle</button>
-                    <button class="btn-main" id="btn-d-cancel" onclick="cancelDeviceEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
-                </div>
-            </div>
-            <div class="modern-card"><div id="deviceListArea" class="card-list"></div></div>
-        </div>
-
         <div id="view-vehicles" class="view-section">
             <input type="text" class="search-bar" placeholder="Plaka/Model Ara..." onkeyup="filterList(this, 'vehicleListArea', 'div.info-card')">
             <div class="admin-only modern-card" id="vehicleFormContainer">
@@ -216,6 +208,22 @@
                 </div>
             </div>
             <div class="modern-card"><div id="vehicleListArea" class="card-list"></div></div>
+        </div>
+
+        <div id="view-devices" class="view-section">
+            <input type="text" class="search-bar" placeholder="Cihaz/Seri No Ara..." onkeyup="filterList(this, 'deviceListArea', 'div.info-card')">
+            <div class="admin-only modern-card" id="deviceFormContainer">
+                <h3 id="deviceFormTitle">Yeni Cihaz</h3>
+                <input type="text" id="d-name" placeholder="Cihaz Adı">
+                <input type="text" id="d-serial" placeholder="Seri No">
+                <label>Kalibrasyon:</label><input type="date" id="d-calib">
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-d-save" onclick="addDevice()">Ekle</button>
+                    <button class="btn-main" id="btn-d-update" onclick="updateDeviceDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-d-cancel" onclick="cancelDeviceEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
+            </div>
+            <div class="modern-card"><div id="deviceListArea" class="card-list"></div></div>
         </div>
 
         <div id="view-users" class="view-section">
@@ -260,6 +268,23 @@
             </div>
         </div>
 
+        <div id="view-logs" class="view-section">
+            <div class="modern-card">
+                <h3>Sistem Kayıtları (Log)</h3>
+                <label>Tarih Seç:</label>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <input type="date" id="adminLogDate" onchange="renderAdminLogs(this.value)">
+                    <button class="btn-sm" onclick="exportLogsToWord()" style="background:#2980b9; color:white;">Word İndir</button>
+                </div>
+                <div style="overflow-x:auto;" id="adminLogContainer">
+                    <table class="log-table" id="adminLogTable" style="width:100%;">
+                        <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>İşlem</th><th>Detay</th></tr></thead>
+                        <tbody id="adminLogBody"><tr><td colspan="4">Tarih seçiniz.</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div id="view-profile" class="view-section">
             <div class="modern-card">
                 <h3>Profilim</h3>
@@ -279,7 +304,7 @@
 
     </div>
 
-    <div class="bottom-nav">
+    <div class="bottom-nav" id="bottomNav">
         <div class="nav-item active" onclick="switchTab('calendar')"><span class="icon">📅</span>Takvim</div>
         <div class="nav-item" onclick="switchTab('projects')"><span class="icon">📂</span>Proje</div>
         <div class="nav-item" onclick="switchTab('team')"><span class="icon">👥</span>Ekip</div>
@@ -287,6 +312,7 @@
         <div class="nav-item" onclick="switchTab('devices')"><span class="icon">🧰</span>Cihaz</div>
         <div class="nav-item admin-only" onclick="switchTab('users')"><span class="icon">⚙️</span>Yetki</div>
         <div class="nav-item admin-only" onclick="switchTab('reports')"><span class="icon">📊</span>Rapor</div>
+        <div class="nav-item admin-only" onclick="switchTab('logs')"><span class="icon">📝</span>Log</div>
         <div class="nav-item" onclick="switchTab('profile')"><span class="icon">👤</span>Profil</div>
     </div>
 </div>
@@ -366,7 +392,7 @@
                 currentUser = userData; userRole = userData.role;
                 document.getElementById('welcomeUser').innerText = userData.name.split(' ')[0];
                 
-                // Profil Bilgilerini Doldur
+                // Profil verilerini doldur
                 document.getElementById('profileName').innerText = userData.name;
                 document.getElementById('profileRole').innerText = userData.title || (userData.role === 'admin' ? 'Yönetici' : 'Personel');
                 document.getElementById('profileAvatar').innerText = userData.name.charAt(0);
@@ -429,7 +455,7 @@
         });
     }
 
-    // --- ŞİFRE DEĞİŞTİRME (YENİ) ---
+    // --- PROFİL & ŞİFRE DEĞİŞTİRME ---
     window.updateUserPassword = async () => {
         const p1 = document.getElementById('new-pass').value;
         const p2 = document.getElementById('new-pass-confirm').value;
@@ -450,6 +476,37 @@
                 handleLogout();
             }
         }
+    }
+
+    // --- ADMIN LOG YÖNETİMİ ---
+    window.renderAdminLogs = (dateVal) => {
+        const tbody = document.getElementById('adminLogBody');
+        if(!dateVal) { tbody.innerHTML = '<tr><td colspan="4">Tarih seçiniz.</td></tr>'; return; }
+        
+        const filtered = logs.filter(l => l.date.startsWith(dateVal));
+        if(filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="4">Kayıt yok.</td></tr>'; return; }
+
+        tbody.innerHTML = filtered.map(l => {
+            const d = new Date(l.date);
+            const time = `${d.getHours()}:${d.getMinutes()}`;
+            return `<tr><td>${time}</td><td>${l.admin || 'Sistem'}</td><td>${l.action}</td><td>${l.person} - ${l.item}</td></tr>`;
+        }).join('');
+    }
+
+    window.exportLogsToWord = () => {
+        const dateVal = document.getElementById('adminLogDate').value;
+        if(!dateVal) return alert("Önce tarih seçiniz.");
+        
+        const html = document.getElementById('adminLogTable').outerHTML;
+        const blob = new Blob(['<html><head><meta charset="UTF-8"></head><body>' + html + '</body></html>'], {
+            type: 'application/msword'
+        });
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Gunluk_Log_${dateVal}.doc`;
+        a.click();
     }
 
     // --- WHATSAPP BİLDİRİM SİSTEMİ (MOBİL UYUMLU & KURUMSAL) ---
@@ -900,6 +957,42 @@
     }
     function getMultiSelectValues(id){return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i=>i.value);}
     
+    // DRAG AND SCROLL ÖZELLİĞİ (YENİ)
+    const nav = document.querySelector('.bottom-nav');
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    nav.addEventListener('mousedown', (e) => {
+        isDown = true;
+        nav.classList.add('active');
+        startX = e.pageX - nav.offsetLeft;
+        scrollLeft = nav.scrollLeft;
+    });
+    nav.addEventListener('mouseleave', () => {
+        isDown = false;
+        nav.classList.remove('active');
+    });
+    nav.addEventListener('mouseup', () => {
+        isDown = false;
+        nav.classList.remove('active');
+    });
+    nav.addEventListener('mousemove', (e) => {
+        if(!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - nav.offsetLeft;
+        const walk = (x - startX) * 2; // Kaydırma hızı
+        nav.scrollLeft = scrollLeft - walk;
+    });
+
+    // MOUSE WHEEL SCROLL
+    nav.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+            e.preventDefault();
+            nav.scrollLeft += e.deltaY;
+        }
+    });
+
     window.switchTab = (tab) => { document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); document.getElementById('view-'+tab).classList.add('active'); event.currentTarget.classList.add('active'); if(tab==='reports') filterReports(); }
     window.changeMonth = (d) => { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
     window.toggleDatePicker = () => { document.getElementById('month-picker-modal').style.display = document.getElementById('month-picker-modal').style.display === 'block' ? 'none' : 'block'; pickerYear = currentDate.getFullYear(); document.getElementById('pick-year-val').innerText = pickerYear; }
