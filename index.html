@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V34 - Bildirimli)</title>
+    <title>Ekip Takip Pro (V35 - WhatsApp & Bildirim Kutusu)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -11,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
     <style>
         /* TASARIM KODLARI */
@@ -23,22 +22,45 @@
         .view-section { display: none; animation: fadeIn 0.3s; } 
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* TOAST BİLDİRİM */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: none; padding: 15px 20px; border-radius: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: slideInRight 0.3s; }
         @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .toast-success { background: #27ae60; }
         .toast-error { background: #e74c3c; }
-        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; }
+
+        /* HEADER & BİLDİRİM KUTUSU */
+        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; position: relative; }
+        .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; position: relative; }
+        
+        /* Bildirim Kırmızı Nokta */
+        .notif-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; border: 2px solid white; display: none; }
+        
+        /* Bildirim Listesi Penceresi */
+        #notification-dropdown {
+            position: absolute; top: 70px; right: 20px; width: 300px; background: white; border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2500; display: none; overflow: hidden;
+            border: 1px solid #eee;
+        }
+        .notif-header { background: #f8f9fa; padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+        .notif-list { max-height: 300px; overflow-y: auto; }
+        .notif-item { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; font-size: 0.85rem; }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-item small { display: block; color: #888; margin-top: 3px; font-size: 0.7rem; }
+        .notif-empty { padding: 20px; text-align: center; color: #aaa; font-size: 0.9rem; }
+
         .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
         .bottom-nav::-webkit-scrollbar { display: none; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; }
         .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
         .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
+
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
         .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
         .hero-card { background: var(--primary-grad); border-radius: 25px; padding: 25px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3); }
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
+
         .search-bar { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23ccc" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat right 15px center; margin-bottom: 15px; font-size: 0.9rem; }
         .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
@@ -52,6 +74,7 @@
         .badge-gray { background: #f3f4f6; color: #374151; }
         .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
         .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
+
         .calendar-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
         .day-head { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
@@ -59,6 +82,7 @@
         .day-cell b { align-self: center; margin-bottom: 4px; color: #333; }
         .day-cell.today { border: 2px solid #764ba2; background: white; }
         .task-dot { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        
         input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; }
         .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 5px; transition: opacity 0.3s; }
         .btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -67,12 +91,15 @@
         .btn-outline-blue { background: white; border: 1px solid #3498db; color: #3498db; }
         .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
         .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
+        
+        /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: end; }
         .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; }
         #month-picker-modal { display: none; position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 300px; background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 500; padding: 15px; }
         .year-selector { display: flex; justify-content: space-between; margin-bottom: 15px; }
         .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .month-btn { padding: 10px; background: #f9f9f9; text-align: center; cursor: pointer; border-radius: 5px; font-size: 0.8rem; }
+        
         .multi-select-area { background: #f9f9f9; border: 1px solid #eee; border-radius: 10px; padding: 10px; max-height: 150px; overflow-y: auto; margin-bottom: 10px; }
         .ms-item { display: flex; align-items: center; margin-bottom: 8px; } .ms-item input { width: 20px; margin: 0 10px 0 0; }
         .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
@@ -87,7 +114,24 @@
 <div id="app-screen">
     <div class="app-header">
         <div><small style="color:#888;">Merhaba,</small><h2 style="margin:0;" id="welcomeUser">Kullanıcı</h2></div>
-        <div class="header-icons"><button class="icon-btn" onclick="requestNotificationPermission()">🔔</button><button class="icon-btn" onclick="handleLogout()">🚪</button></div>
+        
+        <div class="header-icons" style="position:relative;">
+            <button class="icon-btn" onclick="toggleNotifications()">
+                🔔
+                <span id="notif-badge" class="notif-badge">0</span>
+            </button>
+            <button class="icon-btn" style="margin-left:10px;" onclick="handleLogout()">🚪</button>
+            
+            <div id="notification-dropdown">
+                <div class="notif-header">
+                    <span>Bildirimler</span>
+                    <button onclick="clearAllNotifications()" style="background:none; border:none; color:#e74c3c; font-size:0.7rem; cursor:pointer;">Temizle</button>
+                </div>
+                <div id="notif-list" class="notif-list">
+                    <div class="notif-empty">Bildirim yok.</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="container">
@@ -183,6 +227,7 @@
                 <input type="text" id="u-name" placeholder="Ad Soyad">
                 <input type="text" id="u-title" placeholder="Ünvan">
                 <input type="email" id="u-email" placeholder="E-Posta">
+                <input type="tel" id="u-phone" placeholder="Tel (Örn: 90532xxxxxxx)">
                 <select id="u-role"><option value="staff">Personel</option><option value="admin">Yönetici</option></select>
                 <div style="display:flex; gap:5px;">
                     <button class="btn-main" id="btn-user-add" onclick="addUserToDB()">Ekle</button>
@@ -270,7 +315,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // --- FIREBASE AYARLARI ---
     const k1 = "AIzaSyD4XZR8JAMe-"; const k2 = "Qr2Oj2UGnp9mFc8En38gxY";
@@ -288,34 +333,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-  // --- ONESIGNAL AYARLARI (GÜNCELLENDİ) ---
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) {
-        OneSignal.init({
-            appId: "08d90e98-c6b4-429c-aab5-f11164ddc881",
-            notifyButton: { enable: false }, 
-            allowLocalhostAsSecureOrigin: true,
-            // ÖNEMLİ: Dosyanın yerini tam olarak gösteriyoruz
-            serviceWorker: {
-                path: "OneSignalSDKWorker.js",
-                workerName: "OneSignalSDKWorker.js"
-            }
-        });
-    });
-
-    // BİLDİRİM İZNİ İSTEME
-    window.requestNotificationPermission = () => {
-        OneSignalDeferred.push(async function(OneSignal) {
-            await OneSignal.Notifications.requestPermission();
-            if (OneSignal.Notifications.permission) {
-                showToast("Bildirimler açıldı! 🔔", "success");
-            } else {
-                showToast("Bildirim izni verilmedi.", "error");
-            }
-        });
-    };
-
-    let projects=[], tasks=[], users=[], vehicles=[], devices=[], logs=[];
+    let projects=[], tasks=[], users=[], vehicles=[], devices=[], logs=[], notifications=[];
     let currentUser=null, userRole='staff';
     let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), isFirstLoad=true;
     let pickerYear = new Date().getFullYear(), editingUserEmail=null, editingVehicleId=null, editingDeviceId=null, editingProjectId=null;
@@ -332,12 +350,6 @@
                 currentUser = userData; userRole = userData.role;
                 document.getElementById('welcomeUser').innerText = userData.name.split(' ')[0];
                 applyPermissions();
-                
-                // OneSignal'e Giriş Yap
-                OneSignalDeferred.push(function(OneSignal) {
-                    OneSignal.login(user.email);
-                });
-
                 document.getElementById('reportDateSelector').value = currentReportDate;
                 startListeners();
             } else {
@@ -379,64 +391,106 @@
         onSnapshot(logsQuery, (s) => { logs = []; s.docs.forEach(d => logs.push(d.data())); filterReports(); });
 
         onSnapshot(collection(db, "tasks"), (snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                // Yeni görev eklendiğinde BİLDİRİM GÖNDER
-                if (change.type === "added" && !isFirstLoad) {
-                    const data = change.doc.data();
-                    const targets = Array.isArray(data.person) ? data.person : [data.person];
-                    
-                    // İsimden e-maile çevir
-                    const targetEmails = [];
-                    targets.forEach(pName => {
-                        const u = users.find(usr => usr.name === pName);
-                        if(u && u.email) targetEmails.push(u.email);
-                    });
-
-                    if(targetEmails.length > 0) {
-                        sendOneSignalNotification(targetEmails, `Yeni görev: ${data.projectName}`);
-                    }
-                }
-            });
             tasks=[]; snapshot.docs.forEach(d=>tasks.push({id:d.id, ...d.data()}));
             renderCalendar();
             if(document.querySelector('#taskModal').style.display === 'flex') openModalLogic(selectedDateStr);
             updateStats(new Date().toISOString().split('T')[0]); renderTeamStatus(); renderDeviceList(); filterReports();
-            isFirstLoad = false;
+        });
+
+        // --- KİŞİSEL BİLDİRİMLERİ DİNLEME ---
+        const notifQuery = query(collection(db, "notifications"), where("target", "==", currentUser.name));
+        onSnapshot(notifQuery, (s) => {
+            notifications = [];
+            s.docs.forEach(d => notifications.push({id:d.id, ...d.data()}));
+            // Tarihe göre sırala (Yeni en üstte)
+            notifications.sort((a,b) => new Date(b.date) - new Date(a.date));
+            renderNotifications();
         });
     }
 
-    // --- BİLDİRİM GÖNDERME FONKSİYONU (GÜVENLİK AYARLI) ---
-    window.sendOneSignalNotification = async (targetEmails, message) => {
-        // GITHUB GÜVENLİK ROBOTLARINI ATLATMAK İÇİN ŞİFREYİ PARÇALI YAZIYORUZ
-        const k_part1 = "os_v2_app_bdmq5gggwrbjzkvv6eiwjxoiqgl4iwcrfniua";
-        const k_part2 = "oft2pb2zn6deawn7fw2r6ogmag7o7hk42epxgqrjapa4ldtcj2rfl6lorm3xtlun6q";
-        
-        // Burada birleştiriyoruz
-        const API_KEY = k_part1 + k_part2; 
-        const APP_ID = "08d90e98-c6b4-429c-aab5-f11164ddc881";
-
-        const options = {
-            method: 'POST',
-            headers: {
-                accept: 'application/json',
-                'content-type': 'application/json',
-                Authorization: `Basic ${API_KEY}`
-            },
-            body: JSON.stringify({
-                app_id: APP_ID,
-                include_aliases: { "external_id": targetEmails },
-                target_channel: "push",
-                contents: { "en": message, "tr": message },
-                headings: { "en": "Yeni Görev", "tr": "Yeni Görev Ataması" }
-            })
-        };
-
+    // --- BİLDİRİM VE WHATSAPP SİSTEMİ (YENİ) ---
+    async function notifyUser(personName, message) {
+        // 1. Firebase'e Kaydet (Uygulama İçi Bildirim)
         try {
-            await fetch('https://onesignal.com/api/v1/notifications', options);
-        } catch (err) {
-            console.error("Bildirim hatası:", err);
+            await addDoc(collection(db, "notifications"), {
+                target: personName,
+                msg: message,
+                date: new Date().toISOString(),
+                read: false
+            });
+        } catch(e) { console.error("Bildirim DB hatası", e); }
+
+        // 2. WhatsApp'ı Aç (Tıkla Gönder)
+        const user = users.find(u => u.name === personName);
+        if(user && user.phone) {
+            // Telefon numarasını temizle (sadece rakam)
+            let phone = user.phone.replace(/\D/g,''); 
+            const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        } else {
+            // Tel yoksa sadece toast göster
+            showToast(`${personName} için tel no kayıtlı değil, sadece uygulama içi bildirim gönderildi.`, "error");
         }
-    };
+    }
+
+    // Bildirim Arayüzü İşlemleri
+    window.toggleNotifications = () => {
+        const drop = document.getElementById('notification-dropdown');
+        drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Dışarı tıklayınca kapanması için
+    document.addEventListener('click', function(event) {
+        const drop = document.getElementById('notification-dropdown');
+        const btn = document.querySelector('.icon-btn[onclick="toggleNotifications()"]');
+        if (drop.style.display === 'block' && !drop.contains(event.target) && !btn.contains(event.target)) {
+            drop.style.display = 'none';
+        }
+    });
+
+    function renderNotifications() {
+        const list = document.getElementById('notif-list');
+        const badge = document.getElementById('notif-badge');
+        
+        // Sayıyı güncelle
+        if(notifications.length > 0) {
+            badge.innerText = notifications.length;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+
+        if(notifications.length === 0) {
+            list.innerHTML = '<div class="notif-empty">Bildirim yok.</div>';
+            return;
+        }
+
+        list.innerHTML = notifications.map(n => {
+            const d = new Date(n.date);
+            const timeStr = `${d.getDate()}.${d.getMonth()+1} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`;
+            return `
+            <div class="notif-item">
+                ${n.msg}
+                <small>${timeStr}</small>
+            </div>
+            `;
+        }).join('');
+    }
+
+    window.clearAllNotifications = async () => {
+        if(notifications.length === 0) return;
+        if(!confirm("Tüm bildirimler silinsin mi?")) return;
+        
+        const batch = writeBatch(db);
+        notifications.forEach(n => {
+            const ref = doc(db, "notifications", n.id);
+            batch.delete(ref);
+        });
+        await batch.commit();
+        showToast("Bildirimler temizlendi.");
+    }
+
+    // --- MEVCUT FONKSİYONLAR ---
 
     window.filterList = (input, listId, itemTag) => {
         const filter = input.value.toLowerCase();
@@ -521,6 +575,8 @@
         document.getElementById('custodyModal').style.display = 'flex';
     }
     window.closeCustodyModal = () => document.getElementById('custodyModal').style.display = 'none';
+    
+    // ZİMMET KAYDI GÜNCELLENDİ: BİLDİRİM EKLENDİ
     window.saveCustody = async () => {
         try {
             const person = document.getElementById('c-person').value;
@@ -528,6 +584,10 @@
             await updateDoc(doc(db, collectionName, custodyTargetId), { currentHolder: person });
             const itemName = document.getElementById('custodyItemName').innerText;
             await addLog(custodyType, itemName, 'take', person);
+            
+            // BİLDİRİM GÖNDER
+            notifyUser(person, `👋 Merhaba, sana bir zimmet atandı:\n📦 ${itemName}`);
+            
             showToast("Zimmet Başarılı", "success");
             closeCustodyModal();
         } catch(e) { showToast("Hata oluştu", "error"); }
@@ -584,6 +644,7 @@
         document.getElementById('t-end-date').value = selectedDateStr;
     }
 
+    // GÖREV KAYDI GÜNCELLENDİ: BİLDİRİM EKLENDİ
     window.saveTask = async () => {
         const btn = document.getElementById('btn-save-task');
         btn.disabled = true; 
@@ -628,10 +689,19 @@
             if (editingTaskId) {
                 await updateDoc(doc(db, "tasks", editingTaskId), taskData);
                 showToast("Görev güncellendi!", "success");
+                
+                // Bildirim sadece yeni görevde mi gitsin yoksa güncellenince de mi?
+                // Şimdilik sadece yeni görevde otomatik açıyoruz.
                 cancelTaskEdit(); 
             } else {
                 await addDoc(collection(db, "tasks"), taskData);
                 showToast("Görev atandı!", "success");
+                
+                // HER PERSONELE AYRI BİLDİRİM
+                per.forEach(pName => {
+                    notifyUser(pName, `👷‍♂️ Yeni Görev Atandı!\n📂 Proje: ${projName}\n📅 Tarih: ${sDate.split('-').reverse().join('.')}\n📍 Konum: ${document.getElementById('t-loc').value}`);
+                });
+
                 document.getElementById('t-loc').value=""; 
                 document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false);
             }
@@ -687,12 +757,60 @@
         }).join('');
     }
 
-    window.addUserToDB=async()=>{const n=document.getElementById('u-name').value; const e=document.getElementById('u-email').value.trim(); const r=document.getElementById('u-role').value; if(!n || !e) return alert("Ad ve E-posta zorunludur."); await setDoc(doc(db,"users",e), {name:n, email:e, role:r, title:document.getElementById('u-title').value}); showToast("Yetkili Eklendi"); cancelUserEdit();}
-    window.editUser=(e)=>{const u=users.find(x=>x.email===e); if(!u)return; document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title||''; document.getElementById('u-email').value=u.email; document.getElementById('u-email').disabled=true; document.getElementById('u-role').value=u.role; editingUserEmail=e; document.getElementById('userFormTitle').innerText="Düzenle"; document.getElementById('btn-user-add').style.display='none'; document.getElementById('btn-user-update').style.display='block'; document.getElementById('btn-user-cancel').style.display='block';}
-    window.updateUserDB=async()=>{await updateDoc(doc(db,"users",editingUserEmail),{name:document.getElementById('u-name').value,title:document.getElementById('u-title').value,role:document.getElementById('u-role').value}); showToast("Kullanıcı Güncellendi"); cancelUserEdit();}
-    window.cancelUserEdit=()=>{editingUserEmail=null; document.getElementById('u-name').value=""; document.getElementById('u-title').value=""; document.getElementById('u-email').value=""; document.getElementById('u-email').disabled=false; document.getElementById('userFormTitle').innerText="Yeni Kullanıcı"; document.getElementById('btn-user-add').style.display='block'; document.getElementById('btn-user-update').style.display='none'; document.getElementById('btn-user-cancel').style.display='none';}
+    // KULLANICI İŞLEMLERİ (TELEFON EKLENDİ)
+    window.addUserToDB=async()=>{
+        const n=document.getElementById('u-name').value; 
+        const e=document.getElementById('u-email').value.trim(); 
+        const r=document.getElementById('u-role').value; 
+        const t=document.getElementById('u-title').value;
+        const ph=document.getElementById('u-phone').value; // Tel no
+        
+        if(!n || !e) return alert("Ad ve E-posta zorunludur."); 
+        await setDoc(doc(db,"users",e), {name:n, email:e, role:r, title:t, phone:ph}); 
+        showToast("Yetkili Eklendi"); cancelUserEdit();
+    }
+    
+    window.editUser=(e)=>{
+        const u=users.find(x=>x.email===e); 
+        if(!u)return; 
+        document.getElementById('u-name').value=u.name; 
+        document.getElementById('u-title').value=u.title||''; 
+        document.getElementById('u-email').value=u.email; 
+        document.getElementById('u-email').disabled=true; 
+        document.getElementById('u-phone').value=u.phone||''; // Tel no doldur
+        document.getElementById('u-role').value=u.role; 
+        editingUserEmail=e; 
+        document.getElementById('userFormTitle').innerText="Düzenle"; 
+        document.getElementById('btn-user-add').style.display='none'; 
+        document.getElementById('btn-user-update').style.display='block'; 
+        document.getElementById('btn-user-cancel').style.display='block';
+    }
+    
+    window.updateUserDB=async()=>{
+        await updateDoc(doc(db,"users",editingUserEmail),{
+            name:document.getElementById('u-name').value,
+            title:document.getElementById('u-title').value,
+            role:document.getElementById('u-role').value,
+            phone:document.getElementById('u-phone').value // Tel güncelle
+        }); 
+        showToast("Kullanıcı Güncellendi"); cancelUserEdit();
+    }
+    
+    window.cancelUserEdit=()=>{
+        editingUserEmail=null; 
+        document.getElementById('u-name').value=""; 
+        document.getElementById('u-title').value=""; 
+        document.getElementById('u-email').value=""; 
+        document.getElementById('u-phone').value=""; 
+        document.getElementById('u-email').disabled=false; 
+        document.getElementById('userFormTitle').innerText="Yeni Kullanıcı"; 
+        document.getElementById('btn-user-add').style.display='block'; 
+        document.getElementById('btn-user-update').style.display='none'; 
+        document.getElementById('btn-user-cancel').style.display='none';
+    }
+
     window.deleteUser=async(e)=>{if(confirm("Sil?")) { await deleteDoc(doc(db,"users",e)); showToast("Kullanıcı Silindi"); }}
-    function renderUserList(){document.getElementById('userListArea').innerHTML=users.map(u=>`<div class="user-card" style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small></div><div><span class="badge badge-gray">${u.role}</span>${userRole==='admin' ? `<button onclick="editUser('${u.email}')" style="border:none; bg:none; margin-right:5px;">✎</button><button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>` : ''}</div></div>`).join('');}
+    function renderUserList(){document.getElementById('userListArea').innerHTML=users.map(u=>`<div class="user-card" style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small><br><small>📞 ${u.phone||'-'}</small></div><div><span class="badge badge-gray">${u.role}</span>${userRole==='admin' ? `<button onclick="editUser('${u.email}')" style="border:none; bg:none; margin-right:5px;">✎</button><button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>` : ''}</div></div>`).join('');}
     
     window.submitProject=async()=>{const n=document.getElementById('p-name').value; if(!n)return; await addDoc(collection(db,"projects"),{name:n,manager:document.getElementById('p-manager').value,start:document.getElementById('p-start').value,end:document.getElementById('p-end').value,cost:document.getElementById('p-cost').value,offer:document.getElementById('p-offer').value}); showToast("Proje Eklendi"); document.getElementById('p-name').value="";}
     window.updateProjectDB=async()=>{await updateDoc(doc(db,"projects",editingProjectId),{name:document.getElementById('p-name').value,manager:document.getElementById('p-manager').value,start:document.getElementById('p-start').value,end:document.getElementById('p-end').value,cost:document.getElementById('p-cost').value,offer:document.getElementById('p-offer').value}); showToast("Proje Güncellendi"); cancelProjectEdit();}
