@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V41 - Desktop Scroll Fix)</title>
+    <title>Ekip Takip Pro (V42 - Grup Bildirim)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        /* GENEL STİLLER (KORUNDU) */
+        /* MEVCUT TASARIM KORUNDU */
         :root { --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f3f5f9; --text-main: #2d3436; --nav-height: 75px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
@@ -24,33 +24,23 @@
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* TOAST BİLDİRİM */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: none; padding: 15px 20px; border-radius: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: slideInRight 0.3s; }
         @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .toast-success { background: #27ae60; }
         .toast-error { background: #e74c3c; }
 
-        /* HEADER */
         .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         .header-icons { display: flex; align-items: center; gap: 10px; position: relative; }
         .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; position: relative; }
         .notif-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: none; justify-content: center; align-items: center; border: 2px solid white; }
 
-        /* ALT MENÜ (SCROLL DÜZELTİLDİ + DRAG EKLENDİ) */
-        .bottom-nav { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 600px; 
-            background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 15px; 
-            -ms-overflow-style: none; scrollbar-width: none; white-space: nowrap; cursor: grab; user-select: none; /* Sürükleme için imleç */
-        }
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 600px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 15px; -ms-overflow-style: none; scrollbar-width: none; white-space: nowrap; cursor: grab; user-select: none; }
         .bottom-nav:active { cursor: grabbing; }
         .bottom-nav::-webkit-scrollbar { display: none; }
-        
         .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; flex-shrink: 0; }
-        .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; pointer-events: none; /* İkon sürüklemeyi engellemesin */ }
+        .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; pointer-events: none; }
         .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
 
-        /* BİLDİRİM PENCERESİ */
         #notification-dropdown { position: absolute; top: 60px; right: 0; width: 300px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2500; display: none; overflow: hidden; border: 1px solid #eee; }
         .notif-header { background: #f8f9fa; padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
         .notif-list { max-height: 300px; overflow-y: auto; }
@@ -63,20 +53,13 @@
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
 
-        /* ARAMA & KARTLAR */
         .search-bar { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23ccc" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat right 15px center; margin-bottom: 15px; font-size: 0.9rem; }
         .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .info-card.active { border-left-color: #27ae60; } 
-        .info-card.busy { border-left-color: #e74c3c; } 
-        .info-card.custody { border-left-color: #f39c12; }
+        .info-card.active { border-left-color: #27ae60; } .info-card.busy { border-left-color: #e74c3c; } .info-card.custody { border-left-color: #f39c12; }
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
-        .badge-green { background: #d1fae5; color: #065f46; } 
-        .badge-red { background: #fee2e2; color: #991b1b; } 
-        .badge-orange { background: #ffedd5; color: #9a3412; } 
-        .badge-gray { background: #f3f4f6; color: #374151; }
+        .badge-green { background: #d1fae5; color: #065f46; } .badge-red { background: #fee2e2; color: #991b1b; } .badge-orange { background: #ffedd5; color: #9a3412; } .badge-gray { background: #f3f4f6; color: #374151; }
         
-        /* TAKVİM */
         .calendar-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
         .day-head { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
@@ -85,7 +68,6 @@
         .day-cell.today { border: 2px solid #764ba2; background: white; }
         .task-dot { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
-        /* FORM & TABLO */
         input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; }
         .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 5px; transition: opacity 0.3s; }
         .btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -509,11 +491,10 @@
         a.click();
     }
 
-    // --- WHATSAPP BİLDİRİM SİSTEMİ (MOBİL UYUMLU & KURUMSAL) ---
+    // --- WHATSAPP BİLDİRİM SİSTEMİ (GRUP + MANUEL) ---
     async function notifyUser(personName, message) {
-        // 1. Firebase'e Kaydet (Uygulama İçi Bildirim - Özet)
+        // 1. Firebase'e Kaydet
         try {
-            // Firebase'e sadece kısa özet kaydediyoruz
             const shortMsg = message.includes("Yeni Görev") ? "Yeni görev atandı. Detaylar için tıklayın." : (message.includes("iade") ? "Zimmet iade alındı." : message);
             await addDoc(collection(db, "notifications"), {
                 target: personName,
@@ -523,18 +504,10 @@
             });
         } catch(e) { console.error("Bildirim DB hatası", e); }
 
-        // 2. WhatsApp'ı Aç (Mobilde Çalışan Yöntem: api.whatsapp.com)
-        const user = users.find(u => u.name === personName);
-        if(user && user.phone) {
-            let phone = user.phone.replace(/\D/g,''); 
-            // URL Encode ederek mesajı linke çevir
-            const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
-            
-            // Mobilde 'popup blocked' olmaması için window.open
-            window.open(url, '_blank');
-        } else {
-            showToast(`${personName} için tel no yok.`, "error");
-        }
+        // 2. GRUP İÇİN GENEL WHATSAPP LİNKİ (TEXT ONLY)
+        // Telefon numarası aramıyoruz, doğrudan mesajı paylaşıma açıyoruz.
+        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
     }
 
     // Bildirim Arayüzü İşlemleri
@@ -813,7 +786,7 @@
                 const appLink = "https://yavuzdalgic18.github.io/EkipTakipApp/"; // Uygulama linki
 
                 per.forEach(pName => {
-                    const msg = `*Sayın ${pName},*\n\nAşağıdaki detaylara sahip yeni bir göreve atandınız.\n\n📂 *Proje:* ${projName}\n📍 *Konum:* ${loc}\n📅 *Tarih:* ${dateRange}\n\n👥 *Ekip:* ${teamStr}\n🚗 *Araçlar:* ${platesStr}\n🧰 *Ekipman:* ${devStr}\n\nDetaylar ve işlem yapmak için uygulamayı kontrol ediniz:\n🔗 ${appLink}`;
+                    const msg = `*@${pName},*\n\nAşağıdaki detaylara sahip yeni bir göreve atandınız.\n\n📂 *Proje:* ${projName}\n📍 *Konum:* ${loc}\n📅 *Tarih:* ${dateRange}\n\n👥 *Ekip:* ${teamStr}\n🚗 *Araçlar:* ${platesStr}\n🧰 *Ekipman:* ${devStr}\n\nDetaylar ve işlem yapmak için uygulamayı kontrol ediniz:\n🔗 ${appLink}`;
                     
                     notifyUser(pName, msg);
                 });
