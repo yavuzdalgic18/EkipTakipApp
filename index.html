@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V36 - Kurumsal WhatsApp)</title>
+    <title>Ekip Takip Pro (V37 - İade Bildirimli)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -409,7 +409,7 @@
         // 1. Firebase'e Kaydet (Uygulama İçi Bildirim - Özet)
         try {
             // Firebase'e sadece kısa özet kaydediyoruz
-            const shortMsg = message.includes("Yeni Görev") ? "Yeni görev atandı. Detaylar için tıklayın." : message;
+            const shortMsg = message.includes("Yeni Görev") ? "Yeni görev atandı. Detaylar için tıklayın." : (message.includes("iade") ? "Zimmet iade alındı." : message);
             await addDoc(collection(db, "notifications"), {
                 target: personName,
                 msg: shortMsg,
@@ -572,7 +572,7 @@
     }
     window.closeCustodyModal = () => document.getElementById('custodyModal').style.display = 'none';
     
-    // ZİMMET KAYDI GÜNCELLENDİ: BİLDİRİM EKLENDİ
+    // ZİMMET VERME (BİLDİRİMLİ)
     window.saveCustody = async () => {
         try {
             const person = document.getElementById('c-person').value;
@@ -581,7 +581,7 @@
             const itemName = document.getElementById('custodyItemName').innerText;
             await addLog(custodyType, itemName, 'take', person);
             
-            // BİLDİRİM METNİ OLUŞTUR
+            // BİLDİRİM
             const msg = `*Sayın ${person},*\n\nTarafınıza yeni bir zimmet ataması yapılmıştır.\n\n📦 *Zimmet:* ${itemName}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}\n\nLütfen malzemeyi kontrol ediniz.`;
             notifyUser(person, msg);
             
@@ -589,16 +589,30 @@
             closeCustodyModal();
         } catch(e) { showToast("Hata oluştu", "error"); }
     }
+
+    // ZİMMET İADE ALMA (GÜNCELLENDİ - BİLDİRİM EKLENDİ)
     window.returnItem = async (type, id) => {
         if(confirm("İade?")) {
             try {
                 const collectionName = type === 'vehicle' ? 'vehicles' : 'devices';
                 let prevHolder = "Bilinmiyor";
                 const itemDoc = type === 'vehicle' ? vehicles.find(v=>v.id===id) : devices.find(d=>d.id===id);
+                
                 if(itemDoc) prevHolder = itemDoc.currentHolder;
+                
                 await updateDoc(doc(db, collectionName, id), { currentHolder: null });
+                
                 let itemDetail = itemDoc ? (type==='vehicle' ? `${itemDoc.plate}` : `${itemDoc.name}`) : '';
+                
                 await addLog(type, itemDetail, 'return', prevHolder);
+                
+                // İADE BİLDİRİMİ GÖNDER
+                if(prevHolder && prevHolder !== "Bilinmiyor") {
+                    const itemLabel = type === 'vehicle' ? 'Araç' : 'Cihaz';
+                    const msg = `*Sayın ${prevHolder},*\n\nÜzerinizde bulunan zimmet iade alınmıştır.\n\n📦 *Tip:* ${itemLabel}\n🆔 *Detay:* ${itemDetail}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}\n\nSistemden düşümü yapılmıştır.`;
+                    notifyUser(prevHolder, msg);
+                }
+
                 showToast("İade Alındı", "success");
             } catch(e) { showToast("Hata oluştu", "error"); }
         }
@@ -760,58 +774,10 @@
         }).join('');
     }
 
-    // KULLANICI İŞLEMLERİ (TELEFON EKLENDİ)
-    window.addUserToDB=async()=>{
-        const n=document.getElementById('u-name').value; 
-        const e=document.getElementById('u-email').value.trim(); 
-        const r=document.getElementById('u-role').value; 
-        const t=document.getElementById('u-title').value;
-        const ph=document.getElementById('u-phone').value; // Tel no
-        
-        if(!n || !e) return alert("Ad ve E-posta zorunludur."); 
-        await setDoc(doc(db,"users",e), {name:n, email:e, role:r, title:t, phone:ph}); 
-        showToast("Yetkili Eklendi"); cancelUserEdit();
-    }
-    
-    window.editUser=(e)=>{
-        const u=users.find(x=>x.email===e); 
-        if(!u)return; 
-        document.getElementById('u-name').value=u.name; 
-        document.getElementById('u-title').value=u.title||''; 
-        document.getElementById('u-email').value=u.email; 
-        document.getElementById('u-email').disabled=true; 
-        document.getElementById('u-phone').value=u.phone||''; // Tel no doldur
-        document.getElementById('u-role').value=u.role; 
-        editingUserEmail=e; 
-        document.getElementById('userFormTitle').innerText="Düzenle"; 
-        document.getElementById('btn-user-add').style.display='none'; 
-        document.getElementById('btn-user-update').style.display='block'; 
-        document.getElementById('btn-user-cancel').style.display='block';
-    }
-    
-    window.updateUserDB=async()=>{
-        await updateDoc(doc(db,"users",editingUserEmail),{
-            name:document.getElementById('u-name').value,
-            title:document.getElementById('u-title').value,
-            role:document.getElementById('u-role').value,
-            phone:document.getElementById('u-phone').value // Tel güncelle
-        }); 
-        showToast("Kullanıcı Güncellendi"); cancelUserEdit();
-    }
-    
-    window.cancelUserEdit=()=>{
-        editingUserEmail=null; 
-        document.getElementById('u-name').value=""; 
-        document.getElementById('u-title').value=""; 
-        document.getElementById('u-email').value=""; 
-        document.getElementById('u-phone').value=""; 
-        document.getElementById('u-email').disabled=false; 
-        document.getElementById('userFormTitle').innerText="Yeni Kullanıcı"; 
-        document.getElementById('btn-user-add').style.display='block'; 
-        document.getElementById('btn-user-update').style.display='none'; 
-        document.getElementById('btn-user-cancel').style.display='none';
-    }
-
+    window.addUserToDB=async()=>{const n=document.getElementById('u-name').value; const e=document.getElementById('u-email').value.trim(); const r=document.getElementById('u-role').value; const t=document.getElementById('u-title').value; const ph=document.getElementById('u-phone').value; if(!n || !e) return alert("Ad ve E-posta zorunludur."); await setDoc(doc(db,"users",e), {name:n, email:e, role:r, title:t, phone:ph}); showToast("Yetkili Eklendi"); cancelUserEdit();}
+    window.editUser=(e)=>{const u=users.find(x=>x.email===e); if(!u)return; document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title||''; document.getElementById('u-email').value=u.email; document.getElementById('u-email').disabled=true; document.getElementById('u-phone').value=u.phone||''; document.getElementById('u-role').value=u.role; editingUserEmail=e; document.getElementById('userFormTitle').innerText="Düzenle"; document.getElementById('btn-user-add').style.display='none'; document.getElementById('btn-user-update').style.display='block'; document.getElementById('btn-user-cancel').style.display='block';}
+    window.updateUserDB=async()=>{await updateDoc(doc(db,"users",editingUserEmail),{name:document.getElementById('u-name').value,title:document.getElementById('u-title').value,role:document.getElementById('u-role').value,phone:document.getElementById('u-phone').value}); showToast("Kullanıcı Güncellendi"); cancelUserEdit();}
+    window.cancelUserEdit=()=>{editingUserEmail=null; document.getElementById('u-name').value=""; document.getElementById('u-title').value=""; document.getElementById('u-email').value=""; document.getElementById('u-phone').value=""; document.getElementById('u-email').disabled=false; document.getElementById('userFormTitle').innerText="Yeni Kullanıcı"; document.getElementById('btn-user-add').style.display='block'; document.getElementById('btn-user-update').style.display='none'; document.getElementById('btn-user-cancel').style.display='none';}
     window.deleteUser=async(e)=>{if(confirm("Sil?")) { await deleteDoc(doc(db,"users",e)); showToast("Kullanıcı Silindi"); }}
     function renderUserList(){document.getElementById('userListArea').innerHTML=users.map(u=>`<div class="user-card" style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small><br><small>📞 ${u.phone||'-'}</small></div><div><span class="badge badge-gray">${u.role}</span>${userRole==='admin' ? `<button onclick="editUser('${u.email}')" style="border:none; bg:none; margin-right:5px;">✎</button><button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>` : ''}</div></div>`).join('');}
     
