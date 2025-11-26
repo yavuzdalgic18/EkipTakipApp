@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V35 - WhatsApp & Bildirim Kutusu)</title>
+    <title>Ekip Takip Pro (V36 - Kurumsal WhatsApp)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -33,10 +33,8 @@
         .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; position: relative; }
         .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; position: relative; }
         
-        /* Bildirim Kırmızı Nokta */
         .notif-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; border: 2px solid white; display: none; }
         
-        /* Bildirim Listesi Penceresi */
         #notification-dropdown {
             position: absolute; top: 70px; right: 20px; width: 300px; background: white; border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2500; display: none; overflow: hidden;
@@ -92,7 +90,6 @@
         .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
         .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
         
-        /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: end; }
         .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; }
         #month-picker-modal { display: none; position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 300px; background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 500; padding: 15px; }
@@ -402,34 +399,36 @@
         onSnapshot(notifQuery, (s) => {
             notifications = [];
             s.docs.forEach(d => notifications.push({id:d.id, ...d.data()}));
-            // Tarihe göre sırala (Yeni en üstte)
             notifications.sort((a,b) => new Date(b.date) - new Date(a.date));
             renderNotifications();
         });
     }
 
-    // --- BİLDİRİM VE WHATSAPP SİSTEMİ (YENİ) ---
+    // --- WHATSAPP BİLDİRİM SİSTEMİ (MOBİL UYUMLU & KURUMSAL) ---
     async function notifyUser(personName, message) {
-        // 1. Firebase'e Kaydet (Uygulama İçi Bildirim)
+        // 1. Firebase'e Kaydet (Uygulama İçi Bildirim - Özet)
         try {
+            // Firebase'e sadece kısa özet kaydediyoruz
+            const shortMsg = message.includes("Yeni Görev") ? "Yeni görev atandı. Detaylar için tıklayın." : message;
             await addDoc(collection(db, "notifications"), {
                 target: personName,
-                msg: message,
+                msg: shortMsg,
                 date: new Date().toISOString(),
                 read: false
             });
         } catch(e) { console.error("Bildirim DB hatası", e); }
 
-        // 2. WhatsApp'ı Aç (Tıkla Gönder)
+        // 2. WhatsApp'ı Aç (Mobilde Çalışan Yöntem: api.whatsapp.com)
         const user = users.find(u => u.name === personName);
         if(user && user.phone) {
-            // Telefon numarasını temizle (sadece rakam)
             let phone = user.phone.replace(/\D/g,''); 
-            const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+            // URL Encode ederek mesajı linke çevir
+            const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+            
+            // Mobilde 'popup blocked' olmaması için window.open
             window.open(url, '_blank');
         } else {
-            // Tel yoksa sadece toast göster
-            showToast(`${personName} için tel no kayıtlı değil, sadece uygulama içi bildirim gönderildi.`, "error");
+            showToast(`${personName} için tel no yok.`, "error");
         }
     }
 
@@ -439,7 +438,6 @@
         drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
     }
 
-    // Dışarı tıklayınca kapanması için
     document.addEventListener('click', function(event) {
         const drop = document.getElementById('notification-dropdown');
         const btn = document.querySelector('.icon-btn[onclick="toggleNotifications()"]');
@@ -452,7 +450,6 @@
         const list = document.getElementById('notif-list');
         const badge = document.getElementById('notif-badge');
         
-        // Sayıyı güncelle
         if(notifications.length > 0) {
             badge.innerText = notifications.length;
             badge.style.display = 'flex';
@@ -480,7 +477,6 @@
     window.clearAllNotifications = async () => {
         if(notifications.length === 0) return;
         if(!confirm("Tüm bildirimler silinsin mi?")) return;
-        
         const batch = writeBatch(db);
         notifications.forEach(n => {
             const ref = doc(db, "notifications", n.id);
@@ -585,8 +581,9 @@
             const itemName = document.getElementById('custodyItemName').innerText;
             await addLog(custodyType, itemName, 'take', person);
             
-            // BİLDİRİM GÖNDER
-            notifyUser(person, `👋 Merhaba, sana bir zimmet atandı:\n📦 ${itemName}`);
+            // BİLDİRİM METNİ OLUŞTUR
+            const msg = `*Sayın ${person},*\n\nTarafınıza yeni bir zimmet ataması yapılmıştır.\n\n📦 *Zimmet:* ${itemName}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}\n\nLütfen malzemeyi kontrol ediniz.`;
+            notifyUser(person, msg);
             
             showToast("Zimmet Başarılı", "success");
             closeCustodyModal();
@@ -644,7 +641,7 @@
         document.getElementById('t-end-date').value = selectedDateStr;
     }
 
-    // GÖREV KAYDI GÜNCELLENDİ: BİLDİRİM EKLENDİ
+    // GÖREV KAYDI GÜNCELLENDİ: DETAYLI BİLDİRİM
     window.saveTask = async () => {
         const btn = document.getElementById('btn-save-task');
         btn.disabled = true; 
@@ -653,6 +650,7 @@
             const projVal = document.getElementById('t-project-select').value;
             const sDate = document.getElementById('t-start-date').value;
             const eDate = document.getElementById('t-end-date').value;
+            const loc = document.getElementById('t-loc').value;
 
             if(!projVal || per.length===0 || !sDate || !eDate) {
                 showToast("Eksik bilgi: Personel, Proje ve Tarih seçiniz.", "error");
@@ -681,7 +679,7 @@
                 person: per, 
                 projectName: projName, 
                 projectId: projVal, 
-                location: document.getElementById('t-loc').value, 
+                location: loc, 
                 device: dev, 
                 plate: plate 
             };
@@ -689,17 +687,22 @@
             if (editingTaskId) {
                 await updateDoc(doc(db, "tasks", editingTaskId), taskData);
                 showToast("Görev güncellendi!", "success");
-                
-                // Bildirim sadece yeni görevde mi gitsin yoksa güncellenince de mi?
-                // Şimdilik sadece yeni görevde otomatik açıyoruz.
                 cancelTaskEdit(); 
             } else {
                 await addDoc(collection(db, "tasks"), taskData);
                 showToast("Görev atandı!", "success");
                 
-                // HER PERSONELE AYRI BİLDİRİM
+                // KURUMSAL MESAJI OLUŞTUR
+                const teamStr = per.join(", ");
+                const platesStr = plate.length > 0 ? plate.join(", ") : "Yok";
+                const devStr = dev.length > 0 ? dev.join(", ") : "Yok";
+                const dateRange = `${sDate.split('-').reverse().join('.')} - ${eDate.split('-').reverse().join('.')}`;
+                const appLink = "https://yavuzdalgic18.github.io/EkipTakipApp/"; // Uygulama linki
+
                 per.forEach(pName => {
-                    notifyUser(pName, `👷‍♂️ Yeni Görev Atandı!\n📂 Proje: ${projName}\n📅 Tarih: ${sDate.split('-').reverse().join('.')}\n📍 Konum: ${document.getElementById('t-loc').value}`);
+                    const msg = `*Sayın ${pName},*\n\nAşağıdaki detaylara sahip yeni bir göreve atandınız.\n\n📂 *Proje:* ${projName}\n📍 *Konum:* ${loc}\n📅 *Tarih:* ${dateRange}\n\n👥 *Ekip:* ${teamStr}\n🚗 *Araçlar:* ${platesStr}\n🧰 *Ekipman:* ${devStr}\n\nDetaylar ve işlem yapmak için uygulamayı kontrol ediniz:\n🔗 ${appLink}`;
+                    
+                    notifyUser(pName, msg);
                 });
 
                 document.getElementById('t-loc').value=""; 
