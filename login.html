@@ -2,125 +2,59 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giriş Yap - Ekip Takip Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); width: 90%; max-width: 400px; text-align: center; }
+        input { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #eee; border-radius: 10px; background: #f9f9f9; outline: none; }
+        .btn-main { width: 100%; padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-main:hover { background: #764ba2; }
+        .forgot-link { display: block; margin-top: 15px; color: #888; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
         
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background: var(--primary-grad); 
-            margin: 0; 
-            padding: 0; 
-            height: 100vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-        }
-
-        .login-container {
-            width: 100%;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .login-box { 
-            background: white; 
-            padding: 30px 25px; 
-            border-radius: 20px; 
-            width: 100%; 
-            max-width: 380px; 
-            text-align: center; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
-            position: relative;
-            animation: slideUp 0.5s ease;
-        }
-
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        h2 { margin-top: 0; color: #333; margin-bottom: 20px; }
-        
-        input { 
-            width: 100%; 
-            padding: 15px; 
-            margin: 8px 0; 
-            border: 1px solid #ddd; 
-            border-radius: 12px; 
-            background: #f9f9f9; 
-            font-size: 16px; 
-            outline: none;
-            transition: 0.3s;
-        }
-        input:focus { border-color: #764ba2; background: #fff; }
-
-        button { 
-            width: 100%; 
-            padding: 16px; 
-            background: #764ba2; 
-            color: white; 
-            border: none; 
-            border-radius: 12px; 
-            font-weight: 600; 
-            font-size: 16px; 
-            cursor: pointer; 
-            margin-top: 15px; 
-            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
-            transition: transform 0.1s;
-        }
-        button:active { transform: scale(0.98); }
-
-        .toggle-link { margin-top: 20px; color: #764ba2; cursor: pointer; font-size: 0.9rem; text-decoration: underline; display: inline-block; padding: 10px; }
-        .hidden { display: none; }
-        #loginError { color: #e74c3c; margin-top: 10px; font-size: 0.85rem; font-weight: 500; }
-
-        @media (max-height: 600px) {
-            .login-box { padding: 20px; }
-            h2 { margin-bottom: 10px; font-size: 1.2rem; }
-            input { padding: 12px; margin: 5px 0; }
-        }
+        /* MODAL */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .modal-card { background: white; width: 90%; max-width: 350px; border-radius: 15px; padding: 25px; text-align: left; }
+        .error-msg { color: #e74c3c; font-size: 0.8rem; display: none; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div class="login-container">
-    <div class="login-box">
-        <h2 id="formTitle">Ekip Takip Pro</h2>
+<div class="login-card">
+    <h2>Giriş Yap</h2>
+    <input type="email" id="email" placeholder="E-Posta Adresi">
+    <input type="password" id="password" placeholder="Şifre">
+    <button class="btn-main" onclick="handleLogin()">Giriş Yap</button>
+    <span class="forgot-link" onclick="openForgotModal()">Şifremi Unuttum</span>
+    <p id="loginError" class="error-msg" style="text-align:center; margin-top:10px;"></p>
+</div>
+
+<div class="modal-overlay" id="forgotModal">
+    <div class="modal-card">
+        <h3>Şifre Sıfırlama</h3>
+        <p style="font-size:0.8rem; color:#666; margin-bottom:15px;">Güvenliğiniz için lütfen kayıtlı e-posta ve telefon numaranızı giriniz.</p>
         
-        <div id="loginArea">
-            <input type="email" id="loginEmail" placeholder="E-Posta" inputmode="email">
-            <input type="password" id="loginPass" placeholder="Şifre">
-            <button onclick="handleLogin()">Giriş Yap</button>
-            <div class="toggle-link" onclick="toggleForm('register')">Hesabın yok mu? Kayıt Ol</div>
-        </div>
-
-        <div id="registerArea" class="hidden">
-            <p style="font-size:0.8rem; color:#666; margin-bottom:15px;">
-                ⚠️ Sadece yöneticinizin sisteme eklediği mail adresiyle kayıt olabilirsiniz.
-            </p>
-            <input type="text" id="regName" placeholder="Ad Soyad" autocapitalize="words">
-            <input type="text" id="regTitle" placeholder="Ünvan (Örn: Mühendis)">
-            <input type="email" id="regEmail" placeholder="E-Posta" inputmode="email">
-            <input type="password" id="regPass" placeholder="Şifre (Min 6 hane)">
-            <button onclick="handleRegister()" style="background:#27ae60;">Kaydol</button>
-            <div class="toggle-link" onclick="toggleForm('login')">Giriş Yap</div>
-        </div>
-
-        <div id="loginError"></div>
+        <label style="font-size:0.8rem; font-weight:bold;">E-Posta</label>
+        <input type="email" id="reset-email" placeholder="ornek@mail.com">
+        
+        <label style="font-size:0.8rem; font-weight:bold;">Telefon No</label>
+        <input type="tel" id="reset-phone" placeholder="Örn: 905xxxxxxxxx">
+        
+        <p id="resetError" class="error-msg">Bilgiler eşleşmiyor!</p>
+        
+        <button class="btn-main" id="btn-reset" onclick="handleResetPassword()">Sıfırlama Bağlantısı Gönder</button>
+        <button class="btn-main" onclick="closeForgotModal()" style="background:#95a5a6; margin-top:5px;">İptal</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- Firebase Ayarları ---
-    const k1 = "AIzaSyD4XZR8JAMe-"; const k2 = "Qr2Oj2UGnp9mFc8En38gxY";
     const firebaseConfig = {
-      apiKey: k1 + k2,
+      apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY", // Senin API Key'in (Birleşik)
       authDomain: "ekiptakipapp.firebaseapp.com",
       projectId: "ekiptakipapp",
       storageBucket: "ekiptakipapp.firebasestorage.app",
@@ -133,86 +67,74 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            window.location.href = "index.html";
-        }
-    });
-
-    window.toggleForm = (target) => {
-        const loginArea = document.getElementById('loginArea');
-        const registerArea = document.getElementById('registerArea');
-        const title = document.getElementById('formTitle');
-        document.getElementById('loginError').innerText = "";
-
-        if(target === 'register') {
-            loginArea.classList.add('hidden');
-            registerArea.classList.remove('hidden');
-            title.innerText = "Yeni Hesap Oluştur";
-        } else {
-            registerArea.classList.add('hidden');
-            loginArea.classList.remove('hidden');
-            title.innerText = "Ekip Takip Pro";
-        }
-    }
-
+    // Giriş Fonksiyonu
     window.handleLogin = () => {
-        const email = document.getElementById('loginEmail').value;
-        const pass = document.getElementById('loginPass').value;
-        if(!email || !pass) { document.getElementById('loginError').innerText = "Lütfen tüm alanları doldurun."; return; }
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('password').value;
+        const err = document.getElementById('loginError');
         
-        signInWithEmailAndPassword(auth, email, pass)
-            .catch(err => {
-                let msg = "Giriş başarısız.";
-                if(err.code === 'auth/invalid-credential') msg = "E-posta veya şifre hatalı.";
-                if(err.code === 'auth/too-many-requests') msg = "Çok fazla deneme yaptınız, biraz bekleyin.";
-                document.getElementById('loginError').innerText = msg;
+        signInWithEmailAndPassword(auth, e, p)
+            .then(() => { window.location.href = "index.html"; })
+            .catch((error) => {
+                err.innerText = "Hatalı E-Posta veya Şifre!";
+                err.style.display = "block";
             });
     };
 
-    // --- KRİTİK GÜNCELLEME: YETKİ KONTROLLÜ KAYIT ---
-    window.handleRegister = async () => {
-        const name = document.getElementById('regName').value;
-        const title = document.getElementById('regTitle').value;
-        const email = document.getElementById('regEmail').value.trim(); // Boşlukları temizle
-        const pass = document.getElementById('regPass').value;
+    // Modal İşlemleri
+    window.openForgotModal = () => document.getElementById('forgotModal').style.display = 'flex';
+    window.closeForgotModal = () => {
+        document.getElementById('forgotModal').style.display = 'none';
+        document.getElementById('resetError').style.display = 'none';
+    };
 
-        const errorDiv = document.getElementById('loginError');
-        errorDiv.innerText = "Kontrol ediliyor...";
+    // Şifre Sıfırlama (Çift Doğrulama)
+    window.handleResetPassword = async () => {
+        const email = document.getElementById('reset-email').value.trim();
+        const phone = document.getElementById('reset-phone').value.replace(/\D/g,''); // Sadece rakamları al
+        const errLabel = document.getElementById('resetError');
+        const btn = document.getElementById('btn-reset');
 
-        if(!name || !email || !pass) { errorDiv.innerText = "Tüm alanları doldurunuz."; return; }
-        if(pass.length < 6) { errorDiv.innerText = "Şifre en az 6 karakter olmalı."; return; }
+        if(!email || !phone) {
+            errLabel.innerText = "Lütfen tüm alanları doldurun.";
+            errLabel.style.display = "block";
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Kontrol Ediliyor...";
 
         try {
-            // 1. ADIM: Bu mail adresi veritabanında (whitelist) var mı?
-            const userRef = doc(db, "users", email);
-            const userSnap = await getDoc(userRef);
+            // 1. Veritabanından kullanıcıyı bul
+            const docRef = doc(db, "users", email);
+            const docSnap = await getDoc(docRef);
 
-            if (!userSnap.exists()) {
-                // Eğer yönetici bu maili eklememişse HATA VER ve dur.
-                errorDiv.innerHTML = "⛔ <b>Yetkisiz Mail Adresi!</b><br>Bu mail adresi sisteme tanımlı değil. Lütfen yöneticinizle iletişime geçin.";
-                return;
+            if (docSnap.exists()) {
+                const userData = docSnap.data();
+                // Veritabanındaki teli de temizle
+                const dbPhone = (userData.phone || "").replace(/\D/g,'');
+
+                // 2. Telefon eşleşiyor mu?
+                if(dbPhone === phone) {
+                    // 3. Eşleşti! Mail gönder.
+                    await sendPasswordResetEmail(auth, email);
+                    alert("Sıfırlama bağlantısı E-Posta adresinize gönderildi! Lütfen gelen kutunuzu (ve spam klasörünü) kontrol edin.");
+                    closeForgotModal();
+                } else {
+                    throw new Error("Telefon numarası uyuşmuyor.");
+                }
+            } else {
+                throw new Error("Kullanıcı bulunamadı.");
             }
-
-            // 2. ADIM: Mail listede varsa, Firebase Auth hesabını oluştur.
-            await createUserWithEmailAndPassword(auth, email, pass);
-            
-            // 3. ADIM: Kullanıcının girdiği Ad ve Ünvan ile mevcut kaydı güncelle.
-            // (setDoc yerine updateDoc kullanıyoruz ki yöneticinin verdiği yetki (role) silinmesin)
-            await updateDoc(userRef, { 
-                name: name, 
-                title: title
-                // role: ... role alanına dokunmuyoruz, yönetici ne verdiyse o kalır.
-            });
-
-            // Başarılı olursa onAuthStateChanged tetiklenir ve index.html'e gider.
-            
-        } catch (err) { 
-            let msg = err.message;
-            if(err.code === 'auth/email-already-in-use') msg = "Bu E-posta zaten kayıtlı, giriş yapmayı deneyin.";
-            errorDiv.innerText = msg; 
+        } catch (error) {
+            console.error(error);
+            errLabel.innerText = "Hata: Bilgiler doğrulanamadı.";
+            errLabel.style.display = "block";
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Sıfırlama Bağlantısı Gönder";
         }
-    };
+    }
 </script>
 </body>
 </html>
