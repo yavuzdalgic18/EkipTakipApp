@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V39 - Admin Log & Profil)</title>
+    <title>Ekip Takip Pro (V40 - Tam Onarım)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -13,37 +13,44 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
-        /* TASARIM KODLARI */
+        /* GENEL STİLLER (V38'den KORUNDU) */
         :root { --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%); --bg-color: #f3f5f9; --text-main: #2d3436; --nav-height: 75px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; padding-bottom: 120px; color: var(--text-main); }
+
         .hidden { display: none !important; } 
         .admin-only { display: none; } 
         .view-section { display: none; animation: fadeIn 0.3s; } 
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
+
+        /* TOAST BİLDİRİM */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: none; padding: 15px 20px; border-radius: 10px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: slideInRight 0.3s; }
         @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .toast-success { background: #27ae60; }
         .toast-error { background: #e74c3c; }
 
-        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; position: relative; }
+        /* HEADER & NAV (DÜZELTİLDİ) */
+        .app-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header-icons { display: flex; align-items: center; gap: 10px; position: relative; }
+        
         .icon-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; font-size: 1.2rem; position: relative; }
         
-        .notif-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; justify-content: center; align-items: center; border: 2px solid white; display: none; }
-        
-        #notification-dropdown { position: absolute; top: 70px; right: 20px; width: 300px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2500; display: none; overflow: hidden; border: 1px solid #eee; }
+        .notif-badge { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: none; justify-content: center; align-items: center; border: 2px solid white; }
+
+        /* ALT MENÜ (SCROLL DÜZELTİLDİ) */
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 600px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 15px; -ms-overflow-style: none; scrollbar-width: none; white-space: nowrap; }
+        .bottom-nav::-webkit-scrollbar { display: none; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; flex-shrink: 0; }
+        .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
+        .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
+
+        /* BİLDİRİM PENCERESİ */
+        #notification-dropdown { position: absolute; top: 60px; right: 0; width: 300px; background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); z-index: 2500; display: none; overflow: hidden; border: 1px solid #eee; }
         .notif-header { background: #f8f9fa; padding: 10px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
         .notif-list { max-height: 300px; overflow-y: auto; }
         .notif-item { padding: 10px 15px; border-bottom: 1px solid #f0f0f0; font-size: 0.85rem; }
         .notif-empty { padding: 20px; text-align: center; color: #aaa; font-size: 0.9rem; }
-
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; background: white; height: var(--nav-height); border-radius: 25px; display: flex; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.15); z-index: 1000; overflow-x: auto; padding: 0 10px; gap: 10px; -ms-overflow-style: none; scrollbar-width: none; }
-        .bottom-nav::-webkit-scrollbar { display: none; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: #b2bec3; min-width: 60px; cursor: pointer; transition: 0.3s; }
-        .nav-item .icon { font-size: 1.5rem; margin-bottom: 2px; }
-        .nav-item.active { color: #764ba2; transform: translateY(-3px); font-weight: 600; }
 
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
         .modern-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
@@ -51,15 +58,20 @@
         .hero-stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; text-align: center; }
         .hero-stat-item span { font-size: 1.8rem; font-weight: 700; display: block; }
 
+        /* ARAMA & KARTLAR */
         .search-bar { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #eee; background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23ccc" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat right 15px center; margin-bottom: 15px; font-size: 0.9rem; }
         .info-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .info-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .info-card.active { border-left-color: #27ae60; } .info-card.busy { border-left-color: #e74c3c; } .info-card.custody { border-left-color: #f39c12; }
+        .info-card.active { border-left-color: #27ae60; } 
+        .info-card.busy { border-left-color: #e74c3c; } 
+        .info-card.custody { border-left-color: #f39c12; }
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
-        .badge-green { background: #d1fae5; color: #065f46; } .badge-red { background: #fee2e2; color: #991b1b; } .badge-orange { background: #ffedd5; color: #9a3412; } .badge-gray { background: #f3f4f6; color: #374151; }
-        .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
-        .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
-
+        .badge-green { background: #d1fae5; color: #065f46; } 
+        .badge-red { background: #fee2e2; color: #991b1b; } 
+        .badge-orange { background: #ffedd5; color: #9a3412; } 
+        .badge-gray { background: #f3f4f6; color: #374151; }
+        
+        /* TAKVİM (DÜZELTİLDİ) */
         .calendar-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
         .day-head { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 5px; }
@@ -67,13 +79,12 @@
         .day-cell b { align-self: center; margin-bottom: 4px; color: #333; }
         .day-cell.today { border: 2px solid #764ba2; background: white; }
         .task-dot { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-        
+
+        /* FORM & TABLO */
         input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; }
         .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 5px; transition: opacity 0.3s; }
         .btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; margin-left: 5px; }
-        .btn-outline-red { background: white; border: 1px solid #e74c3c; color: #e74c3c; } 
-        .btn-outline-blue { background: white; border: 1px solid #3498db; color: #3498db; }
         .filter-btn { padding: 8px 15px; border: 1px solid #eee; border-radius: 20px; background: #fff; cursor: pointer; font-size: 0.8rem; }
         .filter-btn.active { background: var(--primary-grad); color: white; border: none; }
         
@@ -89,6 +100,9 @@
         .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         .log-table th { text-align: left; padding: 10px; background: #f4f6f8; }
         .log-table td { padding: 10px; border-bottom: 1px solid #eee; }
+        
+        .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
+        .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
     </style>
 </head>
 <body>
@@ -98,20 +112,36 @@
 <div id="app-screen">
     <div class="app-header">
         <div><small style="color:#888;">Merhaba,</small><h2 style="margin:0;" id="welcomeUser">Kullanıcı</h2></div>
-        <div class="header-icons" style="position:relative;">
-            <button class="icon-btn" onclick="toggleNotifications()">🔔<span id="notif-badge" class="notif-badge">0</span></button>
+        
+        <div class="header-icons">
+            <button class="icon-btn" onclick="toggleNotifications()">
+                🔔
+                <span id="notif-badge" class="notif-badge">0</span>
+            </button>
+            
+            <button class="icon-btn" onclick="handleLogout()">🚪</button>
             
             <div id="notification-dropdown">
-                <div class="notif-header"><span>Bildirimler</span><button onclick="clearAllNotifications()" style="background:none; border:none; color:#e74c3c; font-size:0.7rem; cursor:pointer;">Temizle</button></div>
-                <div id="notif-list" class="notif-list"><div class="notif-empty">Bildirim yok.</div></div>
+                <div class="notif-header">
+                    <span>Bildirimler</span>
+                    <button onclick="clearAllNotifications()" style="background:none; border:none; color:#e74c3c; font-size:0.7rem; cursor:pointer;">Temizle</button>
+                </div>
+                <div id="notif-list" class="notif-list">
+                    <div class="notif-empty">Bildirim yok.</div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="container">
+        
         <div id="view-calendar" class="view-section active">
             <div class="hero-card">
-                <div class="hero-stat-grid"><div class="hero-stat-item"><span id="stat-total">0</span><small>Ekip</small></div><div class="hero-stat-item"><span id="stat-active">0</span><small>Sahada</small></div><div class="hero-stat-item"><span id="stat-idle">0</span><small>Boşta</small></div></div>
+                <div class="hero-stat-grid">
+                    <div class="hero-stat-item"><span id="stat-total">0</span><small>Ekip</small></div>
+                    <div class="hero-stat-item"><span id="stat-active">0</span><small>Sahada</small></div>
+                    <div class="hero-stat-item"><span id="stat-idle">0</span><small>Boşta</small></div>
+                </div>
             </div>
             <div class="modern-card">
                 <div class="calendar-nav-row">
@@ -120,7 +150,12 @@
                         <h3 style="margin:0; cursor:pointer; text-decoration:underline;" id="monthDisplay" onclick="toggleDatePicker()">Takvim</h3>
                         <div id="month-picker-modal">
                             <div class="year-selector"><button onclick="changePickYear(-1)">◀</button><span id="pick-year-val">2025</span><button onclick="changePickYear(1)">▶</button></div>
-                            <div class="month-grid"><div class="month-btn" onclick="goToMonth(0)">Oca</div><div class="month-btn" onclick="goToMonth(1)">Şub</div><div class="month-btn" onclick="goToMonth(2)">Mar</div><div class="month-btn" onclick="goToMonth(3)">Nis</div><div class="month-btn" onclick="goToMonth(4)">May</div><div class="month-btn" onclick="goToMonth(5)">Haz</div><div class="month-btn" onclick="goToMonth(6)">Tem</div><div class="month-btn" onclick="goToMonth(7)">Ağu</div><div class="month-btn" onclick="goToMonth(8)">Eyl</div><div class="month-btn" onclick="goToMonth(9)">Eki</div><div class="month-btn" onclick="goToMonth(10)">Kas</div><div class="month-btn" onclick="goToMonth(11)">Ara</div></div>
+                            <div class="month-grid">
+                                <div class="month-btn" onclick="goToMonth(0)">Oca</div><div class="month-btn" onclick="goToMonth(1)">Şub</div><div class="month-btn" onclick="goToMonth(2)">Mar</div>
+                                <div class="month-btn" onclick="goToMonth(3)">Nis</div><div class="month-btn" onclick="goToMonth(4)">May</div><div class="month-btn" onclick="goToMonth(5)">Haz</div>
+                                <div class="month-btn" onclick="goToMonth(6)">Tem</div><div class="month-btn" onclick="goToMonth(7)">Ağu</div><div class="month-btn" onclick="goToMonth(8)">Eyl</div>
+                                <div class="month-btn" onclick="goToMonth(9)">Eki</div><div class="month-btn" onclick="goToMonth(10)">Kas</div><div class="month-btn" onclick="goToMonth(11)">Ara</div>
+                            </div>
                         </div>
                     </div>
                     <button class="icon-btn" style="width:35px; height:35px;" onclick="changeMonth(1)">▶</button>
@@ -133,10 +168,18 @@
             <input type="text" class="search-bar" placeholder="Proje Ara..." onkeyup="filterList(this, 'projectListBody', 'div')">
             <div class="admin-only modern-card" id="projectFormContainer">
                 <h3 id="projectFormTitle">Yeni Proje</h3>
-                <input type="text" id="p-name" placeholder="Proje Adı"><select id="p-manager"></select>
-                <div style="display:flex; gap:5px;"><div style="flex:1"><label style="font-size:0.7rem;">Başlangıç</label><input type="date" id="p-start"></div><div style="flex:1"><label style="font-size:0.7rem;">Bitiş</label><input type="date" id="p-end"></div></div>
+                <input type="text" id="p-name" placeholder="Proje Adı">
+                <select id="p-manager"></select>
+                <div style="display:flex; gap:5px;">
+                    <div style="flex:1"><label style="font-size:0.7rem;">Başlangıç</label><input type="date" id="p-start"></div>
+                    <div style="flex:1"><label style="font-size:0.7rem;">Bitiş</label><input type="date" id="p-end"></div>
+                </div>
                 <div style="display:flex; gap:5px;"><input type="number" id="p-cost" placeholder="Maliyet"><input type="number" id="p-offer" placeholder="Teklif"></div>
-                <div style="display:flex; gap:5px;"><button class="btn-main" id="btn-p-save" onclick="submitProject()">Kaydet</button><button class="btn-main" id="btn-p-update" onclick="updateProjectDB()" style="background:#f39c12; display:none;">Güncelle</button><button class="btn-main" id="btn-p-cancel" onclick="cancelProjectEdit()" style="background:#95a5a6; display:none;">Vazgeç</button></div>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-p-save" onclick="submitProject()">Kaydet</button>
+                    <button class="btn-main" id="btn-p-update" onclick="updateProjectDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-p-cancel" onclick="cancelProjectEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
             </div>
             <div class="modern-card" id="projectListBody"></div>
         </div>
@@ -150,8 +193,14 @@
             <input type="text" class="search-bar" placeholder="Plaka/Model Ara..." onkeyup="filterList(this, 'vehicleListArea', 'div.info-card')">
             <div class="admin-only modern-card" id="vehicleFormContainer">
                 <h3 id="vehicleFormTitle">Yeni Araç</h3>
-                <input type="text" id="v-plate" placeholder="Plaka"><input type="text" id="v-info" placeholder="Model"><label>Muayene Tarihi:</label><input type="date" id="v-inspection">
-                <div style="display:flex; gap:5px;"><button class="btn-main" id="btn-v-save" onclick="addVehicle()">Kaydet</button><button class="btn-main" id="btn-v-update" onclick="updateVehicleDB()" style="background:#f39c12; display:none;">Güncelle</button><button class="btn-main" id="btn-v-cancel" onclick="cancelVehicleEdit()" style="background:#95a5a6; display:none;">Vazgeç</button></div>
+                <input type="text" id="v-plate" placeholder="Plaka">
+                <input type="text" id="v-info" placeholder="Model">
+                <label>Muayene Tarihi:</label><input type="date" id="v-inspection">
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-v-save" onclick="addVehicle()">Kaydet</button>
+                    <button class="btn-main" id="btn-v-update" onclick="updateVehicleDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-v-cancel" onclick="cancelVehicleEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
             </div>
             <div class="modern-card"><div id="vehicleListArea" class="card-list"></div></div>
         </div>
@@ -160,8 +209,14 @@
             <input type="text" class="search-bar" placeholder="Cihaz/Seri No Ara..." onkeyup="filterList(this, 'deviceListArea', 'div.info-card')">
             <div class="admin-only modern-card" id="deviceFormContainer">
                 <h3 id="deviceFormTitle">Yeni Cihaz</h3>
-                <input type="text" id="d-name" placeholder="Cihaz Adı"><input type="text" id="d-serial" placeholder="Seri No"><label>Kalibrasyon:</label><input type="date" id="d-calib">
-                <div style="display:flex; gap:5px;"><button class="btn-main" id="btn-d-save" onclick="addDevice()">Ekle</button><button class="btn-main" id="btn-d-update" onclick="updateDeviceDB()" style="background:#f39c12; display:none;">Güncelle</button><button class="btn-main" id="btn-d-cancel" onclick="cancelDeviceEdit()" style="background:#95a5a6; display:none;">Vazgeç</button></div>
+                <input type="text" id="d-name" placeholder="Cihaz Adı">
+                <input type="text" id="d-serial" placeholder="Seri No">
+                <label>Kalibrasyon:</label><input type="date" id="d-calib">
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-d-save" onclick="addDevice()">Ekle</button>
+                    <button class="btn-main" id="btn-d-update" onclick="updateDeviceDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-d-cancel" onclick="cancelDeviceEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
             </div>
             <div class="modern-card"><div id="deviceListArea" class="card-list"></div></div>
         </div>
@@ -169,20 +224,43 @@
         <div id="view-users" class="view-section">
             <div class="admin-only modern-card">
                 <h3 id="userFormTitle">Kullanıcı Yönetimi</h3>
-                <input type="text" id="u-name" placeholder="Ad Soyad"><input type="text" id="u-title" placeholder="Ünvan"><input type="email" id="u-email" placeholder="E-Posta"><input type="tel" id="u-phone" placeholder="Tel (Örn: 90532xxxxxxx)"><select id="u-role"><option value="staff">Personel</option><option value="admin">Yönetici</option></select>
-                <div style="display:flex; gap:5px;"><button class="btn-main" id="btn-user-add" onclick="addUserToDB()">Ekle</button><button class="btn-main" id="btn-user-update" onclick="updateUserDB()" style="background:#f39c12; display:none;">Güncelle</button><button class="btn-main" id="btn-user-cancel" onclick="cancelUserEdit()" style="background:#95a5a6; display:none;">Vazgeç</button></div>
+                <input type="text" id="u-name" placeholder="Ad Soyad">
+                <input type="text" id="u-title" placeholder="Ünvan">
+                <input type="email" id="u-email" placeholder="E-Posta">
+                <input type="tel" id="u-phone" placeholder="Tel (Örn: 90532xxxxxxx)">
+                <select id="u-role"><option value="staff">Personel</option><option value="admin">Yönetici</option></select>
+                <div style="display:flex; gap:5px;">
+                    <button class="btn-main" id="btn-user-add" onclick="addUserToDB()">Ekle</button>
+                    <button class="btn-main" id="btn-user-update" onclick="updateUserDB()" style="background:#f39c12; display:none;">Güncelle</button>
+                    <button class="btn-main" id="btn-user-cancel" onclick="cancelUserEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
+                </div>
             </div>
             <div class="modern-card" id="userListArea"></div>
         </div>
 
         <div id="view-reports" class="view-section">
-            <div class="modern-card"><label>Dönem:</label><input type="month" id="reportDateSelector" onchange="filterReports()" style="width:100%;"></div>
+            <div class="modern-card">
+                <label>Dönem:</label>
+                <input type="month" id="reportDateSelector" onchange="filterReports()" style="width:100%;">
+            </div>
             <div class="modern-card">
                 <h3>Zimmet Geçmişi</h3>
-                <div class="report-filters" style="display:flex; gap:5px; margin-bottom:10px;"><button class="filter-btn active" onclick="setReportFilter('all', this)">Tümü</button><button class="filter-btn" onclick="setReportFilter('vehicle', this)">Araç</button><button class="filter-btn" onclick="setReportFilter('device', this)">Cihaz</button></div>
-                <div style="max-height:300px; overflow-y:auto;"><table class="log-table" id="logTable" style="width:100%; font-size:0.8rem;"></table></div>
+                <div class="report-filters" style="display:flex; gap:5px; margin-bottom:10px;">
+                    <button class="filter-btn active" onclick="setReportFilter('all', this)">Tümü</button>
+                    <button class="filter-btn" onclick="setReportFilter('vehicle', this)">Araç</button>
+                    <button class="filter-btn" onclick="setReportFilter('device', this)">Cihaz</button>
+                </div>
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table class="log-table" id="logTable" style="width:100%; font-size:0.8rem;"></table>
+                </div>
             </div>
-             <div class="modern-card"><div style="display:flex; justify-content:space-between; align-items:center;"><h3>Personel Eforu</h3><button class="btn-sm" style="background:#27ae60; color:white; border:none; border-radius:5px; cursor:pointer;" onclick="exportExcel()">Excel İndir</button></div><table class="log-table" id="personnelReportTable" style="width:100%;"><tbody id="personnelReportBody"></tbody></table></div>
+             <div class="modern-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3>Personel Eforu</h3>
+                    <button class="btn-sm" style="background:#27ae60; color:white; border:none; border-radius:5px; cursor:pointer;" onclick="exportExcel()">Excel İndir</button>
+                </div>
+                <table class="log-table" id="personnelReportTable" style="width:100%;"><tbody id="personnelReportBody"></tbody></table>
+            </div>
         </div>
 
         <div id="view-logs" class="view-section">
@@ -234,16 +312,59 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="custodyModal" onclick="if(event.target===this) closeCustodyModal()"><div class="modal-card"><h3>Zimmetle</h3><p id="custodyItemName" style="color:#666;"></p><label>Personel Seç:</label><select id="c-person"></select><button class="btn-main" onclick="saveCustody()">Kaydet</button><button class="btn-main" onclick="closeCustodyModal()" style="background:#95a5a6; margin-top:10px;">İptal</button></div></div>
-<div class="modal-overlay" id="taskModal" onclick="if(event.target===this) closeModal()"><div class="modal-card"><div style="display:flex; justify-content:space-between; margin-bottom:20px;"><h2>Görevler</h2><span onclick="closeModal()" style="font-size:1.5rem; cursor:pointer;">✕</span></div><p id="modalDateText" style="margin-bottom:10px; font-weight:bold; color:#764ba2;"></p><div id="dayTaskList" style="margin-bottom:20px;"></div><div class="admin-only"><h3 id="taskFormTitle">Yeni Atama</h3><div style="display:flex; gap:10px;"><div style="flex:1;"><label>Başlangıç</label><input type="date" id="t-start-date"></div><div style="flex:1;"><label>Bitiş</label><input type="date" id="t-end-date"></div></div><label>Personel</label><div class="multi-select-area" id="ms-person"></div><label>Proje</label><select id="t-project-select"></select><input type="text" id="t-loc" placeholder="Konum"><label>Araçlar</label><div class="multi-select-area" id="ms-plate"></div><label>Cihazlar</label><div class="multi-select-area" id="ms-device"></div><div id="conflictWarning" style="color:red; font-size:0.8rem; margin:10px 0;"></div><button class="btn-main" id="btn-save-task" onclick="saveTask()">Kaydet</button><button class="btn-main" id="btn-cancel-task" onclick="cancelTaskEdit()" style="background:#95a5a6; display:none; margin-top:5px;">Vazgeç</button></div></div></div>
+<div class="modal-overlay" id="custodyModal" onclick="if(event.target===this) closeCustodyModal()">
+    <div class="modal-card">
+        <h3>Zimmetle</h3>
+        <p id="custodyItemName" style="color:#666;"></p>
+        <label>Personel Seç:</label><select id="c-person"></select>
+        <button class="btn-main" onclick="saveCustody()">Kaydet</button>
+        <button class="btn-main" onclick="closeCustodyModal()" style="background:#95a5a6; margin-top:10px;">İptal</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="taskModal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:20px;"><h2>Görevler</h2><span onclick="closeModal()" style="font-size:1.5rem; cursor:pointer;">✕</span></div>
+        <p id="modalDateText" style="margin-bottom:10px; font-weight:bold; color:#764ba2;"></p>
+        
+        <div id="dayTaskList" style="margin-bottom:20px;"></div>
+        
+        <div class="admin-only">
+            <h3 id="taskFormTitle">Yeni Atama</h3>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;"><label>Başlangıç</label><input type="date" id="t-start-date"></div>
+                <div style="flex:1;"><label>Bitiş</label><input type="date" id="t-end-date"></div>
+            </div>
+
+            <label>Personel</label><div class="multi-select-area" id="ms-person"></div>
+            <label>Proje</label><select id="t-project-select"></select>
+            <input type="text" id="t-loc" placeholder="Konum">
+            <label>Araçlar</label><div class="multi-select-area" id="ms-plate"></div>
+            <label>Cihazlar</label><div class="multi-select-area" id="ms-device"></div>
+            <div id="conflictWarning" style="color:red; font-size:0.8rem; margin:10px 0;"></div>
+            
+            <button class="btn-main" id="btn-save-task" onclick="saveTask()">Kaydet</button>
+            <button class="btn-main" id="btn-cancel-task" onclick="cancelTaskEdit()" style="background:#95a5a6; display:none; margin-top:5px;">Vazgeç</button>
+        </div>
+    </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // --- FIREBASE AYARLARI ---
     const k1 = "AIzaSyD4XZR8JAMe-"; const k2 = "Qr2Oj2UGnp9mFc8En38gxY";
-    const firebaseConfig = { apiKey: k1 + k2, authDomain: "ekiptakipapp.firebaseapp.com", projectId: "ekiptakipapp", storageBucket: "ekiptakipapp.firebasestorage.app", messagingSenderId: "55716082808", appId: "1:55716082808:web:b144b953684fc9f80c698d", measurementId: "G-S6Q0H5RHR7" };
+    const firebaseConfig = {
+      apiKey: k1 + k2,
+      authDomain: "ekiptakipapp.firebaseapp.com",
+      projectId: "ekiptakipapp",
+      storageBucket: "ekiptakipapp.firebasestorage.app",
+      messagingSenderId: "55716082808",
+      appId: "1:55716082808:web:b144b953684fc9f80c698d",
+      measurementId: "G-S6Q0H5RHR7"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -253,9 +374,11 @@
     let currentUser=null, userRole='staff';
     let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), isFirstLoad=true;
     let pickerYear = new Date().getFullYear(), editingUserEmail=null, editingVehicleId=null, editingDeviceId=null, editingProjectId=null;
-    let editingTaskId = null, custodyTargetId = null, custodyType = null;
+    let editingTaskId = null;
+    let custodyTargetId = null, custodyType = null;
     let currentReportFilter = 'all', currentReportDate = new Date().toISOString().slice(0, 7);
 
+    // --- GİRİŞ KONTROLÜ VE VERİ YÜKLEME ---
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const userDoc = await getDoc(doc(db, "users", user.email));
@@ -288,14 +411,20 @@
         document.querySelectorAll('.nav-item.admin-only').forEach(el => el.style.display = (userRole === 'admin') ? 'flex' : 'none');
     }
 
+    // --- TOAST MSG ---
     window.showToast = (msg, type = "success") => {
         const t = document.getElementById("toast-container");
-        t.innerText = msg; t.className = type === "success" ? "toast-success" : "toast-error"; t.style.display = "block";
+        t.innerText = msg;
+        t.className = type === "success" ? "toast-success" : "toast-error";
+        t.style.display = "block";
         setTimeout(() => { t.style.display = "none"; }, 3000);
     }
 
     function startListeners() {
-        const load = (col, arr, cb) => onSnapshot(collection(db, col), (s) => { arr.length=0; s.docs.forEach(d=>arr.push({id:d.id, ...d.data()})); if(cb) cb(); loadDropdowns(); });
+        const load = (col, arr, cb) => onSnapshot(collection(db, col), (s) => { 
+            arr.length=0; s.docs.forEach(d=>arr.push({id:d.id, ...d.data()})); 
+            if(cb) cb(); loadDropdowns();
+        });
         load("projects", projects, renderProjects);
         load("vehicles", vehicles, renderVehicleList);
         load("devices", devices, renderDeviceList);
@@ -311,10 +440,13 @@
             updateStats(new Date().toISOString().split('T')[0]); renderTeamStatus(); renderDeviceList(); renderVehicleList(); filterReports();
         });
 
+        // --- KİŞİSEL BİLDİRİMLERİ DİNLEME ---
         const notifQuery = query(collection(db, "notifications"), where("target", "==", currentUser.name));
         onSnapshot(notifQuery, (s) => {
-            notifications = []; s.docs.forEach(d => notifications.push({id:d.id, ...d.data()}));
-            notifications.sort((a,b) => new Date(b.date) - new Date(a.date)); renderNotifications();
+            notifications = [];
+            s.docs.forEach(d => notifications.push({id:d.id, ...d.data()}));
+            notifications.sort((a,b) => new Date(b.date) - new Date(a.date));
+            renderNotifications();
         });
     }
 
@@ -334,7 +466,6 @@
         } catch(e) {
             console.error(e);
             showToast("Hata: " + e.message, "error");
-            // Eğer oturum süresi dolmuşsa, yeniden giriş yapması gerekebilir.
             if(e.code === 'auth/requires-recent-login') {
                 alert("Güvenlik nedeniyle şifre değiştirmek için yeniden giriş yapmalısınız.");
                 handleLogout();
@@ -373,119 +504,331 @@
         a.click();
     }
 
-    // --- BİLDİRİM SİSTEMİ ---
+    // --- WHATSAPP BİLDİRİM SİSTEMİ (MOBİL UYUMLU & KURUMSAL) ---
     async function notifyUser(personName, message) {
         try {
             const shortMsg = message.includes("Yeni Görev") ? "Yeni görev atandı. Detaylar için tıklayın." : (message.includes("iade") ? "Zimmet iade alındı." : message);
-            await addDoc(collection(db, "notifications"), { target: personName, msg: shortMsg, date: new Date().toISOString(), read: false });
-        } catch(e) {}
+            await addDoc(collection(db, "notifications"), {
+                target: personName,
+                msg: shortMsg,
+                date: new Date().toISOString(),
+                read: false
+            });
+        } catch(e) { console.error("Bildirim DB hatası", e); }
 
         const user = users.find(u => u.name === personName);
         if(user && user.phone) {
             let phone = user.phone.replace(/\D/g,''); 
             const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
             window.open(url, '_blank');
-        } else { showToast(`${personName} için tel no yok.`, "error"); }
-    }
-
-    window.toggleNotifications = () => { const d = document.getElementById('notification-dropdown'); d.style.display = d.style.display === 'block' ? 'none' : 'block'; }
-    document.addEventListener('click', function(event) {
-        const d = document.getElementById('notification-dropdown'); const b = document.querySelector('.icon-btn[onclick="toggleNotifications()"]');
-        if (d.style.display === 'block' && !d.contains(event.target) && !b.contains(event.target)) d.style.display = 'none';
-    });
-    function renderNotifications() {
-        const l = document.getElementById('notif-list'); const b = document.getElementById('notif-badge');
-        b.innerText = notifications.length; b.style.display = notifications.length > 0 ? 'flex' : 'none';
-        if(notifications.length === 0) { l.innerHTML = '<div class="notif-empty">Bildirim yok.</div>'; return; }
-        l.innerHTML = notifications.map(n => `<div class="notif-item">${n.msg}<small>${new Date(n.date).toLocaleDateString()}</small></div>`).join('');
-    }
-    window.clearAllNotifications = async () => {
-        if(notifications.length === 0) return;
-        if(!confirm("Tüm bildirimler silinsin mi?")) return;
-        const batch = writeBatch(db); notifications.forEach(n => batch.delete(doc(db, "notifications", n.id)));
-        await batch.commit(); showToast("Bildirimler temizlendi.");
-    }
-
-    // --- MEVCUT İŞLEVLER ---
-    window.filterList = (input, listId, itemTag) => { const f = input.value.toLowerCase(); document.getElementById(listId).querySelectorAll(itemTag).forEach(i => i.style.display = (i.textContent.toLowerCase().indexOf(f) > -1) ? "" : "none"); }
-    window.exportExcel = () => {
-        const [year, month] = currentReportDate.split('-').map(Number); const reportData = [];
-        users.forEach(u => {
-            let days = 0;
-            tasks.forEach(t => {
-                let start = new Date(t.startDate || parseDateStr(t.date)); let end = new Date(t.endDate || parseDateStr(t.date)); let loop = new Date(start);
-                while(loop <= end) { if (loop.getFullYear() === year && loop.getMonth() === (month - 1)) { if (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name) days++; } loop.setDate(loop.getDate() + 1); }
-            });
-            reportData.push({ "Personel": u.name, "Çalışma Günü": days });
-        });
-        XLSX.writeFile(XLSX.utils.book_new(XLSX.utils.book_append_sheet(XLSX.utils.book_new(), XLSX.utils.json_to_sheet(reportData), "Efor")), `Personel_Efor_${currentReportDate}.xlsx`);
-    }
-    
-    window.setReportFilter = (f, b) => { currentReportFilter = f; document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); filterReports(); }
-    window.filterReports = () => { currentReportDate = document.getElementById('reportDateSelector').value; renderLogs(); renderPersonnelReport(); }
-    function renderLogs() {
-        const t = document.getElementById('logTable');
-        const fLogs = logs.filter(l => l.date.startsWith(currentReportDate) && (currentReportFilter === 'all' || l.type === currentReportFilter));
-        if (fLogs.length === 0) { t.innerHTML = '<tr><td>Kayıt yok.</td></tr>'; return; }
-        t.innerHTML = fLogs.map(l => { const d = new Date(l.date); return `<tr><td><span class="log-date">${d.toLocaleDateString()} ${d.getHours()}:${d.getMinutes()}</span></td><td>${l.type==='vehicle'?'🚗':'🧰'} <strong>${l.person}</strong><br>${l.item} <span class="log-action ${l.action==='take'?'action-take':'action-return'}">${l.action==='take'?'Aldı':'Verdi'}</span></td></tr>`; }).join('');
-    }
-    function renderPersonnelReport() {
-        const [y, m] = currentReportDate.split('-').map(Number); const rd = {}; users.forEach(u => rd[u.name] = 0);
-        tasks.forEach(t => {
-            let s = new Date(t.startDate || parseDateStr(t.date)); let e = new Date(t.endDate || parseDateStr(t.date));
-            for(let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) { if (d.getFullYear() === y && d.getMonth() === m - 1) { const ps = Array.isArray(t.person) ? t.person : [t.person]; ps.forEach(p => { if(rd[p] !== undefined) rd[p]++; }); } }
-        });
-        document.getElementById('personnelReportBody').innerHTML = Object.keys(rd).map(k => `<tr><td>${k}</td><td style="font-weight:bold;">${rd[k]} Gün</td></tr>`).join('');
-    }
-
-    window.openCustodyModal = (type, id, name, extra) => { custodyType = type; custodyTargetId = id; document.getElementById('custodyItemName').innerText = `${name} (${extra||''})`; document.getElementById('c-person').innerHTML = users.map(u => `<option value="${u.name}">${u.name}</option>`).join(''); document.getElementById('custodyModal').style.display = 'flex'; }
-    window.closeCustodyModal = () => document.getElementById('custodyModal').style.display = 'none';
-    
-    window.saveCustody = async () => {
-        try {
-            const p = document.getElementById('c-person').value; const col = custodyType === 'vehicle' ? 'vehicles' : 'devices';
-            await updateDoc(doc(db, col, custodyTargetId), { currentHolder: p }); const iName = document.getElementById('custodyItemName').innerText;
-            await addLog(custodyType, iName, 'take', p);
-            notifyUser(p, `*Sayın ${p},*\n\nTarafınıza yeni bir zimmet ataması yapılmıştır.\n\n📦 *Zimmet:* ${iName}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}`);
-            showToast("Zimmet Başarılı"); closeCustodyModal();
-        } catch(e) { showToast("Hata", "error"); }
-    }
-    window.returnItem = async (type, id) => {
-        if(confirm("İade?")) {
-            try {
-                const col = type === 'vehicle' ? 'vehicles' : 'devices'; const itemDoc = type === 'vehicle' ? vehicles.find(v=>v.id===id) : devices.find(d=>d.id===id);
-                const prev = itemDoc ? itemDoc.currentHolder : "Bilinmiyor";
-                await updateDoc(doc(db, col, id), { currentHolder: null });
-                const iDet = itemDoc ? (type==='vehicle' ? itemDoc.plate : itemDoc.name) : '';
-                await addLog(type, iDet, 'return', prev);
-                if(prev && prev !== "Bilinmiyor") notifyUser(prev, `*Sayın ${prev},*\n\nÜzerinizde bulunan zimmet iade alınmıştır.\n\n📦 *Tip:* ${type==='vehicle'?'Araç':'Cihaz'}\n🆔 *Detay:* ${iDet}\n\nSistemden düşümü yapılmıştır.`);
-                showToast("İade Alındı");
-            } catch(e) { showToast("Hata", "error"); }
+        } else {
+            showToast(`${personName} için tel no yok.`, "error");
         }
     }
 
+    window.toggleNotifications = () => {
+        const drop = document.getElementById('notification-dropdown');
+        drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', function(event) {
+        const drop = document.getElementById('notification-dropdown');
+        const btn = document.querySelector('.icon-btn[onclick="toggleNotifications()"]');
+        if (drop.style.display === 'block' && !drop.contains(event.target) && !btn.contains(event.target)) {
+            drop.style.display = 'none';
+        }
+    });
+
+    function renderNotifications() {
+        const list = document.getElementById('notif-list');
+        const badge = document.getElementById('notif-badge');
+        
+        if(notifications.length > 0) {
+            badge.innerText = notifications.length;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+
+        if(notifications.length === 0) {
+            list.innerHTML = '<div class="notif-empty">Bildirim yok.</div>';
+            return;
+        }
+
+        list.innerHTML = notifications.map(n => {
+            const d = new Date(n.date);
+            const timeStr = `${d.getDate()}.${d.getMonth()+1} ${d.getHours()}:${d.getMinutes().toString().padStart(2,'0')}`;
+            return `
+            <div class="notif-item">
+                ${n.msg}
+                <small>${timeStr}</small>
+            </div>
+            `;
+        }).join('');
+    }
+
+    window.clearAllNotifications = async () => {
+        if(notifications.length === 0) return;
+        if(!confirm("Tüm bildirimler silinsin mi?")) return;
+        const batch = writeBatch(db);
+        notifications.forEach(n => {
+            const ref = doc(db, "notifications", n.id);
+            batch.delete(ref);
+        });
+        await batch.commit();
+        showToast("Bildirimler temizlendi.");
+    }
+
+    // --- MEVCUT FONKSİYONLAR ---
+
+    window.filterList = (input, listId, itemTag) => {
+        const filter = input.value.toLowerCase();
+        const list = document.getElementById(listId);
+        const items = list.querySelectorAll(itemTag);
+        items.forEach(item => {
+            const text = item.textContent || item.innerText;
+            item.style.display = text.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+        });
+    }
+
+    window.exportExcel = () => {
+        if (typeof XLSX === 'undefined') return alert("Excel kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.");
+        const [year, month] = currentReportDate.split('-').map(Number);
+        const reportData = [];
+        users.forEach(u => {
+            let days = 0;
+            tasks.forEach(t => {
+                let start = new Date(t.startDate || parseDateStr(t.date));
+                let end = new Date(t.endDate || parseDateStr(t.date));
+                let loop = new Date(start);
+                while(loop <= end) {
+                    if (loop.getFullYear() === year && loop.getMonth() === (month - 1)) {
+                         if (Array.isArray(t.person)) { if(t.person.includes(u.name)) days++; }
+                         else if(t.person === u.name) days++;
+                    }
+                    loop.setDate(loop.getDate() + 1);
+                }
+            });
+            reportData.push({ "Personel": u.name, "Çalışma Günü": days });
+        });
+        const ws = XLSX.utils.json_to_sheet(reportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Efor");
+        XLSX.writeFile(wb, `Personel_Efor_${currentReportDate}.xlsx`);
+    }
+
+    async function addLog(type, item, action, person) {
+        await addDoc(collection(db, "logs"), { date: new Date().toISOString(), type: type, item: item, action: action, person: person, admin: currentUser.name });
+    }
+    window.setReportFilter = (filter, btn) => { currentReportFilter = filter; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); filterReports(); }
+    window.filterReports = () => { currentReportDate = document.getElementById('reportDateSelector').value; renderLogs(); renderPersonnelReport(); }
+    
+    function renderLogs() {
+        const table = document.getElementById('logTable');
+        const filteredLogs = logs.filter(l => {
+            const logMonth = l.date.substring(0, 7); const typeMatch = currentReportFilter === 'all' || l.type === currentReportFilter;
+            return logMonth === currentReportDate && typeMatch;
+        });
+        if (filteredLogs.length === 0) { table.innerHTML = '<tr><td>Kayıt yok.</td></tr>'; return; }
+        table.innerHTML = filteredLogs.map(l => {
+            const d = new Date(l.date);
+            const dateStr = `${d.getDate()}.${d.getMonth()+1} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+            const actionClass = l.action === 'take' ? 'action-take' : 'action-return';
+            const actionText = l.action === 'take' ? 'Aldı' : 'Verdi';
+            const icon = l.type === 'vehicle' ? '🚗' : '🧰';
+            return `<tr><td><span class="log-date">${dateStr}</span></td><td>${icon} <strong>${l.person}</strong><br>${l.item} <span class="log-action ${actionClass}">${actionText}</span></td></tr>`;
+        }).join('');
+    }
+    function renderPersonnelReport() {
+        const [year, month] = currentReportDate.split('-').map(Number);
+        const reportData = {}; users.forEach(u => reportData[u.name] = 0);
+        tasks.forEach(t => {
+            let start = new Date(t.startDate || parseDateStr(t.date));
+            let end = new Date(t.endDate || parseDateStr(t.date));
+            let loop = new Date(start);
+            while(loop <= end) {
+                if (loop.getFullYear() === year && loop.getMonth() === (month - 1)) {
+                    if (Array.isArray(t.person)) t.person.forEach(p => { if(reportData[p] !== undefined) reportData[p]++; });
+                    else if(reportData[t.person] !== undefined) reportData[t.person]++;
+                }
+                loop.setDate(loop.getDate() + 1);
+            }
+        });
+        document.getElementById('personnelReportBody').innerHTML = Object.keys(reportData).map(key => `<tr><td>${key}</td><td style="font-weight:bold;">${reportData[key]} Gün</td></tr>`).join('');
+    }
+
+    window.openCustodyModal = (type, id, name, extra) => {
+        custodyType = type; custodyTargetId = id;
+        document.getElementById('custodyItemName').innerText = `${name} (${extra||''})`;
+        document.getElementById('c-person').innerHTML = users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+        document.getElementById('custodyModal').style.display = 'flex';
+    }
+    window.closeCustodyModal = () => document.getElementById('custodyModal').style.display = 'none';
+    
+    // ZİMMET VERME (BİLDİRİMLİ)
+    window.saveCustody = async () => {
+        try {
+            const person = document.getElementById('c-person').value;
+            const collectionName = custodyType === 'vehicle' ? 'vehicles' : 'devices';
+            await updateDoc(doc(db, collectionName, custodyTargetId), { currentHolder: person });
+            const itemName = document.getElementById('custodyItemName').innerText;
+            await addLog(custodyType, itemName, 'take', person);
+            
+            // BİLDİRİM
+            const msg = `*Sayın ${person},*\n\nTarafınıza yeni bir zimmet ataması yapılmıştır.\n\n📦 *Zimmet:* ${itemName}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}\n\nLütfen malzemeyi kontrol ediniz.`;
+            notifyUser(person, msg);
+            
+            showToast("Zimmet Başarılı", "success");
+            closeCustodyModal();
+        } catch(e) { showToast("Hata oluştu", "error"); }
+    }
+
+    // ZİMMET İADE ALMA (GÜNCELLENDİ - BİLDİRİM EKLENDİ)
+    window.returnItem = async (type, id) => {
+        if(confirm("İade?")) {
+            try {
+                const collectionName = type === 'vehicle' ? 'vehicles' : 'devices';
+                let prevHolder = "Bilinmiyor";
+                const itemDoc = type === 'vehicle' ? vehicles.find(v=>v.id===id) : devices.find(d=>d.id===id);
+                
+                if(itemDoc) prevHolder = itemDoc.currentHolder;
+                
+                await updateDoc(doc(db, collectionName, id), { currentHolder: null });
+                
+                let itemDetail = itemDoc ? (type==='vehicle' ? `${itemDoc.plate}` : `${itemDoc.name}`) : '';
+                
+                await addLog(type, itemDetail, 'return', prevHolder);
+                
+                // İADE BİLDİRİMİ GÖNDER
+                if(prevHolder && prevHolder !== "Bilinmiyor") {
+                    const itemLabel = type === 'vehicle' ? 'Araç' : 'Cihaz';
+                    const msg = `*Sayın ${prevHolder},*\n\nÜzerinizde bulunan zimmet iade alınmıştır.\n\n📦 *Tip:* ${itemLabel}\n🆔 *Detay:* ${itemDetail}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}\n\nSistemden düşümü yapılmıştır.`;
+                    notifyUser(prevHolder, msg);
+                }
+
+                showToast("İade Alındı", "success");
+            } catch(e) { showToast("Hata oluştu", "error"); }
+        }
+    }
+
+    function setMultiSelectValues(id, values) {
+        const inputs = document.querySelectorAll(`#${id} input`);
+        inputs.forEach(input => {
+            input.checked = values.includes(input.value);
+        });
+    }
+
+    window.editTask = (id) => {
+        const t = tasks.find(x => x.id === id);
+        if(!t) return;
+        editingTaskId = id;
+        document.getElementById('taskFormTitle').innerText = "Görevi Düzenle";
+        document.getElementById('btn-save-task').innerText = "Güncelle";
+        document.getElementById('btn-cancel-task').style.display = "block";
+        document.getElementById('btn-save-task').style.background = "#f39c12"; 
+        document.getElementById('t-start-date').value = t.startDate || "";
+        document.getElementById('t-end-date').value = t.endDate || "";
+        document.getElementById('t-project-select').value = t.projectId || "";
+        document.getElementById('t-loc').value = t.location || "";
+        setMultiSelectValues('ms-person', Array.isArray(t.person) ? t.person : [t.person]);
+        setMultiSelectValues('ms-device', Array.isArray(t.device) ? t.device : [t.device]);
+        setMultiSelectValues('ms-plate', Array.isArray(t.plate) ? t.plate : [t.plate]);
+    }
+
+    window.cancelTaskEdit = () => {
+        editingTaskId = null;
+        document.getElementById('taskFormTitle').innerText = "Yeni Atama";
+        document.getElementById('btn-save-task').innerText = "Kaydet";
+        document.getElementById('btn-save-task').style.background = ""; 
+        document.getElementById('btn-cancel-task').style.display = "none";
+        document.getElementById('t-loc').value = "";
+        document.getElementById('t-project-select').value = "";
+        document.querySelectorAll('.multi-select-area input').forEach(c => c.checked = false);
+        document.getElementById('t-start-date').value = selectedDateStr;
+        document.getElementById('t-end-date').value = selectedDateStr;
+    }
+
+    // GÖREV KAYDI GÜNCELLENDİ: DETAYLI BİLDİRİM
     window.saveTask = async () => {
-        const btn = document.getElementById('btn-save-task'); btn.disabled = true;
+        const btn = document.getElementById('btn-save-task');
+        btn.disabled = true; 
         try {
             const per = getMultiSelectValues('ms-person'), dev = getMultiSelectValues('ms-device'), plate = getMultiSelectValues('ms-plate');
-            const proj = document.getElementById('t-project-select').value; const sDate = document.getElementById('t-start-date').value; const eDate = document.getElementById('t-end-date').value; const loc = document.getElementById('t-loc').value;
-            if(!proj || per.length===0 || !sDate || !eDate) { showToast("Eksik bilgi.", "error"); btn.disabled = false; return; }
-            
-            const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
-            const taskData = { startDate: sDate, endDate: eDate, person: per, projectName: projName, projectId: proj, location: loc, device: dev, plate: plate };
-            
-            if(editingTaskId) { await updateDoc(doc(db, "tasks", editingTaskId), taskData); showToast("Güncellendi"); cancelTaskEdit(); }
-            else {
-                await addDoc(collection(db, "tasks"), taskData); showToast("Atandı");
-                const msg = `📂 *Proje:* ${projName}\n📍 *Konum:* ${loc}\n📅 *Tarih:* ${sDate.split('-').reverse().join('.')} - ${eDate.split('-').reverse().join('.')}\n\n👥 *Ekip:* ${per.join(", ")}\n🚗 *Araçlar:* ${plate.length?plate.join(", "):"Yok"}\n🧰 *Ekipman:* ${dev.length?dev.join(", "):"Yok"}`;
-                per.forEach(p => notifyUser(p, `*Sayın ${p},*\n\nYeni görev atandı.\n\n${msg}\n\n🔗 https://yavuzdalgic18.github.io/EkipTakipApp/`));
-                document.getElementById('t-loc').value=""; document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false);
+            const projVal = document.getElementById('t-project-select').value;
+            const sDate = document.getElementById('t-start-date').value;
+            const eDate = document.getElementById('t-end-date').value;
+            const loc = document.getElementById('t-loc').value;
+
+            if(!projVal || per.length===0 || !sDate || !eDate) {
+                showToast("Eksik bilgi: Personel, Proje ve Tarih seçiniz.", "error");
+                btn.disabled = false; return;
             }
-        } catch(e) { console.error(e); showToast("Hata", "error"); } finally { btn.disabled = false; }
+            if(sDate > eDate) {
+                showToast("Başlangıç tarihi bitişten büyük olamaz.", "error");
+                btn.disabled = false; return;
+            }
+
+            let conflictMsg = "";
+            dev.forEach(dName => {
+                const deviceObj = devices.find(d => d.name === dName);
+                if (deviceObj && deviceObj.currentHolder && !per.includes(deviceObj.currentHolder)) {
+                    conflictMsg += `⚠️ ${dName} cihazı ${deviceObj.currentHolder} zimmetinde!\n`;
+                }
+            });
+            if (conflictMsg && !confirm(`DİKKAT:\n${conflictMsg}\nYine de devam et?`)) {
+                btn.disabled = false; return;
+            }
+
+            const projName = document.getElementById('t-project-select').options[document.getElementById('t-project-select').selectedIndex].text;
+            const taskData = { 
+                startDate: sDate, 
+                endDate: eDate, 
+                person: per, 
+                projectName: projName, 
+                projectId: projVal, 
+                location: loc, 
+                device: dev, 
+                plate: plate 
+            };
+
+            if (editingTaskId) {
+                await updateDoc(doc(db, "tasks", editingTaskId), taskData);
+                showToast("Görev güncellendi!", "success");
+                cancelTaskEdit(); 
+            } else {
+                await addDoc(collection(db, "tasks"), taskData);
+                showToast("Görev atandı!", "success");
+                
+                // KURUMSAL MESAJI OLUŞTUR
+                const teamStr = per.join(", ");
+                const platesStr = plate.length > 0 ? plate.join(", ") : "Yok";
+                const devStr = dev.length > 0 ? dev.join(", ") : "Yok";
+                const dateRange = `${sDate.split('-').reverse().join('.')} - ${eDate.split('-').reverse().join('.')}`;
+                const appLink = "https://yavuzdalgic18.github.io/EkipTakipApp/"; // Uygulama linki
+
+                per.forEach(pName => {
+                    const msg = `*Sayın ${pName},*\n\nAşağıdaki detaylara sahip yeni bir göreve atandınız.\n\n📂 *Proje:* ${projName}\n📍 *Konum:* ${loc}\n📅 *Tarih:* ${dateRange}\n\n👥 *Ekip:* ${teamStr}\n🚗 *Araçlar:* ${platesStr}\n🧰 *Ekipman:* ${devStr}\n\nDetaylar ve işlem yapmak için uygulamayı kontrol ediniz:\n🔗 ${appLink}`;
+                    
+                    notifyUser(pName, msg);
+                });
+
+                document.getElementById('t-loc').value=""; 
+                document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false);
+            }
+        } catch (error) {
+            console.error(error);
+            showToast("Hata: " + error.message, "error");
+        } finally {
+            btn.disabled = false; 
+        }
     }
-    window.delTask = async (id) => { if(confirm("Sil?")) { await deleteDoc(doc(db, "tasks", id)); showToast("Silindi"); } }
-    window.editTask = (id) => { const t = tasks.find(x=>x.id===id); if(!t)return; editingTaskId=id; document.getElementById('taskFormTitle').innerText="Düzenle"; document.getElementById('btn-save-task').innerText="Güncelle"; document.getElementById('btn-cancel-task').style.display="block"; document.getElementById('t-start-date').value=t.startDate; document.getElementById('t-end-date').value=t.endDate; document.getElementById('t-project-select').value=t.projectId; document.getElementById('t-loc').value=t.location; setMultiSelectValues('ms-person', Array.isArray(t.person)?t.person:[t.person]); setMultiSelectValues('ms-device', Array.isArray(t.device)?t.device:[t.device]); setMultiSelectValues('ms-plate', Array.isArray(t.plate)?t.plate:[t.plate]); }
-    window.cancelTaskEdit = () => { editingTaskId=null; document.getElementById('taskFormTitle').innerText="Yeni Atama"; document.getElementById('btn-save-task').innerText="Kaydet"; document.getElementById('btn-cancel-task').style.display="none"; document.getElementById('t-loc').value=""; document.querySelectorAll('.multi-select-area input').forEach(c=>c.checked=false); document.getElementById('t-start-date').value=selectedDateStr; document.getElementById('t-end-date').value=selectedDateStr; }
+    
+    window.delTask = async (id) => { 
+        if(confirm("Silmek istiyor musunuz?")) {
+            try { await deleteDoc(doc(db, "tasks", id)); showToast("Silindi.", "success"); } 
+            catch(e) { showToast("Silinemedi.", "error"); }
+        } 
+    }
 
     window.addVehicle=async()=>{const p=document.getElementById('v-plate').value; if(!p)return; await addDoc(collection(db,"vehicles"),{plate:p,info:document.getElementById('v-info').value,inspectionDate:document.getElementById('v-inspection').value,currentHolder:null}); showToast("Araç Eklendi"); resetVehicleForm();}
     window.updateVehicleDB=async()=>{await updateDoc(doc(db,"vehicles",editingVehicleId),{plate:document.getElementById('v-plate').value,info:document.getElementById('v-info').value,inspectionDate:document.getElementById('v-inspection').value}); showToast("Araç Güncellendi"); resetVehicleForm();}
@@ -494,15 +837,34 @@
     function resetVehicleForm(){editingVehicleId=null; document.getElementById('v-plate').value=""; document.getElementById('v-info').value=""; document.getElementById('v-inspection').value=""; document.getElementById('vehicleFormTitle').innerText="Yeni Araç Ekle"; document.getElementById('btn-v-save').style.display='block'; document.getElementById('btn-v-update').style.display='none'; document.getElementById('btn-v-cancel').style.display='none';}
     window.deleteVehicle=async(id)=>{if(confirm("Sil?")) { await deleteDoc(doc(db,"vehicles",id)); showToast("Silindi"); }}
     
+    // YENİLENEN ARAÇ LİSTELEME FONKSİYONU (GÖREV DURUMU EKLENDİ)
     function renderVehicleList(){
         const todayISO = new Date().toISOString().split('T')[0];
         document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => { 
-            let s = `<span class="badge badge-green">BOŞTA</span>`; let z = ""; 
-            if(v.currentHolder) { s = `<span class="badge badge-orange">👤 ${v.currentHolder}</span>`; if(userRole==='admin') z = `<button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade Al</button>`; } 
-            else if(userRole==='admin') { z = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}','${v.info}')">Zimmetle</button>`; } 
-            const at = tasks.find(t => { const st = t.startDate || parseDateStr(t.date).toISOString().split('T')[0]; const en = t.endDate || parseDateStr(t.date).toISOString().split('T')[0]; const inR = todayISO >= st && todayISO <= en; const hP = Array.isArray(t.plate) ? t.plate.includes(v.plate) : t.plate === v.plate; return inR && hP; });
-            if(at) s += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`;
-            return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small></div>${userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${s}${z}</div></div>`; 
+            let inspHtml = v.inspectionDate ? (new Date(v.inspectionDate) < new Date() ? `<small style="color:red; display:block;">⚠️ Muayene: ${v.inspectionDate}</small>` : `<small style="color:#666;">📅 Muayene: ${v.inspectionDate}</small>`) : ""; 
+            
+            let statusBadge = `<span class="badge badge-green">BOŞTA</span>`;
+            let zimmetHtml = ""; 
+
+            if(v.currentHolder) { 
+                statusBadge = `<span class="badge badge-orange">👤 ${v.currentHolder}</span>`; 
+                if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade Al</button>`; 
+            } else if(userRole==='admin') { 
+                zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}','${v.info}')">Zimmetle</button>`; 
+            } 
+
+            // GÖREVDE Mİ KONTROLÜ
+            const at = tasks.find(t => {
+                const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const inRange = todayISO >= s && todayISO <= e;
+                const hasPlate = Array.isArray(t.plate) ? t.plate.includes(v.plate) : t.plate === v.plate;
+                return inRange && hasPlate;
+            });
+
+            if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`;
+
+            return `<div class="info-card ${v.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${v.plate}</strong><br><small>${v.info}</small>${inspHtml}</div>${userRole==='admin' ? `<div><button onclick="editVehicle('${v.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteVehicle('${v.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; 
         }).join('');
     }
 
@@ -515,15 +877,80 @@
     function renderDeviceList(){
         const todayISO = new Date().toISOString().split('T')[0];
         document.getElementById('deviceListArea').innerHTML = devices.map(d => { 
-            let s = `<span class="badge badge-green">BOŞTA</span>`; let z = ""; 
-            if(d.currentHolder) { s = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; if(userRole==='admin') z = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; } 
-            else if(userRole==='admin') { z = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; } 
-            const at = tasks.find(t => { const st = t.startDate || parseDateStr(t.date).toISOString().split('T')[0]; const en = t.endDate || parseDateStr(t.date).toISOString().split('T')[0]; const inR = todayISO >= st && todayISO <= en; const hD = Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name; return inR && hD; });
-            if(at) s += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`; 
-            return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small></div>${userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${s}${z}</div></div>`; 
+            let statusBadge = `<span class="badge badge-green">BOŞTA</span>`, zimmetHtml = ""; 
+            if(d.currentHolder) { 
+                statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; 
+                if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; 
+            } else if(userRole==='admin') { 
+                zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial}')">Zimmetle</button>`; 
+            } 
+            const at = tasks.find(t => {
+                const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const inRange = todayISO >= s && todayISO <= e;
+                const hasDev = Array.isArray(t.device) ? t.device.includes(d.name) : t.device === d.name;
+                return inRange && hasDev;
+            });
+            if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`; 
+            let calibHtml = d.calib ? `<br><small style="color:${new Date(d.calib) < new Date() ? 'red' : '#666'}">Kalibrasyon: ${d.calib}</small>` : ""; 
+            return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial})</small>${calibHtml}</div>${userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; 
         }).join('');
     }
 
+    window.addUserToDB=async()=>{const n=document.getElementById('u-name').value; const e=document.getElementById('u-email').value.trim(); const r=document.getElementById('u-role').value; const t=document.getElementById('u-title').value; const ph=document.getElementById('u-phone').value; if(!n || !e) return alert("Ad ve E-posta zorunludur."); await setDoc(doc(db,"users",e), {name:n, email:e, role:r, title:t, phone:ph}); showToast("Yetkili Eklendi"); cancelUserEdit();}
+    window.editUser=(e)=>{const u=users.find(x=>x.email===e); if(!u)return; document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title||''; document.getElementById('u-email').value=u.email; document.getElementById('u-email').disabled=true; document.getElementById('u-phone').value=u.phone||''; document.getElementById('u-role').value=u.role; editingUserEmail=e; document.getElementById('userFormTitle').innerText="Düzenle"; document.getElementById('btn-user-add').style.display='none'; document.getElementById('btn-user-update').style.display='block'; document.getElementById('btn-user-cancel').style.display='block';}
+    window.updateUserDB=async()=>{await updateDoc(doc(db,"users",editingUserEmail),{name:document.getElementById('u-name').value,title:document.getElementById('u-title').value,role:document.getElementById('u-role').value,phone:document.getElementById('u-phone').value}); showToast("Kullanıcı Güncellendi"); cancelUserEdit();}
+    window.cancelUserEdit=()=>{editingUserEmail=null; document.getElementById('u-name').value=""; document.getElementById('u-title').value=""; document.getElementById('u-email').value=""; document.getElementById('u-phone').value=""; document.getElementById('u-email').disabled=false; document.getElementById('userFormTitle').innerText="Yeni Kullanıcı"; document.getElementById('btn-user-add').style.display='block'; document.getElementById('btn-user-update').style.display='none'; document.getElementById('btn-user-cancel').style.display='none';}
+    window.deleteUser=async(e)=>{if(confirm("Sil?")) { await deleteDoc(doc(db,"users",e)); showToast("Kullanıcı Silindi"); }}
+    function renderUserList(){document.getElementById('userListArea').innerHTML=users.map(u=>`<div class="user-card" style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;"><div><strong>${u.name}</strong> <small>(${u.title||''})</small><br><small>${u.email}</small><br><small>📞 ${u.phone||'-'}</small></div><div><span class="badge badge-gray">${u.role}</span>${userRole==='admin' ? `<button onclick="editUser('${u.email}')" style="border:none; bg:none; margin-right:5px;">✎</button><button onclick="deleteUser('${u.email}')" style="color:red; border:none; bg:none;">🗑</button>` : ''}</div></div>`).join('');}
+    
+    window.submitProject=async()=>{const n=document.getElementById('p-name').value; if(!n)return; await addDoc(collection(db,"projects"),{name:n,manager:document.getElementById('p-manager').value,start:document.getElementById('p-start').value,end:document.getElementById('p-end').value,cost:document.getElementById('p-cost').value,offer:document.getElementById('p-offer').value}); showToast("Proje Eklendi"); document.getElementById('p-name').value="";}
+    window.updateProjectDB=async()=>{await updateDoc(doc(db,"projects",editingProjectId),{name:document.getElementById('p-name').value,manager:document.getElementById('p-manager').value,start:document.getElementById('p-start').value,end:document.getElementById('p-end').value,cost:document.getElementById('p-cost').value,offer:document.getElementById('p-offer').value}); showToast("Proje Güncellendi"); cancelProjectEdit();}
+    window.editProject=(id)=>{const p=projects.find(x=>x.id===id); if(!p)return; document.getElementById('p-name').value=p.name; document.getElementById('p-manager').value=p.manager; document.getElementById('p-start').value=p.start||""; document.getElementById('p-end').value=p.end||""; document.getElementById('p-cost').value=p.cost; document.getElementById('p-offer').value=p.offer; editingProjectId=id; document.getElementById('projectFormTitle').innerText="Proje Düzenle"; document.getElementById('btn-p-save').style.display='none'; document.getElementById('btn-p-update').style.display='block'; document.getElementById('btn-p-cancel').style.display='block';}
+    window.cancelProjectEdit=()=>{editingProjectId=null; document.getElementById('p-name').value=""; document.getElementById('p-cost').value=""; document.getElementById('p-offer').value=""; document.getElementById('p-start').value=""; document.getElementById('p-end').value=""; document.getElementById('projectFormTitle').innerText="Yeni Proje"; document.getElementById('btn-p-save').style.display='block'; document.getElementById('btn-p-update').style.display='none'; document.getElementById('btn-p-cancel').style.display='none';}
+    window.deleteProject=async(id)=>{if(confirm("Sil?")) { await deleteDoc(doc(db,"projects",id)); showToast("Silindi"); }}
+    function renderProjects(){document.getElementById('projectListBody').innerHTML=projects.map(p=>{const pf=p.offer-p.cost; return `<div style="padding:15px; border-bottom:1px solid #eee;"><strong>${p.name}</strong> (${p.start||'-'} / ${p.end||'?'})<br><small>${p.manager||'-'} | Kar: ${pf}</small> ${userRole==='admin' ? `<div style="float:right;"><button onclick="editProject('${p.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteProject('${p.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div>`;}).join('');}
+    
+    function renderTeamStatus(){
+        const todayStr=new Date().toISOString().split('T')[0];
+        document.getElementById('teamListArea').innerHTML=users.map(u=>{
+            const at = tasks.find(t => {
+                const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
+                const inRange = todayStr >= s && todayStr <= e;
+                const hasPerson = Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name;
+                return inRange && hasPerson;
+            });
+            let statusHtml=at?`<div class="badge badge-green">SAHADA</div>`:`<div class="badge badge-gray">BOŞTA</div>`;
+            const upcoming = tasks.filter(t => (t.startDate || parseDateStr(t.date).toISOString().split('T')[0]) > todayStr && (Array.isArray(t.person) ? t.person.includes(u.name) : t.person === u.name)).sort((a,b) => (a.startDate||a.date).localeCompare(b.startDate||b.date))[0];
+            let futureHtml = upcoming ? `<small style="color:#e67e22; display:block; margin-top:5px;">📅 Sonraki: ${upcoming.startDate || upcoming.date} - ${upcoming.projectName}</small>` : '';
+            return `<div class="person-row"><div style="display:flex; align-items:center;"><div class="avatar" style="margin-right:10px;">${u.name.charAt(0)}</div><div><div style="font-weight:600;">${u.name}</div><small>${u.title||''}</small>${futureHtml}</div></div>${statusHtml}</div>`;
+        }).join('');
+    }
+
+    function updateStats(todayISO){
+        let activeSet = new Set();
+        tasks.forEach(t => {
+            const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
+            const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
+            if (todayISO >= s && todayISO <= e) {
+                if(Array.isArray(t.person)) t.person.forEach(p=>activeSet.add(p)); else activeSet.add(t.person);
+            }
+        });
+        document.getElementById('stat-total').innerText=users.length; 
+        document.getElementById('stat-active').innerText=activeSet.size; 
+        document.getElementById('stat-idle').innerText=Math.max(0,users.length-activeSet.size);
+    }
+
+    function loadDropdowns(){
+        if(document.getElementById('p-manager')) document.getElementById('p-manager').innerHTML=users.map(u=>`<option>${u.name}</option>`).join('');
+        if(document.getElementById('t-project-select')) document.getElementById('t-project-select').innerHTML=`<option value="">Seç</option>`+projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+        if(document.getElementById('c-person')) document.getElementById('c-person').innerHTML=users.map(u=>`<option value="${u.name}">${u.name}</option>`).join('');
+        const fillMulti=(id,arr,k)=>{const el=document.getElementById(id);if(el)el.innerHTML=arr.map(i=>`<div class="ms-item"><input type="checkbox" value="${i[k]}">${i[k]}</div>`).join('')};
+        fillMulti('ms-person',users,'name'); fillMulti('ms-device',devices,'name'); fillMulti('ms-plate',vehicles,'plate');
+    }
+    function getMultiSelectValues(id){return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i=>i.value);}
+    
     window.switchTab = (tab) => { document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); document.getElementById('view-'+tab).classList.add('active'); event.currentTarget.classList.add('active'); if(tab==='reports') filterReports(); }
     window.changeMonth = (d) => { currentDate.setMonth(currentDate.getMonth()+d); renderCalendar(); }
     window.toggleDatePicker = () => { const m = document.getElementById('month-picker-modal'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; pickerYear = currentDate.getFullYear(); document.getElementById('pick-year-val').innerText = pickerYear; }
