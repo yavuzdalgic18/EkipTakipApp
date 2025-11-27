@@ -11,12 +11,16 @@
         input { width: 100%; padding: 15px; margin-bottom: 15px; border: 1px solid #eee; border-radius: 10px; background: #f9f9f9; outline: none; }
         .btn-main { width: 100%; padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-main:hover { background: #764ba2; }
-        .forgot-link { display: block; margin-top: 15px; color: #888; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
+        
+        .links-container { display: flex; justify-content: space-between; margin-top: 15px; font-size: 0.85rem; }
+        .link-text { color: #888; cursor: pointer; text-decoration: underline; }
+        .link-text:hover { color: #667eea; }
         
         /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: center; }
         .modal-card { background: white; width: 90%; max-width: 350px; border-radius: 15px; padding: 25px; text-align: left; }
-        .error-msg { color: #e74c3c; font-size: 0.8rem; display: none; margin-bottom: 10px; }
+        .error-msg { color: #e74c3c; font-size: 0.8rem; display: none; margin-bottom: 10px; text-align: center; }
+        .modal-title { margin-top: 0; color: #333; margin-bottom: 15px; text-align: center; }
     </style>
 </head>
 <body>
@@ -26,13 +30,18 @@
     <input type="email" id="email" placeholder="E-Posta Adresi">
     <input type="password" id="password" placeholder="Şifre">
     <button class="btn-main" onclick="handleLogin()">Giriş Yap</button>
-    <span class="forgot-link" onclick="openForgotModal()">Şifremi Unuttum</span>
-    <p id="loginError" class="error-msg" style="text-align:center; margin-top:10px;"></p>
+    
+    <div class="links-container">
+        <span class="link-text" onclick="openForgotModal()">Şifremi Unuttum</span>
+        <span class="link-text" onclick="openRegisterModal()" style="font-weight: 600; color: #667eea;">Üye Ol</span>
+    </div>
+
+    <p id="loginError" class="error-msg"></p>
 </div>
 
 <div class="modal-overlay" id="forgotModal">
     <div class="modal-card">
-        <h3>Şifre Sıfırlama</h3>
+        <h3 class="modal-title">Şifre Sıfırlama</h3>
         <p style="font-size:0.8rem; color:#666; margin-bottom:15px;">Güvenliğiniz için lütfen kayıtlı e-posta ve telefon numaranızı giriniz.</p>
         
         <label style="font-size:0.8rem; font-weight:bold;">E-Posta</label>
@@ -48,13 +57,29 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="registerModal">
+    <div class="modal-card">
+        <h3 class="modal-title">Yeni Üyelik Oluştur</h3>
+        <p style="font-size:0.8rem; color:#666; margin-bottom:15px;">Yöneticiniz tarafından sisteme eklenen e-posta adresinizle kayıt olabilirsiniz.</p>
+        
+        <input type="email" id="reg-email" placeholder="E-Posta Adresiniz">
+        <input type="password" id="reg-pass" placeholder="Şifre Belirleyin (En az 6 karakter)">
+        <input type="password" id="reg-pass-confirm" placeholder="Şifre Tekrar">
+        
+        <p id="regError" class="error-msg">Hata!</p>
+        
+        <button class="btn-main" id="btn-register" onclick="handleRegister()">Kayıt Ol</button>
+        <button class="btn-main" onclick="closeRegisterModal()" style="background:#95a5a6; margin-top:5px;">İptal</button>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY", // Senin API Key'in (Birleşik)
+      apiKey: "AIzaSyD4XZR8JAMe-Qr2Oj2UGnp9mFc8En38gxY",
       authDomain: "ekiptakipapp.firebaseapp.com",
       projectId: "ekiptakipapp",
       storageBucket: "ekiptakipapp.firebasestorage.app",
@@ -67,7 +92,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Giriş Fonksiyonu
+    // --- GİRİŞ YAP ---
     window.handleLogin = () => {
         const e = document.getElementById('email').value;
         const p = document.getElementById('password').value;
@@ -81,17 +106,16 @@
             });
     };
 
-    // Modal İşlemleri
+    // --- ŞİFRE SIFIRLAMA MODAL İŞLEMLERİ ---
     window.openForgotModal = () => document.getElementById('forgotModal').style.display = 'flex';
     window.closeForgotModal = () => {
         document.getElementById('forgotModal').style.display = 'none';
         document.getElementById('resetError').style.display = 'none';
     };
 
-    // Şifre Sıfırlama (Çift Doğrulama)
     window.handleResetPassword = async () => {
         const email = document.getElementById('reset-email').value.trim();
-        const phone = document.getElementById('reset-phone').value.replace(/\D/g,''); // Sadece rakamları al
+        const phone = document.getElementById('reset-phone').value.replace(/\D/g,'');
         const errLabel = document.getElementById('resetError');
         const btn = document.getElementById('btn-reset');
 
@@ -105,20 +129,16 @@
         btn.innerText = "Kontrol Ediliyor...";
 
         try {
-            // 1. Veritabanından kullanıcıyı bul
             const docRef = doc(db, "users", email);
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
                 const userData = docSnap.data();
-                // Veritabanındaki teli de temizle
                 const dbPhone = (userData.phone || "").replace(/\D/g,'');
 
-                // 2. Telefon eşleşiyor mu?
                 if(dbPhone === phone) {
-                    // 3. Eşleşti! Mail gönder.
                     await sendPasswordResetEmail(auth, email);
-                    alert("Sıfırlama bağlantısı E-Posta adresinize gönderildi! Lütfen gelen kutunuzu (ve spam klasörünü) kontrol edin.");
+                    alert("Sıfırlama bağlantısı gönderildi! E-postanızı kontrol edin.");
                     closeForgotModal();
                 } else {
                     throw new Error("Telefon numarası uyuşmuyor.");
@@ -133,6 +153,72 @@
         } finally {
             btn.disabled = false;
             btn.innerText = "Sıfırlama Bağlantısı Gönder";
+        }
+    }
+
+    // --- ÜYE OLMA MODAL İŞLEMLERİ (YENİ EKLENDİ) ---
+    window.openRegisterModal = () => document.getElementById('registerModal').style.display = 'flex';
+    window.closeRegisterModal = () => {
+        document.getElementById('registerModal').style.display = 'none';
+        document.getElementById('regError').style.display = 'none';
+    };
+
+    window.handleRegister = async () => {
+        const email = document.getElementById('reg-email').value.trim();
+        const p1 = document.getElementById('reg-pass').value;
+        const p2 = document.getElementById('reg-pass-confirm').value;
+        const errLabel = document.getElementById('regError');
+        const btn = document.getElementById('btn-register');
+
+        errLabel.style.display = 'none';
+
+        if(!email || !p1 || !p2) {
+            errLabel.innerText = "Tüm alanları doldurunuz.";
+            errLabel.style.display = 'block';
+            return;
+        }
+
+        if(p1.length < 6) {
+            errLabel.innerText = "Şifre en az 6 karakter olmalı.";
+            errLabel.style.display = 'block';
+            return;
+        }
+
+        if(p1 !== p2) {
+            errLabel.innerText = "Şifreler uyuşmuyor.";
+            errLabel.style.display = 'block';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Kontrol Ediliyor...";
+
+        try {
+            // 1. Önce Firestore'da yöneticinin bu kişiyi ekleyip eklemediğini kontrol et
+            const docRef = doc(db, "users", email);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                // 2. Kayıt varsa Authentication oluştur
+                await createUserWithEmailAndPassword(auth, email, p1);
+                alert("Üyelik başarıyla oluşturuldu! Yönlendiriliyorsunuz...");
+                window.location.href = "index.html";
+            } else {
+                // Kayıt yoksa hata ver
+                throw new Error("Yöneticiniz tarafından oluşturulmuş bir kaydınız bulunamadı. Lütfen yönetici ile iletişime geçin.");
+            }
+
+        } catch (error) {
+            console.error(error);
+            let msg = "Bir hata oluştu.";
+            if(error.code === 'auth/email-already-in-use') msg = "Bu e-posta zaten kayıtlı.";
+            else if(error.message) msg = error.message;
+            
+            errLabel.innerText = msg;
+            errLabel.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Kayıt Ol";
         }
     }
 </script>
