@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V42 - Grup Bildirim)</title>
+    <title>Ekip Takip Pro (V43 - Dosya Özellikli)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -197,8 +197,12 @@
                 <h3 id="deviceFormTitle">Yeni Cihaz</h3>
                 <input type="text" id="d-name" placeholder="Cihaz Adı">
                 <input type="text" id="d-serial" placeholder="Seri No">
-                <label>Kalibrasyon:</label><input type="date" id="d-calib">
-                <div style="display:flex; gap:5px;">
+                <label>Kalibrasyon Tarihi:</label><input type="date" id="d-calib">
+                
+                <label style="margin-top:10px; display:block; font-size:0.8rem;">Kalibrasyon Dosyası (PDF):</label>
+                <input type="file" id="d-file" accept="application/pdf" style="background:white; margin-top:5px;">
+                
+                <div style="display:flex; gap:5px; margin-top:10px;">
                     <button class="btn-main" id="btn-d-save" onclick="addDevice()">Ekle</button>
                     <button class="btn-main" id="btn-d-update" onclick="updateDeviceDB()" style="background:#f39c12; display:none;">Güncelle</button>
                     <button class="btn-main" id="btn-d-cancel" onclick="cancelDeviceEdit()" style="background:#95a5a6; display:none;">Vazgeç</button>
@@ -339,6 +343,8 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    // YENI EKLENEN IMPORTLAR
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     // --- FIREBASE AYARLARI ---
     const k1 = "AIzaSyD4XZR8JAMe-"; const k2 = "Qr2Oj2UGnp9mFc8En38gxY";
@@ -355,6 +361,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app); // Storage başlatıldı
 
     let projects=[], tasks=[], users=[], vehicles=[], devices=[], logs=[], notifications=[];
     let currentUser=null, userRole='staff';
@@ -373,7 +380,6 @@
                 currentUser = userData; userRole = userData.role;
                 document.getElementById('welcomeUser').innerText = userData.name.split(' ')[0];
                 
-                // Profil verilerini doldur
                 document.getElementById('profileName').innerText = userData.name;
                 document.getElementById('profileRole').innerText = userData.title || (userData.role === 'admin' ? 'Yönetici' : 'Personel');
                 document.getElementById('profileAvatar').innerText = userData.name.charAt(0);
@@ -426,7 +432,6 @@
             updateStats(new Date().toISOString().split('T')[0]); renderTeamStatus(); renderDeviceList(); renderVehicleList(); filterReports();
         });
 
-        // --- KİŞİSEL BİLDİRİMLERİ DİNLEME ---
         const notifQuery = query(collection(db, "notifications"), where("target", "==", currentUser.name));
         onSnapshot(notifQuery, (s) => {
             notifications = [];
@@ -436,7 +441,6 @@
         });
     }
 
-    // --- PROFİL & ŞİFRE DEĞİŞTİRME ---
     window.updateUserPassword = async () => {
         const p1 = document.getElementById('new-pass').value;
         const p2 = document.getElementById('new-pass-confirm').value;
@@ -459,7 +463,6 @@
         }
     }
 
-    // --- ADMIN LOG YÖNETİMİ ---
     window.renderAdminLogs = (dateVal) => {
         const tbody = document.getElementById('adminLogBody');
         if(!dateVal) { tbody.innerHTML = '<tr><td colspan="4">Tarih seçiniz.</td></tr>'; return; }
@@ -474,22 +477,14 @@
         }).join('');
     }
 
-window.exportLogsToWord = () => {
+    window.exportLogsToWord = () => {
         const dateVal = document.getElementById('adminLogDate').value;
         if(!dateVal) return alert("Önce tarih seçiniz.");
         
         const html = document.getElementById('adminLogTable').outerHTML;
-        
-        // GÜVENLİK FİLTRESİNİ AŞMA (HEX CODE YÖNTEMİ)
-        // Hosting botları bu karakterleri HTML etiketi olarak algılayamaz.
-        // \x3C = < işareti
-        // \x3E = > işareti
         const header = "\x3Chtml\x3E\x3Chead\x3E\x3Cmeta charset='UTF-8'\x3E\x3C/head\x3E\x3Cbody\x3E";
         const footer = "\x3C/body\x3E\x3C/html\x3E";
-
-        const blob = new Blob([header + html + footer], {
-            type: 'application/msword'
-        });
+        const blob = new Blob([header + html + footer], { type: 'application/msword' });
         
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -498,9 +493,7 @@ window.exportLogsToWord = () => {
         a.click();
     }
 
-    // --- WHATSAPP BİLDİRİM SİSTEMİ (GRUP + MANUEL) ---
     async function notifyUser(personName, message) {
-        // 1. Firebase'e Kaydet
         try {
             const shortMsg = message.includes("Yeni Görev") ? "Yeni görev atandı. Detaylar için tıklayın." : (message.includes("iade") ? "Zimmet iade alındı." : message);
             await addDoc(collection(db, "notifications"), {
@@ -510,14 +503,10 @@ window.exportLogsToWord = () => {
                 read: false
             });
         } catch(e) { console.error("Bildirim DB hatası", e); }
-
-        // 2. GRUP İÇİN GENEL WHATSAPP LİNKİ (TEXT ONLY)
-        // Telefon numarası aramıyoruz, doğrudan mesajı paylaşıma açıyoruz.
         const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
     }
 
-    // Bildirim Arayüzü İşlemleri
     window.toggleNotifications = () => {
         const drop = document.getElementById('notification-dropdown');
         drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
@@ -570,8 +559,6 @@ window.exportLogsToWord = () => {
         await batch.commit();
         showToast("Bildirimler temizlendi.");
     }
-
-    // --- MEVCUT FONKSİYONLAR ---
 
     window.filterList = (input, listId, itemTag) => {
         const filter = input.value.toLowerCase();
@@ -657,7 +644,6 @@ window.exportLogsToWord = () => {
     }
     window.closeCustodyModal = () => document.getElementById('custodyModal').style.display = 'none';
     
-    // ZİMMET KAYDI GÜNCELLENDİ: BİLDİRİM EKLENDİ
     window.saveCustody = async () => {
         try {
             const person = document.getElementById('c-person').value;
@@ -666,7 +652,6 @@ window.exportLogsToWord = () => {
             const itemName = document.getElementById('custodyItemName').innerText;
             await addLog(custodyType, itemName, 'take', person);
             
-            // BİLDİRİM METNİ OLUŞTUR
             const msg = `*Sayın ${person},*\n\nTarafınıza yeni bir zimmet ataması yapılmıştır.\n\n📦 *Zimmet:* ${itemName}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}\n\nLütfen malzemeyi kontrol ediniz.`;
             notifyUser(person, msg);
             
@@ -685,7 +670,6 @@ window.exportLogsToWord = () => {
                 let itemDetail = itemDoc ? (type==='vehicle' ? `${itemDoc.plate}` : `${itemDoc.name}`) : '';
                 await addLog(type, itemDetail, 'return', prevHolder);
                 
-                // İADE BİLDİRİMİ GÖNDER
                 if(prevHolder && prevHolder !== "Bilinmiyor") {
                     const itemLabel = type === 'vehicle' ? 'Araç' : 'Cihaz';
                     const msg = `*Sayın ${prevHolder},*\n\nÜzerinizde bulunan zimmet iade alınmıştır.\n\n📦 *Tip:* ${itemLabel}\n🆔 *Detay:* ${itemDetail}\n📅 *Tarih:* ${new Date().toLocaleDateString('tr-TR')}\n\nSistemden düşümü yapılmıştır.`;
@@ -734,7 +718,6 @@ window.exportLogsToWord = () => {
         document.getElementById('t-end-date').value = selectedDateStr;
     }
 
-    // GÖREV KAYDI GÜNCELLENDİ: DETAYLI BİLDİRİM
     window.saveTask = async () => {
         const btn = document.getElementById('btn-save-task');
         btn.disabled = true; 
@@ -785,12 +768,11 @@ window.exportLogsToWord = () => {
                 await addDoc(collection(db, "tasks"), taskData);
                 showToast("Görev atandı!", "success");
                 
-                // KURUMSAL MESAJI OLUŞTUR
                 const teamStr = per.join(", ");
                 const platesStr = plate.length > 0 ? plate.join(", ") : "Yok";
                 const devStr = dev.length > 0 ? dev.join(", ") : "Yok";
                 const dateRange = `${sDate.split('-').reverse().join('.')} - ${eDate.split('-').reverse().join('.')}`;
-                const appLink = "https://yavuzdalgic18.github.io/EkipTakipApp/"; // Uygulama linki
+                const appLink = "https://yavuzdalgic18.github.io/EkipTakipApp/"; 
 
                 per.forEach(pName => {
                     const msg = `*@${pName},*\n\nAşağıdaki detaylara sahip yeni bir göreve atandınız.\n\n📂 *Proje:* ${projName}\n📍 *Konum:* ${loc}\n📅 *Tarih:* ${dateRange}\n\n👥 *Ekip:* ${teamStr}\n🚗 *Araçlar:* ${platesStr}\n🧰 *Ekipman:* ${devStr}\n\nDetaylar ve işlem yapmak için uygulamayı kontrol ediniz:\n🔗 ${appLink}`;
@@ -823,8 +805,7 @@ window.exportLogsToWord = () => {
     function resetVehicleForm(){editingVehicleId=null; document.getElementById('v-plate').value=""; document.getElementById('v-info').value=""; document.getElementById('v-inspection').value=""; document.getElementById('vehicleFormTitle').innerText="Yeni Araç Ekle"; document.getElementById('btn-v-save').style.display='block'; document.getElementById('btn-v-update').style.display='none'; document.getElementById('btn-v-cancel').style.display='none';}
     window.deleteVehicle=async(id)=>{if(confirm("Sil?")) { await deleteDoc(doc(db,"vehicles",id)); showToast("Silindi"); }}
     
-    // YENİLENEN ARAÇ LİSTELEME FONKSİYONU (GÖREV DURUMU EKLENDİ)
-function renderVehicleList(){
+    function renderVehicleList(){
         const todayISO = new Date().toISOString().split('T')[0];
         document.getElementById('vehicleListArea').innerHTML = vehicles.map(v => { 
             let inspHtml = v.inspectionDate ? (new Date(v.inspectionDate) < new Date() ? `<small style="color:red; display:block;">⚠️ Muayene: ${v.inspectionDate}</small>` : `<small style="color:#666;">📅 Muayene: ${v.inspectionDate}</small>`) : ""; 
@@ -832,7 +813,6 @@ function renderVehicleList(){
             let statusBadge = `<span class="badge badge-green">BOŞTA</span>`;
             let zimmetHtml = ""; 
 
-            // HATA ÇÖZÜMÜ: Parametreler tek tırnak içine alındı ve undefined kontrolü eklendi (v.info || '')
             if(v.currentHolder) { 
                 statusBadge = `<span class="badge badge-orange">👤 ${v.currentHolder}</span>`; 
                 if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('vehicle','${v.id}')">İade Al</button>`; 
@@ -840,7 +820,6 @@ function renderVehicleList(){
                 zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('vehicle','${v.id}','${v.plate}','${v.info || ''}')">Zimmetle</button>`; 
             } 
 
-            // GÖREVDE Mİ KONTROLÜ
             const at = tasks.find(t => {
                 const s = t.startDate || parseDateStr(t.date).toISOString().split('T')[0];
                 const e = t.endDate || parseDateStr(t.date).toISOString().split('T')[0];
@@ -855,14 +834,110 @@ function renderVehicleList(){
         }).join('');
     }
 
-    window.addDevice=async()=>{const n=document.getElementById('d-name').value; if(!n)return; await addDoc(collection(db,"devices"),{name:n,serial:document.getElementById('d-serial').value,calib:document.getElementById('d-calib').value,currentHolder:null}); showToast("Cihaz Eklendi"); document.getElementById('d-name').value="";}
-    window.updateDeviceDB=async()=>{await updateDoc(doc(db,"devices",editingDeviceId),{name:document.getElementById('d-name').value,serial:document.getElementById('d-serial').value,calib:document.getElementById('d-calib').value}); showToast("Güncellendi"); resetDeviceForm();}
-    window.editDevice=(id)=>{const d=devices.find(x=>x.id===id); if(!d)return; document.getElementById('d-name').value=d.name; document.getElementById('d-serial').value=d.serial; document.getElementById('d-calib').value=d.calib||""; editingDeviceId=id; document.getElementById('deviceFormTitle').innerText="Düzenle"; document.getElementById('btn-d-save').style.display='none'; document.getElementById('btn-d-update').style.display='block'; document.getElementById('btn-d-cancel').style.display='block';}
-    window.cancelDeviceEdit=resetDeviceForm;
-    function resetDeviceForm(){editingDeviceId=null; document.getElementById('d-name').value=""; document.getElementById('d-serial').value=""; document.getElementById('d-calib').value=""; document.getElementById('deviceFormTitle').innerText="Yeni Cihaz Ekle"; document.getElementById('btn-d-save').style.display='block'; document.getElementById('btn-d-update').style.display='none'; document.getElementById('btn-d-cancel').style.display='none';}
-    window.deleteDevice=async(id)=>{if(confirm("Sil?")) { await deleteDoc(doc(db,"devices",id)); showToast("Silindi"); }}
+    // --- CİHAZ YÖNETİMİ (PDF ÖZELLİKLİ) ---
+    async function uploadPDF(file) {
+        if (!file) return null;
+        try {
+            const fName = new Date().getTime() + '_' + file.name;
+            const storageRef = ref(storage, 'calibration_docs/' + fName);
+            await uploadBytes(storageRef, file);
+            return await getDownloadURL(storageRef); 
+        } catch (e) {
+            console.error("Yükleme hatası:", e);
+            alert("Dosya yüklenirken hata oluştu! Konsol (Depolama) açık mı?");
+            return null;
+        }
+    }
+
+    window.addDevice = async () => {
+        const n = document.getElementById('d-name').value;
+        const fileInput = document.getElementById('d-file').files[0];
+        
+        if (!n) return showToast("Cihaz adı zorunlu", "error");
+
+        const btn = document.getElementById('btn-d-save');
+        btn.innerText = "Yükleniyor..."; 
+        btn.disabled = true;
+
+        let pdfUrl = null;
+        if (fileInput) {
+            pdfUrl = await uploadPDF(fileInput);
+        }
+
+        await addDoc(collection(db, "devices"), {
+            name: n,
+            serial: document.getElementById('d-serial').value,
+            calib: document.getElementById('d-calib').value,
+            pdfUrl: pdfUrl,
+            currentHolder: null
+        });
+
+        showToast("Cihaz Eklendi");
+        document.getElementById('d-name').value = "";
+        document.getElementById('d-serial').value = "";
+        document.getElementById('d-calib').value = "";
+        document.getElementById('d-file').value = ""; 
+        btn.innerText = "Ekle";
+        btn.disabled = false;
+    }
+
+    window.updateDeviceDB = async () => {
+        const fileInput = document.getElementById('d-file').files[0];
+        
+        const btn = document.getElementById('btn-d-update');
+        btn.innerText = "Güncelleniyor...";
+        btn.disabled = true;
+
+        let updateData = {
+            name: document.getElementById('d-name').value,
+            serial: document.getElementById('d-serial').value,
+            calib: document.getElementById('d-calib').value
+        };
+
+        if (fileInput) {
+            const newUrl = await uploadPDF(fileInput);
+            if (newUrl) updateData.pdfUrl = newUrl;
+        }
+
+        await updateDoc(doc(db, "devices", editingDeviceId), updateData);
+        
+        showToast("Güncellendi");
+        resetDeviceForm();
+        btn.innerText = "Güncelle";
+        btn.disabled = false;
+    }
+
+    window.editDevice = (id) => {
+        const d = devices.find(x => x.id === id); 
+        if (!d) return; 
+        document.getElementById('d-name').value = d.name; 
+        document.getElementById('d-serial').value = d.serial; 
+        document.getElementById('d-calib').value = d.calib || ""; 
+        editingDeviceId = id; 
+        document.getElementById('deviceFormTitle').innerText = "Düzenle"; 
+        document.getElementById('btn-d-save').style.display = 'none'; 
+        document.getElementById('btn-d-update').style.display = 'block'; 
+        document.getElementById('btn-d-cancel').style.display = 'block';
+    }
+
+    window.cancelDeviceEdit = resetDeviceForm;
+    function resetDeviceForm() {
+        editingDeviceId = null; 
+        document.getElementById('d-name').value = ""; 
+        document.getElementById('d-serial').value = ""; 
+        document.getElementById('d-calib').value = ""; 
+        document.getElementById('d-file').value = ""; 
+        document.getElementById('deviceFormTitle').innerText = "Yeni Cihaz Ekle"; 
+        document.getElementById('btn-d-save').style.display = 'block'; 
+        document.getElementById('btn-d-update').style.display = 'none'; 
+        document.getElementById('btn-d-cancel').style.display = 'none';
+    }
+
+    window.deleteDevice = async (id) => {
+        if (confirm("Sil?")) { await deleteDoc(doc(db, "devices", id)); showToast("Silindi"); }
+    }
     
-function renderDeviceList(){
+    function renderDeviceList() {
         const todayISO = new Date().toISOString().split('T')[0];
         document.getElementById('deviceListArea').innerHTML = devices.map(d => { 
             let statusBadge = `<span class="badge badge-green">BOŞTA</span>`, zimmetHtml = ""; 
@@ -870,7 +945,6 @@ function renderDeviceList(){
                 statusBadge = `<span class="badge badge-orange">👤 ${d.currentHolder}</span>`; 
                 if(userRole==='admin') zimmetHtml = `<button class="btn-sm btn-outline-red" onclick="returnItem('device','${d.id}')">İade Al</button>`; 
             } else if(userRole==='admin') { 
-                // HATA ÇÖZÜMÜ: Parametreler tırnak içine alındı ve (d.serial || '') eklendi.
                 zimmetHtml = `<button class="btn-sm btn-outline-blue" onclick="openCustodyModal('device','${d.id}','${d.name}', '${d.serial || ''}')">Zimmetle</button>`; 
             } 
             const at = tasks.find(t => {
@@ -881,11 +955,19 @@ function renderDeviceList(){
                 return inRange && hasDev;
             });
             if(at) statusBadge += ` <span class="badge badge-red" style="margin-left:5px">GÖREVDE</span>`; 
+            
             let calibHtml = d.calib ? `<br><small style="color:${new Date(d.calib) < new Date() ? 'red' : '#666'}">Kalibrasyon: ${d.calib}</small>` : ""; 
-            return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial || '-'})</small>${calibHtml}</div>${userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; 
+            
+            let pdfButton = "";
+            if (d.pdfUrl) {
+                pdfButton = `<a href="${d.pdfUrl}" target="_blank" style="text-decoration:none; margin-left:10px; font-size:0.8rem; background:#3498db; color:white; padding:3px 8px; border-radius:5px;">📄 İndir</a>`;
+            } else {
+                pdfButton = `<small style="color:#aaa; margin-left:10px;">(Dosya Yok)</small>`;
+            }
+
+            return `<div class="info-card ${d.currentHolder?'custody':'active'}"><div class="info-card-header"><div><strong>${d.name}</strong> <small>(${d.serial || '-'})</small> ${pdfButton} ${calibHtml}</div>${userRole==='admin' ? `<div><button onclick="editDevice('${d.id}')" style="border:none; bg:none; font-size:1.1rem;">✎</button><button onclick="deleteDevice('${d.id}')" style="color:red; border:none; bg:none; font-size:1.1rem;">🗑</button></div>` : ''}</div><div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">${statusBadge}${zimmetHtml}</div></div>`; 
         }).join('');
     }
-    
 
     window.addUserToDB=async()=>{const n=document.getElementById('u-name').value; const e=document.getElementById('u-email').value.trim(); const r=document.getElementById('u-role').value; const t=document.getElementById('u-title').value; const ph=document.getElementById('u-phone').value; if(!n || !e) return alert("Ad ve E-posta zorunludur."); await setDoc(doc(db,"users",e), {name:n, email:e, role:r, title:t, phone:ph}); showToast("Yetkili Eklendi"); cancelUserEdit();}
     window.editUser=(e)=>{const u=users.find(x=>x.email===e); if(!u)return; document.getElementById('u-name').value=u.name; document.getElementById('u-title').value=u.title||''; document.getElementById('u-email').value=u.email; document.getElementById('u-email').disabled=true; document.getElementById('u-phone').value=u.phone||''; document.getElementById('u-role').value=u.role; editingUserEmail=e; document.getElementById('userFormTitle').innerText="Düzenle"; document.getElementById('btn-user-add').style.display='none'; document.getElementById('btn-user-update').style.display='block'; document.getElementById('btn-user-cancel').style.display='block';}
@@ -941,7 +1023,6 @@ function renderDeviceList(){
     }
     function getMultiSelectValues(id){return Array.from(document.querySelectorAll(`#${id} input:checked`)).map(i=>i.value);}
     
-    // DRAG AND SCROLL ÖZELLİĞİ (YENİ)
     const nav = document.querySelector('.bottom-nav');
     let isDown = false;
     let startX;
@@ -965,11 +1046,10 @@ function renderDeviceList(){
         if(!isDown) return;
         e.preventDefault();
         const x = e.pageX - nav.offsetLeft;
-        const walk = (x - startX) * 2; // Kaydırma hızı
+        const walk = (x - startX) * 2; 
         nav.scrollLeft = scrollLeft - walk;
     });
 
-    // MOUSE WHEEL SCROLL
     nav.addEventListener('wheel', (e) => {
         if (e.deltaY !== 0) {
             e.preventDefault();
