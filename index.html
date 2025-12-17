@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V44 - İzin Modülü)</title>
+    <title>Ekip Takip Pro (V45 - İzin Onay Sistemi)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -90,7 +90,6 @@
         .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
         .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
 
-        /* İZİN ÖZET STİLİ */
         .leave-stat-card { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
         .leave-stat-val { font-weight: bold; color: #764ba2; }
     </style>
@@ -387,7 +386,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy, setDoc, getDoc, limit, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    // YENI EKLENEN IMPORTLAR
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     // --- FIREBASE AYARLARI ---
@@ -405,7 +403,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const storage = getStorage(app); // Storage başlatıldı
+    const storage = getStorage(app); 
 
     let projects=[], tasks=[], users=[], vehicles=[], devices=[], logs=[], notifications=[], leaves=[];
     let currentUser=null, userRole='staff';
@@ -484,8 +482,6 @@
             renderNotifications();
         });
 
-        // --- İZİNLER DİNLEYİCİSİ (YENİ) ---
-        // Eğer yöneticiyse herkesi, değilse sadece kendini görsün (Filtreleme JS tarafında yapılıyor çünkü sorgu basit tutuldu)
         const leavesQuery = query(collection(db, "leaves"));
         onSnapshot(leavesQuery, (s) => {
             leaves = [];
@@ -495,14 +491,12 @@
                     leaves.push(l);
                 }
             });
-            // Tarihe göre sırala
             leaves.sort((a,b) => b.startDate.localeCompare(a.startDate));
             renderLeaves();
         });
     }
 
-    // --- İZİN SİSTEMİ FONKSİYONLARI (YENİ) ---
-    // Tarih değiştikçe gün sayısını hesapla
+    // --- İZİN SİSTEMİ FONKSİYONLARI ---
     document.getElementById('l-start').addEventListener('change', calcLeaveDays);
     document.getElementById('l-end').addEventListener('change', calcLeaveDays);
 
@@ -554,7 +548,7 @@
                     type: type,
                     days: days,
                     desc: desc,
-                    status: 'Bekliyor', // veya 'Onaylandı'
+                    status: 'Bekliyor', 
                     createdAt: new Date().toISOString()
                 });
                 
@@ -564,7 +558,14 @@
                 document.getElementById('l-desc').value = "";
                 document.getElementById('leaveCalcInfo').style.display = 'none';
                 
-                // Yöneticiye bildirim atılabilir (Opsiyonel)
+                // YÖNETİCİLERE BİLDİRİM GÖNDERME
+                const admins = users.filter(u => u.role === 'admin');
+                const adminMsg = `*Yeni İzin Talebi*\n\n👤 Personel: ${currentUser.name}\n🏖️ Tür: ${type}\n📅 Süre: ${days} Gün\n\nOnaylamak için uygulamaya giriniz.`;
+                
+                admins.forEach(admin => {
+                    notifyUser(admin.name, adminMsg);
+                });
+
             } catch(e) {
                 console.error(e);
                 showToast("Hata oluştu", "error");
@@ -572,13 +573,28 @@
         }
     }
 
+    // İZİN DURUMU GÜNCELLEME (YÖNETİCİ)
+    window.updateLeaveStatus = async (id, newStatus, requesterName) => {
+        if(!confirm(`Bu izin talebini ${newStatus} olarak işaretlemek istiyor musunuz?`)) return;
+
+        try {
+            await updateDoc(doc(db, "leaves", id), { status: newStatus });
+            
+            // Personele Bildirim Gönder
+            const msg = `*İzin Talebiniz Sonuçlandı*\n\nSayın ${requesterName},\nİzin talebiniz yöneticiniz tarafından *${newStatus}* olarak işaretlenmiştir.`;
+            notifyUser(requesterName, msg);
+
+            showToast(`Talep ${newStatus}`);
+        } catch(e) {
+            console.error(e);
+            showToast("İşlem başarısız", "error");
+        }
+    }
+
     function renderLeaves() {
-        // 1. İstatistikleri Hesapla
         const currentYear = new Date().getFullYear();
         const stats = {};
-        
-        // Sadece giriş yapan kullanıcının istatistiklerini hesapla
-        const myLeaves = leaves.filter(l => l.userId === currentUser.email && l.startDate.startsWith(currentYear.toString()));
+        const myLeaves = leaves.filter(l => l.userId === currentUser.email && l.startDate.startsWith(currentYear.toString()) && l.status === 'Onaylandı');
         
         myLeaves.forEach(l => {
             if(!stats[l.type]) stats[l.type] = 0;
@@ -587,18 +603,16 @@
 
         let statsHtml = "";
         if(Object.keys(stats).length === 0) {
-            statsHtml = "<div style='text-align:center; padding:10px;'>Henüz izin kaydı yok.</div>";
+            statsHtml = "<div style='text-align:center; padding:10px;'>Henüz onaylanmış izin kaydı yok.</div>";
         } else {
             for (const [key, value] of Object.entries(stats)) {
                 statsHtml += `<div class="leave-stat-card"><span>${key}</span><span class="leave-stat-val">${value} Gün</span></div>`;
             }
-            // Toplam
             const total = Object.values(stats).reduce((a, b) => a + b, 0);
             statsHtml += `<div class="leave-stat-card" style="border:none; margin-top:5px; font-size:1rem;"><span>TOPLAM</span><span class="leave-stat-val" style="color:white;">${total} Gün</span></div>`;
         }
         document.getElementById('leaveStatsArea').innerHTML = statsHtml;
 
-        // 2. Listeyi Oluştur
         const listArea = document.getElementById('leaveListArea');
         if(leaves.length === 0) {
             listArea.innerHTML = "<div style='color:#999; text-align:center; padding:20px;'>İzin talebi bulunmuyor.</div>";
@@ -609,9 +623,21 @@
             const statusColor = l.status === 'Onaylandı' ? '#27ae60' : (l.status === 'Reddedildi' ? '#e74c3c' : '#f39c12');
             const d1 = l.startDate.split('-').reverse().join('.');
             const d2 = l.endDate.split('-').reverse().join('.');
-            
-            // Eğer adminse kimin talep ettiğini göster
             const userHtml = userRole === 'admin' ? `<br>👤 <strong>${l.userName}</strong>` : '';
+
+            // YÖNETİCİ KONTROL BUTONLARI (Sadece 'Bekliyor' durumundaysa görünür)
+            let adminControls = "";
+            if (userRole === 'admin' && l.status === 'Bekliyor') {
+                adminControls = `
+                <div style="margin-top:10px; display:flex; gap:10px;">
+                    <button onclick="updateLeaveStatus('${l.id}', 'Onaylandı', '${l.userName}')" class="btn-sm" style="background:#27ae60; color:white; flex:1;">✓ Onayla</button>
+                    <button onclick="updateLeaveStatus('${l.id}', 'Reddedildi', '${l.userName}')" class="btn-sm" style="background:#e74c3c; color:white; flex:1;">✕ Reddet</button>
+                </div>
+                `;
+            }
+
+            // SİLME BUTONU (Sadece Yönetici)
+            const deleteBtn = userRole === 'admin' ? `<button onclick="deleteLeave('${l.id}')" style="border:none; background:none; color:red; font-size:1.1rem; margin-left:10px;">🗑</button>` : '';
 
             return `
             <div class="info-card">
@@ -622,11 +648,12 @@
                         <br><small>📅 ${d1} - ${d2}</small>
                         <br><small style="color:#666;">📝 ${l.desc || 'Açıklama yok'}</small>
                     </div>
-                    <div>
+                    <div style="display:flex; align-items:center;">
                         <span class="badge" style="background:${statusColor}; color:white;">${l.status}</span>
-                        ${userRole === 'admin' ? `<button onclick="deleteLeave('${l.id}')" style="border:none; background:none; color:red; margin-left:5px;">🗑</button>` : ''}
+                        ${deleteBtn}
                     </div>
                 </div>
+                ${adminControls}
             </div>
             `;
         }).join('');
