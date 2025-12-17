@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V43 - Dosya Özellikli)</title>
+    <title>Ekip Takip Pro (V44 - İzin Modülü)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -89,6 +89,10 @@
         
         .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
         .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
+
+        /* İZİN ÖZET STİLİ */
+        .leave-stat-card { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
+        .leave-stat-val { font-weight: bold; color: #764ba2; }
     </style>
 </head>
 <body>
@@ -270,6 +274,45 @@
             </div>
         </div>
 
+        <div id="view-leaves" class="view-section">
+            <div class="modern-card" style="background: linear-gradient(135deg, #FF9966 0%, #FF5E62 100%); color:white;">
+                <h3 style="margin-top:0;">Kullanılan İzin Özeti</h3>
+                <div id="leaveStatsArea">
+                    <p style="text-align:center;">Hesaplanıyor...</p>
+                </div>
+                <small style="display:block; text-align:right; margin-top:10px;">*Bu yılın toplamlarıdır.</small>
+            </div>
+
+            <div class="modern-card">
+                <h3>İzin Talep Oluştur</h3>
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1;"><label style="font-size:0.8rem;">Başlangıç</label><input type="date" id="l-start"></div>
+                    <div style="flex:1;"><label style="font-size:0.8rem;">Bitiş</label><input type="date" id="l-end"></div>
+                </div>
+                <label style="font-size:0.8rem;">İzin Türü:</label>
+                <select id="l-type">
+                    <option value="Yıllık İzin">Yıllık İzin</option>
+                    <option value="Mazeret İzni">Mazeret İzni</option>
+                    <option value="Rapor">Rapor (Hastalık)</option>
+                    <option value="Ücretli İzin">Ücretli İzin</option>
+                    <option value="Ücretsiz İzin">Ücretsiz İzin</option>
+                    <option value="Ölüm İzni">Ölüm İzni</option>
+                    <option value="Evlilik İzni">Evlilik İzni</option>
+                    <option value="Babalık İzni">Babalık İzni</option>
+                </select>
+                <input type="text" id="l-desc" placeholder="Açıklama (Opsiyonel)">
+                
+                <div style="background:#fff3cd; padding:10px; border-radius:8px; margin-bottom:10px; display:none; color:#856404;" id="leaveCalcInfo"></div>
+                
+                <button class="btn-main" onclick="saveLeaveRequest()">Talep Oluştur</button>
+            </div>
+
+            <div class="modern-card">
+                <h3>İzin Geçmişi</h3>
+                <div id="leaveListArea"></div>
+            </div>
+        </div>
+
         <div id="view-profile" class="view-section">
             <div class="modern-card">
                 <h3>Profilim</h3>
@@ -295,6 +338,7 @@
         <div class="nav-item" onclick="switchTab('team')"><span class="icon">👥</span>Ekip</div>
         <div class="nav-item" onclick="switchTab('vehicles')"><span class="icon">🚗</span>Araç</div>
         <div class="nav-item" onclick="switchTab('devices')"><span class="icon">🧰</span>Cihaz</div>
+        <div class="nav-item" onclick="switchTab('leaves')"><span class="icon">🏖️</span>İzin</div>
         <div class="nav-item admin-only" onclick="switchTab('users')"><span class="icon">⚙️</span>Yetki</div>
         <div class="nav-item admin-only" onclick="switchTab('reports')"><span class="icon">📊</span>Rapor</div>
         <div class="nav-item admin-only" onclick="switchTab('logs')"><span class="icon">📝</span>Log</div>
@@ -363,7 +407,7 @@
     const db = getFirestore(app);
     const storage = getStorage(app); // Storage başlatıldı
 
-    let projects=[], tasks=[], users=[], vehicles=[], devices=[], logs=[], notifications=[];
+    let projects=[], tasks=[], users=[], vehicles=[], devices=[], logs=[], notifications=[], leaves=[];
     let currentUser=null, userRole='staff';
     let currentDate=new Date(), selectedDateStr=getCurrentDateStr(), isFirstLoad=true;
     let pickerYear = new Date().getFullYear(), editingUserEmail=null, editingVehicleId=null, editingDeviceId=null, editingProjectId=null;
@@ -439,7 +483,163 @@
             notifications.sort((a,b) => new Date(b.date) - new Date(a.date));
             renderNotifications();
         });
+
+        // --- İZİNLER DİNLEYİCİSİ (YENİ) ---
+        // Eğer yöneticiyse herkesi, değilse sadece kendini görsün (Filtreleme JS tarafında yapılıyor çünkü sorgu basit tutuldu)
+        const leavesQuery = query(collection(db, "leaves"));
+        onSnapshot(leavesQuery, (s) => {
+            leaves = [];
+            s.docs.forEach(d => {
+                const l = {id:d.id, ...d.data()};
+                if(userRole === 'admin' || l.userId === currentUser.email) {
+                    leaves.push(l);
+                }
+            });
+            // Tarihe göre sırala
+            leaves.sort((a,b) => b.startDate.localeCompare(a.startDate));
+            renderLeaves();
+        });
     }
+
+    // --- İZİN SİSTEMİ FONKSİYONLARI (YENİ) ---
+    // Tarih değiştikçe gün sayısını hesapla
+    document.getElementById('l-start').addEventListener('change', calcLeaveDays);
+    document.getElementById('l-end').addEventListener('change', calcLeaveDays);
+
+    function calcLeaveDays() {
+        const s = document.getElementById('l-start').value;
+        const e = document.getElementById('l-end').value;
+        const info = document.getElementById('leaveCalcInfo');
+        
+        if(s && e) {
+            const d1 = new Date(s);
+            const d2 = new Date(e);
+            if(d1 > d2) {
+                info.innerText = "Hata: Bitiş tarihi başlangıçtan önce olamaz.";
+                info.style.display = 'block';
+                return 0;
+            } else {
+                const diffTime = Math.abs(d2 - d1);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; 
+                info.innerHTML = `Toplam İzin Süresi: <strong>${diffDays} Gün</strong>`;
+                info.style.display = 'block';
+                return diffDays;
+            }
+        } else {
+            info.style.display = 'none';
+            return 0;
+        }
+    }
+
+    window.saveLeaveRequest = async () => {
+        const s = document.getElementById('l-start').value;
+        const e = document.getElementById('l-end').value;
+        const type = document.getElementById('l-type').value;
+        const desc = document.getElementById('l-desc').value;
+        
+        const days = calcLeaveDays();
+        
+        if(!s || !e || days <= 0) {
+            showToast("Lütfen geçerli tarih aralığı seçiniz.", "error");
+            return;
+        }
+
+        if(confirm(`${days} gün ${type} talebi oluşturulsun mu?`)) {
+            try {
+                await addDoc(collection(db, "leaves"), {
+                    userId: currentUser.email,
+                    userName: currentUser.name,
+                    startDate: s,
+                    endDate: e,
+                    type: type,
+                    days: days,
+                    desc: desc,
+                    status: 'Bekliyor', // veya 'Onaylandı'
+                    createdAt: new Date().toISOString()
+                });
+                
+                showToast("İzin talebi oluşturuldu!");
+                document.getElementById('l-start').value = "";
+                document.getElementById('l-end').value = "";
+                document.getElementById('l-desc').value = "";
+                document.getElementById('leaveCalcInfo').style.display = 'none';
+                
+                // Yöneticiye bildirim atılabilir (Opsiyonel)
+            } catch(e) {
+                console.error(e);
+                showToast("Hata oluştu", "error");
+            }
+        }
+    }
+
+    function renderLeaves() {
+        // 1. İstatistikleri Hesapla
+        const currentYear = new Date().getFullYear();
+        const stats = {};
+        
+        // Sadece giriş yapan kullanıcının istatistiklerini hesapla
+        const myLeaves = leaves.filter(l => l.userId === currentUser.email && l.startDate.startsWith(currentYear.toString()));
+        
+        myLeaves.forEach(l => {
+            if(!stats[l.type]) stats[l.type] = 0;
+            stats[l.type] += l.days;
+        });
+
+        let statsHtml = "";
+        if(Object.keys(stats).length === 0) {
+            statsHtml = "<div style='text-align:center; padding:10px;'>Henüz izin kaydı yok.</div>";
+        } else {
+            for (const [key, value] of Object.entries(stats)) {
+                statsHtml += `<div class="leave-stat-card"><span>${key}</span><span class="leave-stat-val">${value} Gün</span></div>`;
+            }
+            // Toplam
+            const total = Object.values(stats).reduce((a, b) => a + b, 0);
+            statsHtml += `<div class="leave-stat-card" style="border:none; margin-top:5px; font-size:1rem;"><span>TOPLAM</span><span class="leave-stat-val" style="color:white;">${total} Gün</span></div>`;
+        }
+        document.getElementById('leaveStatsArea').innerHTML = statsHtml;
+
+        // 2. Listeyi Oluştur
+        const listArea = document.getElementById('leaveListArea');
+        if(leaves.length === 0) {
+            listArea.innerHTML = "<div style='color:#999; text-align:center; padding:20px;'>İzin talebi bulunmuyor.</div>";
+            return;
+        }
+
+        listArea.innerHTML = leaves.map(l => {
+            const statusColor = l.status === 'Onaylandı' ? '#27ae60' : (l.status === 'Reddedildi' ? '#e74c3c' : '#f39c12');
+            const d1 = l.startDate.split('-').reverse().join('.');
+            const d2 = l.endDate.split('-').reverse().join('.');
+            
+            // Eğer adminse kimin talep ettiğini göster
+            const userHtml = userRole === 'admin' ? `<br>👤 <strong>${l.userName}</strong>` : '';
+
+            return `
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div>
+                        <span style="font-weight:bold; color:#764ba2;">${l.type}</span> (${l.days} Gün)
+                        ${userHtml}
+                        <br><small>📅 ${d1} - ${d2}</small>
+                        <br><small style="color:#666;">📝 ${l.desc || 'Açıklama yok'}</small>
+                    </div>
+                    <div>
+                        <span class="badge" style="background:${statusColor}; color:white;">${l.status}</span>
+                        ${userRole === 'admin' ? `<button onclick="deleteLeave('${l.id}')" style="border:none; background:none; color:red; margin-left:5px;">🗑</button>` : ''}
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    window.deleteLeave = async (id) => {
+        if(confirm("Bu izin kaydını silmek istiyor musunuz?")) {
+            await deleteDoc(doc(db, "leaves", id));
+            showToast("Silindi");
+        }
+    }
+
+    // --- MEVCUT DİĞER FONKSİYONLAR ---
 
     window.updateUserPassword = async () => {
         const p1 = document.getElementById('new-pass').value;
