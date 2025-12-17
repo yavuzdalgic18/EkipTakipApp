@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V45 - İzin Onay Sistemi)</title>
+    <title>Ekip Takip Pro (V46 - İzin Raporlama)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
     <style>
         /* MEVCUT TASARIM KORUNDU */
@@ -90,8 +92,9 @@
         .avatar { width: 40px; height: 40px; background: #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; margin-right:10px;}
         .person-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
 
-        .leave-stat-card { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
-        .leave-stat-val { font-weight: bold; color: #764ba2; }
+        .leave-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 0.9rem; }
+        .report-controls { display: flex; gap: 5px; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 10px; }
+        .report-controls select { margin-bottom: 0; font-size: 0.8rem; padding: 8px; }
     </style>
 </head>
 <body>
@@ -274,12 +277,25 @@
         </div>
 
         <div id="view-leaves" class="view-section">
-            <div class="modern-card" style="background: linear-gradient(135deg, #FF9966 0%, #FF5E62 100%); color:white;">
-                <h3 style="margin-top:0;">Kullanılan İzin Özeti</h3>
-                <div id="leaveStatsArea">
-                    <p style="text-align:center;">Hesaplanıyor...</p>
+            <div class="modern-card">
+                <h3>Personel İzin Durumu & Rapor</h3>
+                <div class="report-controls">
+                    <select id="pdfYear" style="flex:1;"><option value="2025">2025</option><option value="2024">2024</option></select>
+                    <select id="pdfMonth" style="flex:1;">
+                        <option value="all">Tüm Yıl</option>
+                        <option value="01">Ocak</option><option value="02">Şubat</option><option value="03">Mart</option>
+                        <option value="04">Nisan</option><option value="05">Mayıs</option><option value="06">Haziran</option>
+                        <option value="07">Temmuz</option><option value="08">Ağustos</option><option value="09">Eylül</option>
+                        <option value="10">Ekim</option><option value="11">Kasım</option><option value="12">Aralık</option>
+                    </select>
                 </div>
-                <small style="display:block; text-align:right; margin-top:10px;">*Bu yılın toplamlarıdır.</small>
+                <div style="display:flex; gap:5px; margin-bottom:15px;">
+                    <button onclick="downloadLeavePDF('year')" class="btn-sm" style="flex:1; background:#764ba2; color:white;">📂 Yıllık PDF</button>
+                    <button onclick="downloadLeavePDF('month')" class="btn-sm" style="flex:1; background:#667eea; color:white;">📄 Aylık PDF</button>
+                </div>
+                <div id="allUserLeavesStats">
+                    <p style="text-align:center; color:#888;">Yükleniyor...</p>
+                </div>
             </div>
 
             <div class="modern-card">
@@ -487,9 +503,8 @@
             leaves = [];
             s.docs.forEach(d => {
                 const l = {id:d.id, ...d.data()};
-                if(userRole === 'admin' || l.userId === currentUser.email) {
-                    leaves.push(l);
-                }
+                // HERKES HERKESİ GÖREBİLİR (RAPOR İÇİN)
+                leaves.push(l);
             });
             leaves.sort((a,b) => b.startDate.localeCompare(a.startDate));
             renderLeaves();
@@ -592,40 +607,47 @@
     }
 
     function renderLeaves() {
-        const currentYear = new Date().getFullYear();
-        const stats = {};
-        const myLeaves = leaves.filter(l => l.userId === currentUser.email && l.startDate.startsWith(currentYear.toString()) && l.status === 'Onaylandı');
+        const currentYear = document.getElementById('pdfYear').value || new Date().getFullYear().toString();
         
-        myLeaves.forEach(l => {
-            if(!stats[l.type]) stats[l.type] = 0;
-            stats[l.type] += l.days;
+        // --- 1. TÜM PERSONEL ÖZETİ (YENİ) ---
+        const summaryStats = {};
+        
+        leaves.forEach(l => {
+            if(l.status === 'Onaylandı' && l.startDate.startsWith(currentYear)) {
+                if(!summaryStats[l.userName]) summaryStats[l.userName] = 0;
+                summaryStats[l.userName] += l.days;
+            }
         });
 
-        let statsHtml = "";
-        if(Object.keys(stats).length === 0) {
-            statsHtml = "<div style='text-align:center; padding:10px;'>Henüz onaylanmış izin kaydı yok.</div>";
+        let summaryHtml = "";
+        if(Object.keys(summaryStats).length === 0) {
+            summaryHtml = `<div style="text-align:center; padding:10px; color:#999;">${currentYear} yılında onaylı izin kaydı yok.</div>`;
         } else {
-            for (const [key, value] of Object.entries(stats)) {
-                statsHtml += `<div class="leave-stat-card"><span>${key}</span><span class="leave-stat-val">${value} Gün</span></div>`;
+            summaryHtml = `<table style="width:100%; font-size:0.9rem; border-collapse:collapse;">
+                <tr style="background:#f0f0f0;"><th style="padding:5px; text-align:left;">Personel</th><th style="padding:5px; text-align:right;">Toplam (Gün)</th></tr>`;
+            for (const [name, days] of Object.entries(summaryStats)) {
+                summaryHtml += `<tr><td style="padding:5px; border-bottom:1px solid #eee;">${name}</td><td style="padding:5px; text-align:right; border-bottom:1px solid #eee; font-weight:bold;">${days}</td></tr>`;
             }
-            const total = Object.values(stats).reduce((a, b) => a + b, 0);
-            statsHtml += `<div class="leave-stat-card" style="border:none; margin-top:5px; font-size:1rem;"><span>TOPLAM</span><span class="leave-stat-val" style="color:white;">${total} Gün</span></div>`;
+            summaryHtml += `</table>`;
         }
-        document.getElementById('leaveStatsArea').innerHTML = statsHtml;
+        document.getElementById('allUserLeavesStats').innerHTML = summaryHtml;
 
+        // --- 2. LİSTELEME (DEĞİŞMEDİ) ---
         const listArea = document.getElementById('leaveListArea');
-        if(leaves.length === 0) {
+        // Listede sadece kendisininkileri veya (Adminse hepsini) gösterelim
+        let displayLeaves = userRole === 'admin' ? leaves : leaves.filter(l => l.userId === currentUser.email);
+        
+        if(displayLeaves.length === 0) {
             listArea.innerHTML = "<div style='color:#999; text-align:center; padding:20px;'>İzin talebi bulunmuyor.</div>";
             return;
         }
 
-        listArea.innerHTML = leaves.map(l => {
+        listArea.innerHTML = displayLeaves.map(l => {
             const statusColor = l.status === 'Onaylandı' ? '#27ae60' : (l.status === 'Reddedildi' ? '#e74c3c' : '#f39c12');
             const d1 = l.startDate.split('-').reverse().join('.');
             const d2 = l.endDate.split('-').reverse().join('.');
-            const userHtml = userRole === 'admin' ? `<br>👤 <strong>${l.userName}</strong>` : '';
+            const userHtml = `<br>👤 <strong>${l.userName}</strong>`;
 
-            // YÖNETİCİ KONTROL BUTONLARI (Sadece 'Bekliyor' durumundaysa görünür)
             let adminControls = "";
             if (userRole === 'admin' && l.status === 'Bekliyor') {
                 adminControls = `
@@ -636,7 +658,6 @@
                 `;
             }
 
-            // SİLME BUTONU (Sadece Yönetici)
             const deleteBtn = userRole === 'admin' ? `<button onclick="deleteLeave('${l.id}')" style="border:none; background:none; color:red; font-size:1.1rem; margin-left:10px;">🗑</button>` : '';
 
             return `
@@ -658,6 +679,81 @@
             `;
         }).join('');
     }
+
+    // PDF İNDİRME FONKSİYONU
+    window.downloadLeavePDF = (mode) => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const year = document.getElementById('pdfYear').value;
+        const month = document.getElementById('pdfMonth').value;
+        
+        let filteredLeaves = leaves.filter(l => l.status === 'Onaylandı');
+        let title = "";
+        let bodyData = [];
+
+        if (mode === 'year') {
+            title = `${year} Yılı Personel İzin Özeti`;
+            filteredLeaves = filteredLeaves.filter(l => l.startDate.startsWith(year));
+            
+            // Kişi bazlı grupla
+            const grouped = {};
+            filteredLeaves.forEach(l => {
+                if(!grouped[l.userName]) grouped[l.userName] = { total: 0, details: [] };
+                grouped[l.userName].total += l.days;
+                grouped[l.userName].details.push(l.type);
+            });
+
+            // Tablo verisini hazırla
+            Object.keys(grouped).forEach(name => {
+                // Unique izin türlerini al
+                const types = [...new Set(grouped[name].details)].join(', ');
+                bodyData.push([name, types, grouped[name].total + ' Gün']);
+            });
+
+            doc.text(title, 14, 15);
+            doc.autoTable({
+                head: [['Personel', 'Kullanılan İzin Türleri', 'Toplam Gün']],
+                body: bodyData,
+                startY: 20
+            });
+
+        } else {
+            // Aylık Rapor
+            const monthName = document.getElementById('pdfMonth').options[document.getElementById('pdfMonth').selectedIndex].text;
+            if(month === 'all') {
+                alert("Lütfen aylık rapor için belirli bir ay seçiniz.");
+                return;
+            }
+            
+            title = `${monthName} ${year} İzin Raporu`;
+            const target = `${year}-${month}`;
+            
+            filteredLeaves = filteredLeaves.filter(l => l.startDate.startsWith(target) || l.endDate.startsWith(target));
+            
+            filteredLeaves.forEach(l => {
+                const d1 = l.startDate.split('-').reverse().join('.');
+                const d2 = l.endDate.split('-').reverse().join('.');
+                bodyData.push([l.userName, l.type, `${d1} - ${d2}`, l.days + ' Gün']);
+            });
+
+            if(bodyData.length === 0) {
+                alert("Seçilen ayda izin kaydı bulunamadı.");
+                return;
+            }
+
+            doc.text(title, 14, 15);
+            doc.autoTable({
+                head: [['Personel', 'Tür', 'Tarih Aralığı', 'Süre']],
+                body: bodyData,
+                startY: 20
+            });
+        }
+
+        doc.save(`Izin_Raporu_${mode}_${year}.pdf`);
+    }
+
+    // YIL DEĞİŞİNCE TABLOYU GÜNCELLE
+    document.getElementById('pdfYear').addEventListener('change', renderLeaves);
 
     window.deleteLeave = async (id) => {
         if(confirm("Bu izin kaydını silmek istiyor musunuz?")) {
