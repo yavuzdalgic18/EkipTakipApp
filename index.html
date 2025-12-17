@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ekip Takip Pro (V46 - İzin Raporlama)</title>
+    <title>Ekip Takip Pro (V47 - Geri Bildirim)</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4facfe">
@@ -69,7 +69,7 @@
         .day-cell.today { border: 2px solid #764ba2; background: white; }
         .task-dot { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 4px; margin-bottom: 2px; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
-        input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; font-size: 16px; outline: none; textarea { width: 100%; padding: 12px; border: 1px solid #eee; background: #f9f9f9; border-radius: 10px; outline: none; margin-bottom: 10px; min-height: 100px; resize: vertical; } }
         .btn-main { width: 100%; padding: 12px; background: var(--primary-grad); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 5px; transition: opacity 0.3s; }
         .btn-main:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-sm { padding: 5px 10px; font-size: 0.8rem; border-radius: 6px; border: none; cursor: pointer; margin-left: 5px; }
@@ -95,6 +95,11 @@
         .leave-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 0.9rem; }
         .report-controls { display: flex; gap: 5px; margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 10px; }
         .report-controls select { margin-bottom: 0; font-size: 0.8rem; padding: 8px; }
+        
+        /* FEEDBACK CARD STIL */
+        .feedback-item { background: #fff; border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 8px; font-size: 0.85rem; }
+        .feedback-item strong { color: #764ba2; }
+        .feedback-date { float: right; color: #aaa; font-size: 0.75rem; }
     </style>
 </head>
 <body>
@@ -106,6 +111,10 @@
         <div><small style="color:#888;">Merhaba,</small><h2 style="margin:0;" id="welcomeUser">Kullanıcı</h2></div>
         
         <div class="header-icons">
+            <button class="icon-btn" onclick="openFeedbackModal()" title="Geri Bildirim Yap">
+                💬
+            </button>
+
             <button class="icon-btn" onclick="toggleNotifications()">
                 🔔
                 <span id="notif-badge" class="notif-badge">0</span>
@@ -260,6 +269,13 @@
         </div>
 
         <div id="view-logs" class="view-section">
+            <div class="modern-card admin-only">
+                <h3>Kullanıcı Geri Bildirimleri</h3>
+                <div style="max-height:200px; overflow-y:auto;" id="adminFeedbackList">
+                    <p style="color:#aaa; text-align:center;">Yükleniyor...</p>
+                </div>
+            </div>
+
             <div class="modern-card">
                 <h3>Sistem Kayıtları (Log)</h3>
                 <label>Tarih Seç:</label>
@@ -398,6 +414,16 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="feedbackModal" onclick="if(event.target===this) closeFeedbackModal()">
+    <div class="modal-card">
+        <h3>Geri Bildirim Gönder</h3>
+        <p style="color:#666; font-size:0.9rem;">Uygulama ile ilgili görüş, öneri veya şikayetlerinizi yazabilirsiniz.</p>
+        <textarea id="feedbackText" placeholder="Mesajınız..."></textarea>
+        <button class="btn-main" onclick="submitFeedback()">Gönder</button>
+        <button class="btn-main" onclick="closeFeedbackModal()" style="background:#95a5a6; margin-top:10px;">Vazgeç</button>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -503,12 +529,57 @@
             leaves = [];
             s.docs.forEach(d => {
                 const l = {id:d.id, ...d.data()};
-                // HERKES HERKESİ GÖREBİLİR (RAPOR İÇİN)
                 leaves.push(l);
             });
             leaves.sort((a,b) => b.startDate.localeCompare(a.startDate));
             renderLeaves();
         });
+
+        // --- YENİ: GERİ BİLDİRİM DİNLEYİCİSİ (SADECE ADMİNLER) ---
+        if(userRole === 'admin') {
+            const feedQuery = query(collection(db, "feedbacks"), orderBy("date", "desc"));
+            onSnapshot(feedQuery, (s) => {
+                const feedList = document.getElementById('adminFeedbackList');
+                if(s.empty) {
+                    feedList.innerHTML = '<p style="color:#aaa; text-align:center;">Geri bildirim yok.</p>';
+                    return;
+                }
+                feedList.innerHTML = s.docs.map(d => {
+                    const f = d.data();
+                    const dt = new Date(f.date);
+                    const dtStr = `${dt.getDate()}.${dt.getMonth()+1} ${dt.getHours()}:${dt.getMinutes()}`;
+                    return `<div class="feedback-item">
+                        <span class="feedback-date">${dtStr}</span>
+                        <strong>${f.userName}</strong><br>
+                        ${f.message}
+                    </div>`;
+                }).join('');
+            });
+        }
+    }
+
+    // --- YENİ: GERİ BİLDİRİM FONKSİYONLARI ---
+    window.openFeedbackModal = () => document.getElementById('feedbackModal').style.display = 'flex';
+    window.closeFeedbackModal = () => document.getElementById('feedbackModal').style.display = 'none';
+    
+    window.submitFeedback = async () => {
+        const txt = document.getElementById('feedbackText').value;
+        if(!txt) return showToast("Lütfen bir mesaj yazın", "error");
+        
+        try {
+            await addDoc(collection(db, "feedbacks"), {
+                userId: currentUser.email,
+                userName: currentUser.name,
+                message: txt,
+                date: new Date().toISOString()
+            });
+            showToast("Geri bildirim gönderildi, teşekkürler!");
+            document.getElementById('feedbackText').value = "";
+            closeFeedbackModal();
+        } catch(e) {
+            console.error(e);
+            showToast("Hata oluştu", "error");
+        }
     }
 
     // --- İZİN SİSTEMİ FONKSİYONLARI ---
@@ -588,7 +659,6 @@
         }
     }
 
-    // İZİN DURUMU GÜNCELLEME (YÖNETİCİ)
     window.updateLeaveStatus = async (id, newStatus, requesterName) => {
         if(!confirm(`Bu izin talebini ${newStatus} olarak işaretlemek istiyor musunuz?`)) return;
 
@@ -609,7 +679,7 @@
     function renderLeaves() {
         const currentYear = document.getElementById('pdfYear').value || new Date().getFullYear().toString();
         
-        // --- 1. TÜM PERSONEL ÖZETİ (YENİ) ---
+        // --- 1. TÜM PERSONEL ÖZETİ ---
         const summaryStats = {};
         
         leaves.forEach(l => {
@@ -632,9 +702,8 @@
         }
         document.getElementById('allUserLeavesStats').innerHTML = summaryHtml;
 
-        // --- 2. LİSTELEME (DEĞİŞMEDİ) ---
+        // --- 2. LİSTELEME ---
         const listArea = document.getElementById('leaveListArea');
-        // Listede sadece kendisininkileri veya (Adminse hepsini) gösterelim
         let displayLeaves = userRole === 'admin' ? leaves : leaves.filter(l => l.userId === currentUser.email);
         
         if(displayLeaves.length === 0) {
@@ -695,7 +764,6 @@
             title = `${year} Yılı Personel İzin Özeti`;
             filteredLeaves = filteredLeaves.filter(l => l.startDate.startsWith(year));
             
-            // Kişi bazlı grupla
             const grouped = {};
             filteredLeaves.forEach(l => {
                 if(!grouped[l.userName]) grouped[l.userName] = { total: 0, details: [] };
@@ -703,9 +771,7 @@
                 grouped[l.userName].details.push(l.type);
             });
 
-            // Tablo verisini hazırla
             Object.keys(grouped).forEach(name => {
-                // Unique izin türlerini al
                 const types = [...new Set(grouped[name].details)].join(', ');
                 bodyData.push([name, types, grouped[name].total + ' Gün']);
             });
@@ -718,7 +784,6 @@
             });
 
         } else {
-            // Aylık Rapor
             const monthName = document.getElementById('pdfMonth').options[document.getElementById('pdfMonth').selectedIndex].text;
             if(month === 'all') {
                 alert("Lütfen aylık rapor için belirli bir ay seçiniz.");
@@ -752,7 +817,6 @@
         doc.save(`Izin_Raporu_${mode}_${year}.pdf`);
     }
 
-    // YIL DEĞİŞİNCE TABLOYU GÜNCELLE
     document.getElementById('pdfYear').addEventListener('change', renderLeaves);
 
     window.deleteLeave = async (id) => {
